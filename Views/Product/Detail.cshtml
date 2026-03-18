@@ -1,0 +1,424 @@
+@model MilkStore.Models.Product
+@{
+    ViewData["Title"] = Model.ProductName;
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var reviews = (List<MilkStore.Models.Review>)ViewBag.Reviews;
+    var avg     = (double)ViewBag.AvgRating;
+    var userId  = Context.Session.GetInt32("UserId");
+}
+
+<!-- Breadcrumb -->
+<div style="background:#f8f6f2;padding:.75rem 0;border-bottom:1px solid #f0ece4">
+    <div class="container">
+        <div class="breadcrumb-nav" style="margin:0">
+            <a asp-area="" asp-controller="Home" asp-action="Index" style="color:#666">Trang chủ</a>
+            <img src="https://cdn-icons-png.flaticon.com/512/271/271228.png" alt="" style="width:10px;height:10px;opacity:.35">
+            <a asp-area="" asp-controller="Product" asp-action="Index" style="color:#666">Sản phẩm</a>
+            <img src="https://cdn-icons-png.flaticon.com/512/271/271228.png" alt="" style="width:10px;height:10px;opacity:.35">
+            <span style="color:#1a3a2a;font-weight:500">@Model.ProductName</span>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="detail-grid">
+        <!-- Product Image -->
+        <div class="detail-img-wrap">
+            <div class="detail-img-frame">
+                <img src="@(Model.ImageUrl ?? "https://placehold.co/600x500/f0f7f2/1a3a2a?text=Sữa")"
+                     alt="@Model.ProductName" class="detail-img" />
+            </div>
+            <div class="detail-badges-row">
+                <div class="detail-badge-item">
+                    <img src="https://cdn-icons-png.flaticon.com/512/1828/1828640.png" alt="" style="width:18px;height:18px">
+                    <span>Chính hãng</span>
+                </div>
+                <div class="detail-badge-item">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3514/3514491.png" alt="" style="width:18px;height:18px">
+                    <span>Giao nhanh</span>
+                </div>
+                <div class="detail-badge-item">
+                    <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" alt="" style="width:18px;height:18px">
+                    <span>Đổi trả 7 ngày</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- Product Info -->
+        <div class="detail-info">
+            <div class="detail-meta-row">
+                <span class="detail-cat-tag">@Model.Category?.Name</span>
+                <span class="detail-brand-tag">@Model.Brand?.Name</span>
+            </div>
+            <h1 class="detail-title">@Model.ProductName</h1>
+
+            <div class="detail-rating-row">
+                <div class="detail-stars">
+                      @for (int i = 1; i <= 5; i++){
+  
+                         <img src="https://e7.pngegg.com/pngimages/180/113/png-clipart-star-yellow-a-of-a-star-blue-angle-thumbnail.png"
+                           alt="" style="width:14px;height:14px">
+                        }
+                </div>
+                <span class="rating-count-text">@avg.ToString("0.0") / 5.0 (@reviews.Count đánh giá)</span>
+            </div>
+
+            <div class="detail-price-row">
+                <div class="detail-price">@String.Format("{0:N0}đ", Model.Price)</div>
+                @if (Model.StockQuantity > 10)
+                {
+                    <div class="stock-badge in-stock">
+                        <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" alt="" style="width:14px;height:14px;filter:brightness(0) saturate(100%) invert(33%) sepia(80%) saturate(500%) hue-rotate(90deg)">
+                        Còn hàng (@Model.StockQuantity)
+                    </div>
+                }
+                else if (Model.StockQuantity > 0)
+                {
+                    <div class="stock-badge low-stock">
+                        <img src="https://cdn-icons-png.flaticon.com/512/564/564619.png" alt="" style="width:14px;height:14px">
+                        Sắp hết (@Model.StockQuantity còn lại)
+                    </div>
+                }
+                else
+                {
+                    <div class="stock-badge out-stock">
+                        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828774.png" alt="" style="width:14px;height:14px">
+                        Hết hàng
+                    </div>
+                }
+            </div>
+
+            <div class="detail-divider"></div>
+
+            <p class="detail-desc">@Model.Description</p>
+
+            @if (Model.StockQuantity > 0)
+            {
+                <form asp-controller="Cart" asp-action="Add" method="post" class="add-to-cart-form">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="productId" value="@Model.Id" />
+                    <div class="qty-row">
+                        <span class="qty-label">Số lượng:</span>
+                        <div class="qty-controls">
+                            <button type="button" class="qty-btn" onclick="var i=document.getElementById('qty');if(i.value>1)i.value--">−</button>
+                            <input type="number" name="quantity" id="qty" value="1"
+                                   min="1" max="@Model.StockQuantity"
+                                   class="qty-input" />
+                            <button type="button" class="qty-btn" onclick="var i=document.getElementById('qty');if(parseInt(i.value)<@Model.StockQuantity)i.value++">+</button>
+                        </div>
+                    </div>
+                    <div class="buy-actions">
+                        <button type="submit" class="btn-buy-main">
+                            <img src="https://cdn-icons-png.flaticon.com/512/3144/3144456.png" alt="" style="width:18px;height:18px;filter:brightness(10)">
+                            Thêm vào giỏ hàng
+                        </button>
+                    </div>
+                </form>
+            }
+
+            <!-- Share/info row -->
+            <div class="detail-info-row">
+                <div class="info-chip">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3514/3514491.png" alt="" style="width:16px;height:16px;opacity:.7">
+                    <span>Miễn phí ship đơn 300k+</span>
+                </div>
+                <div class="info-chip">
+                    <img src="https://cdn-icons-png.flaticon.com/512/597/597177.png" alt="" style="width:16px;height:16px;opacity:.7">
+                    <span>Hotline: 1800 6789</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Reviews Section -->
+    <div class="reviews-section">
+        <div class="reviews-header">
+            <h3 class="reviews-title">
+                <img src="https://cdn-icons-png.flaticon.com/512/1041/1041916.png" alt="" style="width:22px;height:22px">
+                Đánh giá sản phẩm
+            </h3>
+            <div class="reviews-avg">
+                <span class="reviews-big-num">@avg.ToString("0.0")</span>
+                <div>
+                    <div class="reviews-stars-row">
+                        @for (int i = 1; i <= avg; i++)
+                        {
+                             <img src="https://png.pngtree.com/png-clipart/20190603/original/pngtree-beautiful-yellow-stars-png-image_71724.jpg"
+                             alt="" style="width:14px;height:14px">
+                        }
+                    </div>
+                    <div style="font-size:.8rem;color:#888">@reviews.Count đánh giá</div>
+                </div>
+            </div>
+        </div>
+
+        @if (userId != null)
+        {
+            var hasReviewed = reviews.Any(r => r.UserId == userId);
+            if (!hasReviewed)
+            {
+                <form asp-controller="Product" asp-action="AddReview"
+                      method="post" class="review-form">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="productId" value="@Model.Id" />
+                    <div class="review-form-title">
+                        <img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" alt="" style="width:18px;height:18px">
+                        Viết đánh giá của bạn
+                    </div>
+                    <div class="star-picker">
+                        <label>Đánh giá:</label>
+                        <div class="stars">
+                            @for (int i = 5; i >= 1; i--)
+                            {
+                                <input type="radio" name="rating" id="star@i" value="@i" />
+                                <label for="star@i"></label>
+                            }
+                        </div>
+                    </div>
+                    <textarea name="comment" class="review-textarea"
+                              placeholder="Chia sẻ cảm nhận của bạn về sản phẩm này..." rows="3"></textarea>
+                    <button type="submit" class="btn-review">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3524/3524344.png" alt="" style="width:15px;height:15px;filter:brightness(10)">
+                        Gửi đánh giá
+                    </button>
+                </form>
+            }
+            else
+            {
+                <div class="already-reviewed">
+                    <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" alt="" style="width:18px;height:18px">
+                    Bạn đã đánh giá sản phẩm này.
+                </div>
+            }
+        }
+        else
+        {
+            <div class="login-to-review">
+                <img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" alt="" style="width:18px;height:18px;opacity:.5">
+                <a asp-controller="Account" asp-action="Login">Đăng nhập</a> để viết đánh giá
+            </div>
+        }
+
+        @if (!reviews.Any())
+        {
+            <div class="no-reviews">
+                
+                Chưa có đánh giá nào.
+            </div>
+        }
+
+        @foreach (var r in reviews)
+        {
+            <div class="review-item">
+                <div class="review-avatar">
+                    @r.User?.FullName?.Substring(0,1).ToUpper()
+                </div>
+                <div class="review-body">
+                    <div class="review-header">
+                        <strong>@r.User?.FullName</strong>
+                        <div class="review-stars-inline">
+                            @for (int i = 1; i <= 5; i++)
+                            {
+                               
+                            }
+                        </div>
+                        <span class="review-date">@r.CreatedAt.ToString("dd/MM/yyyy")</span>
+                    </div>
+                    @if (!string.IsNullOrEmpty(r.Comment))
+                    {
+                        <p class="review-comment">@r.Comment</p>
+                    }
+                </div>
+            </div>
+        }
+    </div>
+</div>
+
+<style>
+.breadcrumb-nav {
+    display: flex; align-items: center; gap: .5rem;
+    font-size: .82rem;
+}
+.detail-grid {
+    display: grid; grid-template-columns: 1fr 1fr;
+    gap: 3rem; margin-bottom: 3.5rem;
+}
+.detail-img-frame {
+    background: #f8f6f2; border-radius: 18px; overflow: hidden;
+    box-shadow: 0 4px 24px rgba(0,0,0,.08);
+}
+.detail-img { width: 100%; aspect-ratio: 1/1; object-fit: cover }
+.detail-badges-row {
+    display: flex; gap: .75rem; margin-top: 1rem; flex-wrap: wrap;
+}
+.detail-badge-item {
+    display: flex; align-items: center; gap: .4rem;
+    background: #f0f7f2; border-radius: 8px; padding: .45rem .85rem;
+    font-size: .8rem; font-weight: 600; color: #1a6b3c;
+    border: 1px solid #c8e6c9;
+}
+.detail-meta-row { display: flex; gap: .6rem; margin-bottom: .75rem }
+.detail-cat-tag {
+    background: #f0f7f2; color: #1a6b3c; border-radius: 20px;
+    padding: .22rem .8rem; font-size: .75rem; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .4px;
+}
+.detail-brand-tag {
+    background: #f8f6f2; color: #666; border-radius: 20px;
+    padding: .22rem .8rem; font-size: .75rem; font-weight: 600;
+}
+.detail-title {
+    font-size: 24px;
+    font-weight: 700;
+    line-height: 1.4;
+     font-family: 'Segoe UI', Tahoma, sans-serif;
+}
+.detail-rating-row {
+    display: flex; align-items: center; gap: .75rem; margin-bottom: .85rem;
+}
+.detail-stars { display: flex; gap: 2px }
+.rating-count-text { font-size: .85rem; color: #888 }
+.detail-price-row {
+    display: flex; align-items: center; gap: 1rem; margin-bottom: 1rem;
+}
+.detail-price {
+    font-size: 28px;
+    font-weight: 800;
+    font-family: inherit;
+    color: #ee4d2d;
+}
+.detail-price,
+.reviews-big-num {
+    font-family: 'Segoe UI', monospace;
+}
+.stock-badge {
+    display: inline-flex; align-items: center; gap: .35rem;
+    padding: .3rem .8rem; border-radius: 8px; font-size: .82rem; font-weight: 600;
+}
+.stock-badge.in-stock { background: #e8f5e9; color: #2e7d32 }
+.stock-badge.low-stock { background: #fff8e1; color: #f57f17 }
+.stock-badge.out-stock { background: #fce4ec; color: #c62828 }
+.detail-divider { height: 1px; background: #f0ece4; margin: 1rem 0 }
+.detail-desc { color: #555; line-height: 1.75; font-size: .95rem; margin-bottom: 1.25rem }
+.qty-row { display: flex; align-items: center; gap: 1rem; margin-bottom: 1.1rem }
+.qty-label { font-weight: 600; font-size: .9rem }
+.qty-controls { display: flex; align-items: center; gap: 0 }
+.qty-btn {
+    width: 34px; height: 34px; border: 1.5px solid #e0dbd3;
+    background: #fff; cursor: pointer; font-size: 1.1rem;
+    font-weight: 600; transition: background .2s; color: #333;
+}
+.qty-btn:first-child { border-radius: 8px 0 0 8px }
+.qty-btn:last-child { border-radius: 0 8px 8px 0 }
+.qty-btn:hover { background: #f0f7f2 }
+.qty-input {
+    width: 58px; height: 34px; text-align: center;
+    border: 1.5px solid #e0dbd3; border-left: none; border-right: none;
+    font-size: .95rem; outline: none; font-family: inherit;
+}
+.buy-actions { margin-bottom: 1rem }
+.btn-buy-main {
+    background: linear-gradient(135deg, #1a3a2a, #2d5a40);
+    color: #fff; border: none; border-radius: 12px;
+    padding: .9rem 2.2rem; font-size: 1rem; font-weight: 700;
+    cursor: pointer; display: inline-flex; align-items: center; gap: .6rem;
+    transition: transform .2s, box-shadow .2s;
+}
+.btn-buy-main:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(26,58,42,.3);
+}
+.detail-info-row { display: flex; gap: .75rem; flex-wrap: wrap }
+.info-chip {
+    display: flex; align-items: center; gap: .4rem;
+    background: #f8f6f2; padding: .4rem .85rem;
+    border-radius: 8px; font-size: .8rem; color: #666;
+}
+
+/* Reviews */
+.reviews-section { border-top: 2px solid #f0ece4; padding-top: 2.5rem; margin-bottom: 4rem }
+.reviews-header {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 1.5rem;
+}
+.reviews-title {
+    font-size: 1.2rem; margin: 0;
+    display: flex; align-items: center; gap: .5rem;
+}
+.reviews-avg {
+    display: flex; align-items: center; gap: .75rem;
+}
+.reviews-big-num {
+    font-size: 28px;
+    font-weight: 700;
+}
+.reviews-stars-row { display: flex; gap: 2px; margin-bottom: .2rem }
+
+.review-form {
+    background: #f8f6f2; border-radius: 14px; padding: 1.5rem; margin-bottom: 2rem;
+    border: 1px solid #f0ece4;
+}
+.review-form-title {
+    display: flex; align-items: center; gap: .5rem;
+    font-weight: 700; margin-bottom: 1rem; font-size: .95rem;
+}
+.star-picker { display: flex; align-items: center; gap: .75rem; margin-bottom: .85rem }
+.star-picker .stars {
+    display: flex; flex-direction: row-reverse;
+    justify-content: flex-end; gap: .2rem;
+}
+.star-picker input[type=radio] { display: none }
+.star-picker label { font-size: 1.7rem; color: #ddd; cursor: pointer }
+.star-picker input:checked ~ label,
+.star-picker label:hover,
+.star-picker label:hover ~ label { color: #f59e0b } 
+.review-textarea {
+    width: 100%; padding: .7rem .95rem;
+    border: 1.5px solid #e0dbd3; border-radius: 10px;
+    resize: vertical; font-size: .9rem; margin-bottom: .85rem;
+    box-sizing: border-box; font-family: inherit;
+    transition: border-color .2s;
+}
+.review-textarea:focus { outline: none; border-color: #1a3a2a }
+.btn-review {
+    background: #1a3a2a; color: #fff; border: none;
+    border-radius: 8px; padding: .6rem 1.3rem;
+    font-weight: 600; cursor: pointer; font-size: .9rem;
+    display: inline-flex; align-items: center; gap: .4rem;
+    transition: background .2s;
+}
+.btn-review:hover { background: #2d5a40 }
+.already-reviewed {
+    display: flex; align-items: center; gap: .5rem;
+    color: #2e7d32; font-weight: 600; font-size: .9rem;
+    padding: .75rem 1rem; background: #e8f5e9; border-radius: 10px;
+    margin-bottom: 1.5rem;
+}
+.login-to-review {
+    display: flex; align-items: center; gap: .5rem;
+    color: #888; font-size: .9rem; margin-bottom: 1.5rem;
+}
+.login-to-review a { color: #1a3a2a; font-weight: 600 }
+.no-reviews { text-align: center; padding: 2rem 0; color: #aaa; font-style: italic }
+
+.review-item {
+    display: flex; gap: 1rem; padding: 1.25rem 0;
+    border-bottom: 1px solid #f5f2ed;
+}
+.review-avatar {
+    width: 40px; height: 40px; border-radius: 50%; flex-shrink: 0;
+    background: linear-gradient(135deg, #1a3a2a, #4caf82);
+    color: #fff; display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: .9rem;
+}
+.review-body { flex: 1 }
+.review-header {
+    display: flex; align-items: center; gap: .75rem; margin-bottom: .35rem;
+}
+.review-header strong { font-size: .92rem }
+.review-stars-inline { display: flex; gap: 1px }
+.review-date { font-size: .78rem; color: #bbb; margin-left: auto }
+.review-comment { color: #555; font-size: .9rem; margin: 0; line-height: 1.6 }
+
+@@media(max-width:768px) { .detail-grid { grid-template-columns: 1fr } }
+</style>

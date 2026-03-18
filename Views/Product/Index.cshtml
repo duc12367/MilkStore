@@ -1,0 +1,304 @@
+@model List<MilkStore.Models.Product>
+@{
+    ViewData["Title"] = "Sản phẩm";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<!-- Page Hero -->
+<div class="page-hero">
+    <div class="container">
+        <div class="breadcrumb-nav">
+            <a asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a>
+            <img src="https://cdn-icons-png.flaticon.com/512/271/271228.png" alt="" style="width:10px;height:10px;opacity:.4">
+            <span>Sản phẩm</span>
+        </div>
+        <h1 class="page-hero-title">Tất cả sản phẩm</h1>
+        <p class="page-hero-sub">Khám phá hàng trăm sản phẩm sữa chính hãng chất lượng cao</p>
+    </div>
+</div>
+
+<div class="container" style="margin-top:2rem">
+    <!-- Filter bar -->
+    <form method="get" class="filter-bar">
+        <div class="filter-search-wrap">
+            <img src="https://cdn-icons-png.flaticon.com/512/622/622669.png" alt="" class="filter-search-icon">
+            <input type="text" name="search" value="@ViewBag.Search"
+                   placeholder="Tìm sản phẩm..." class="filter-input" />
+        </div>
+
+        <select name="categoryId" class="filter-select" onchange="this.form.submit()">
+            <option value="">
+                <img src="https://cdn-icons-png.flaticon.com/512/3050/3050157.png" alt="">
+                Tất cả danh mục
+            </option>
+            @foreach (var cat in (List<MilkStore.Models.Category>)ViewBag.Categories)
+            {
+                if (ViewBag.CategoryId == cat.Id)
+                {
+                    <option value="@cat.Id" selected>@cat.Name</option>
+                }
+                else
+                {
+                    <option value="@cat.Id">@cat.Name</option>
+                }
+            }
+        </select>
+
+        <select name="brandId" class="filter-select" onchange="this.form.submit()">
+            <option value="">Tất cả thương hiệu</option>
+            @foreach (var brand in (List<MilkStore.Models.Brand>)ViewBag.Brands)
+            {
+                if (ViewBag.BrandId == brand.Id)
+                {
+                    <option value="@brand.Id" selected>@brand.Name</option>
+                }
+                else
+                {
+                    <option value="@brand.Id">@brand.Name</option>
+                }
+            }
+        </select>
+
+        <button type="submit" class="filter-btn">
+            <img src="https://cdn-icons-png.flaticon.com/512/622/622669.png" alt="" style="width:15px;height:15px;filter:brightness(10)">
+            Tìm
+        </button>
+
+        @if (ViewBag.Search != null || ViewBag.CategoryId != null || ViewBag.BrandId != null)
+        {
+            <a asp-action="Index" class="filter-clear">
+                <img src="https://cdn-icons-png.flaticon.com/512/1828/1828774.png" alt="" style="width:14px;height:14px">
+                Xóa lọc
+            </a>
+        }
+    </form>
+
+    <!-- Result count -->
+    @if (Model.Count > 0)
+    {
+        <div class="result-info">
+            <img src="https://cdn-icons-png.flaticon.com/512/3050/3050157.png" alt="" style="width:16px;height:16px;opacity:.5">
+            Tìm thấy <strong>@Model.Count</strong> sản phẩm
+        </div>
+    }
+
+    <!-- Product Grid -->
+    @if (Model.Any())
+    {
+        <div class="product-grid">
+            @foreach (var p in Model)
+            {
+                <div class="product-card">
+                    <a asp-action="Detail" asp-route-id="@p.Id" class="product-img-link">
+                        <img src="@(p.ImageUrl ?? "https://placehold.co/400x300/f0f7f2/1a3a2a?text=Sữa")"
+                             alt="@p.ProductName" class="product-img" />
+                        <div class="product-hover-overlay">
+                            <span>Xem chi tiết</span>
+                        </div>
+                        @if (p.StockQuantity <= 0)
+                        {
+                            <div class="out-of-stock-badge">Hết hàng</div>
+                        }
+                    </a>
+                    <div class="product-info">
+                        <span class="product-brand">@p.Brand?.Name</span>
+                        <a asp-action="Detail" asp-route-id="@p.Id" class="product-name">
+                            @p.ProductName
+                        </a>
+                        <div class="product-bottom">
+                            <span class="product-price">
+                                @String.Format("{0:N0}đ", p.Price)
+                            </span>
+                            <form asp-controller="Cart" asp-action="Add" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="productId" value="@p.Id" />
+                                <input type="hidden" name="quantity" value="1" />
+                                <button type="submit" class="btn-add-cart"
+                                        @(p.StockQuantity <= 0 ? "disabled" : "")>
+                                    @if (p.StockQuantity <= 0)
+                                    {
+                                        <span>Hết hàng</span>
+                                    }
+                                    else
+                                    {
+                                        <img src="https://cdn-icons-png.flaticon.com/512/3144/3144456.png" alt="" style="width:13px;height:13px;filter:brightness(10)">
+                                        <span>Thêm</span>
+                                    }
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+    else
+    {
+        <div class="empty-state">
+            <img src="https://cdn-icons-png.flaticon.com/512/6598/6598519.png" alt="" style="width:80px;height:80px;opacity:.35;margin-bottom:1.25rem">
+            <h3>Không tìm thấy sản phẩm</h3>
+            <p>Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm</p>
+            <a asp-action="Index" class="btn-back-shop">Xem tất cả sản phẩm</a>
+        </div>
+    }
+
+    <!-- Pagination -->
+    @if (ViewBag.TotalPages > 1)
+    {
+        <div class="pagination-wrap">
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+            {
+                <a asp-action="Index"
+                   asp-route-page="@i"
+                   asp-route-categoryId="@ViewBag.CategoryId"
+                   asp-route-brandId="@ViewBag.BrandId"
+                   asp-route-search="@ViewBag.Search"
+                   class="page-btn @(ViewBag.Page == i ? "active" : "")">
+                    @i
+                </a>
+            }
+        </div>
+    }
+</div>
+
+<style>
+.page-hero {
+    background: linear-gradient(135deg,#0f2018,#1a3a2a);
+    padding: 3rem 0 2.5rem; color: #fff; margin-bottom: 0;
+}
+.breadcrumb-nav {
+    display: flex; align-items: center; gap: .5rem;
+    font-size: .82rem; opacity: .65; margin-bottom: .75rem;
+}
+.breadcrumb-nav a { color: #fff; transition: opacity .2s }
+.breadcrumb-nav a:hover { opacity: 1 }
+.page-hero-title {
+    font-size: 2rem; font-weight: 800; margin-bottom: .4rem;
+}
+.page-hero-sub { font-size: .9rem; opacity: .7; margin: 0 }
+
+.filter-bar {
+    display: flex; gap: .75rem; flex-wrap: wrap; align-items: center;
+    background: #fff; padding: 1.1rem 1.25rem;
+    border-radius: 14px; margin-bottom: 1.25rem;
+    box-shadow: 0 2px 16px rgba(0,0,0,.06);
+    border: 1px solid #f0ece4;
+}
+.filter-search-wrap { position: relative; flex: 1; min-width: 200px }
+.filter-search-icon {
+    position: absolute; left: .75rem; top: 50%; transform: translateY(-50%);
+    width: 15px; height: 15px; opacity: .4; pointer-events: none;
+}
+.filter-input {
+    width: 100%; padding: .55rem 1rem .55rem 2.2rem;
+    border: 1.5px solid #e8e2d9; border-radius: 8px; font-size: .9rem;
+    outline: none; transition: border-color .2s; font-family: inherit;
+}
+.filter-input:focus { border-color: #1a3a2a }
+.filter-select {
+    padding: .55rem .9rem; border: 1.5px solid #e8e2d9;
+    border-radius: 8px; font-size: .88rem; background: #fff;
+    outline: none; cursor: pointer; font-family: inherit;
+}
+.filter-btn {
+    padding: .55rem 1.2rem; background: #1a3a2a; color: #fff;
+    border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
+    display: inline-flex; align-items: center; gap: .4rem;
+    font-size: .88rem; transition: background .2s;
+}
+.filter-btn:hover { background: #2d5a40 }
+.filter-clear {
+    display: inline-flex; align-items: center; gap: .35rem;
+    color: #888; font-size: .85rem; transition: color .2s;
+    padding: .4rem .5rem;
+}
+.filter-clear:hover { color: #c0392b }
+.result-info {
+    display: flex; align-items: center; gap: .5rem;
+    font-size: .87rem; color: #888; margin-bottom: 1.25rem;
+}
+
+.product-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px,1fr));
+    gap: 1.25rem;
+}
+.product-card {
+    background: #fff; border-radius: 14px;
+    box-shadow: 0 2px 14px rgba(0,0,0,.07);
+    overflow: hidden; transition: transform .2s, box-shadow .2s;
+}
+.product-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 32px rgba(26,58,42,.12);
+}
+.product-img-link { display: block; position: relative; overflow: hidden }
+.product-img {
+    width: 100%; height: 190px; object-fit: cover;
+    transition: transform .35s;
+}
+.product-card:hover .product-img { transform: scale(1.05) }
+.product-hover-overlay {
+    position: absolute; inset: 0; background: rgba(26,58,42,.4);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 600; font-size: .9rem;
+    opacity: 0; transition: opacity .25s;
+}
+.product-card:hover .product-hover-overlay { opacity: 1 }
+.out-of-stock-badge {
+    position: absolute; top: .7rem; left: .7rem;
+    background: rgba(0,0,0,.55); color: #fff;
+    font-size: .73rem; font-weight: 600;
+    padding: .22rem .65rem; border-radius: 20px;
+}
+.product-info { padding: .9rem }
+.product-brand {
+    font-size: .73rem; color: #1a6b3c; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .5px;
+    display: block; margin-bottom: .3rem;
+}
+.product-name {
+    display: block; font-size: .9rem; font-weight: 600;
+    color: #222; margin-bottom: .65rem; line-height: 1.35;
+    transition: color .2s;
+}
+.product-name:hover { color: #1a3a2a }
+.product-bottom {
+    display: flex; align-items: center; justify-content: space-between;
+}
+.product-price { font-size: 1rem; font-weight: 800; color: #c0392b }
+.btn-add-cart {
+    background: #1a3a2a; color: #fff; border: none;
+    border-radius: 8px; padding: .38rem .8rem;
+    font-size: .8rem; font-weight: 600; cursor: pointer;
+    display: inline-flex; align-items: center; gap: .3rem;
+    transition: background .2s;
+}
+.btn-add-cart:hover:not(:disabled) { background: #2d5a40 }
+.btn-add-cart:disabled { background: #ccc; cursor: not-allowed }
+
+.empty-state {
+    text-align: center; padding: 5rem 0; color: #aaa;
+}
+.empty-state h3 { font-size: 1.2rem; color: #555; margin-bottom: .5rem }
+.empty-state p { margin-bottom: 1.25rem; font-size: .9rem }
+.btn-back-shop {
+    display: inline-block; background: #1a3a2a; color: #fff;
+    padding: .7rem 1.8rem; border-radius: 10px;
+    font-weight: 700; font-size: .9rem; transition: background .2s;
+}
+.btn-back-shop:hover { background: #2d5a40 }
+
+.pagination-wrap {
+    display: flex; justify-content: center; gap: .5rem; margin: 2.5rem 0;
+}
+.page-btn {
+    width: 40px; height: 40px; display: flex;
+    align-items: center; justify-content: center;
+    border-radius: 10px; font-weight: 600; color: #1a3a2a;
+    background: #fff; border: 1.5px solid #e0dbd3;
+    transition: all .2s; font-size: .9rem;
+}
+.page-btn.active { background: #1a3a2a; color: #fff; border-color: #1a3a2a }
+.page-btn:hover:not(.active) { background: #f0f7f2; border-color: #1a3a2a }
+</style>

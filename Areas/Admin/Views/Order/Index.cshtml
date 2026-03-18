@@ -1,0 +1,111 @@
+@model List<MilkStore.Models.Order>
+@{
+    ViewData["Title"] = "Quản lý đơn hàng";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="toast-success">✓ @TempData["Success"]</div>
+}
+
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h5>   
+            Danh sách đơn hàng
+        </h5>
+        <div style="display:flex;gap:.5rem">
+            @foreach (var s in new[] { "", "Pending", "Paid", "Cancelled" })
+            {
+                <a asp-area="Admin" asp-controller="Order" asp-action="Index"
+                       asp-route-status="@s" class="btn-admin"
+                       style="background:@((ViewBag.Status == s || (s == "" && ViewBag.Status == null)) ? "#8e24aa" : "#f3e5f5");
+                    color:@((ViewBag.Status == s || (s == "" && ViewBag.Status == null)) ? "#fff" : "#6a1b9a")">
+                    @(s == "" ? "Tất cả" : s)
+                </a>
+            }
+        </div>
+    </div>
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>Khách hàng</th>
+                <th>Ngày đặt</th>
+                <th>Địa chỉ</th>
+                <th>Tổng tiền</th>
+                <th>Thanh toán</th>
+                <th>Trạng thái</th>
+                <th>Cập nhật</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var o in Model)
+            {
+                <tr>
+                    <td>
+                        <a asp-area="Admin" asp-controller="Order"
+                           asp-action="Detail" asp-route-id="@o.Id"
+                           style="font-weight:700;color:#8e24aa">#@o.Id</a>
+                    </td>
+                    <td>@o.User?.FullName</td>
+                    <td style="font-size:.82rem;color:#888">
+                        @o.OrderDate.ToString("dd/MM/yyyy HH:mm")
+                    </td>
+                    <td style="font-size:.82rem;max-width:140px;
+                        overflow:hidden;text-overflow:ellipsis;white-space:nowrap">
+                        @o.ShippingAddress
+                    </td>
+                    <td style="font-weight:700;color:#e91e8c">
+                        @String.Format("{0:N0}đ", o.TotalAmount)
+                    </td>
+                    <td>@o.PaymentMethod</td>
+                    <td>
+                        <span class="status-pill badge-@o.Status.ToLower()">@o.Status</span>
+                    </td>
+                    <td>
+                        <form asp-area="Admin" asp-controller="Order"
+                              asp-action="UpdateStatus" method="post"
+                              style="display:flex;gap:.4rem;align-items:center">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="orderId" value="@o.Id" />
+                            <select name="status" class="form-ctrl"
+                                    style="padding:.3rem .5rem;font-size:.82rem;width:105px">
+                                @foreach (var st in new[] { "Pending", "Paid", "Cancelled" })
+                                {
+                                    if (o.Status == st)
+                                    {
+                                        <option value="@st" selected>@st</option>
+                                    }
+                                    else
+                                    {
+                                        <option value="@st">@st</option>
+                                    }
+                                }
+                            </select>
+                            <button type="submit" class="btn-admin btn-primary-admin"
+                                    style="padding:.3rem .7rem;font-size:.8rem">
+                                ✓
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (ViewBag.TotalPages > 1)
+    {
+        <div style="display:flex;justify-content:center;gap:.5rem;padding:1rem">
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+            {
+                <a asp-area="Admin" asp-controller="Order" asp-action="Index"
+                   asp-route-page="@i" asp-route-status="@ViewBag.Status"
+                   style="width:36px;height:36px;display:flex;align-items:center;
+                justify-content:center;border-radius:8px;text-decoration:none;font-weight:600;
+                background:@(ViewBag.Page == i ? "#8e24aa" : "#f3e5f5");
+                color:@(ViewBag.Page == i ? "#fff" : "#6a1b9a")">@i</a>
+            }
+        </div>
+    }
+</div>

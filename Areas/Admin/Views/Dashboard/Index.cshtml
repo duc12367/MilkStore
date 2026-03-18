@@ -1,0 +1,124 @@
+@{
+    ViewData["Title"] = "Dashboard";
+    var labels  = (string[])ViewBag.RevenueLabels;
+    var data    = (decimal[])ViewBag.RevenueData;
+    var topLbl  = (string[])ViewBag.TopLabels;
+    var topData = (int[])ViewBag.TopData;
+    var orders  = (List<MilkStore.Models.Order>)ViewBag.RecentOrders;
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="toast-success">✓ @TempData["Success"]</div>
+}
+
+<!-- Stat cards -->
+<div style="display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.5rem">
+    <div class="stat-card">
+        <div style="font-size:.82rem;color:#999;margin-bottom:.4rem">TỔNG SẢN PHẨM</div>
+        <div style="font-size:2rem;font-weight:700;color:#8e24aa">@ViewBag.TotalProducts</div>
+    </div>
+    <div class="stat-card">
+        <div style="font-size:.82rem;color:#999;margin-bottom:.4rem">TỔNG ĐƠN HÀNG</div>
+        <div style="font-size:2rem;font-weight:700;color:#1976d2">@ViewBag.TotalOrders</div>
+    </div>
+    <div class="stat-card">
+        <div style="font-size:.82rem;color:#999;margin-bottom:.4rem">KHÁCH HÀNG</div>
+        <div style="font-size:2rem;font-weight:700;color:#388e3c">@ViewBag.TotalUsers</div>
+    </div>
+    <div class="stat-card">
+        <div style="font-size:.82rem;color:#999;margin-bottom:.4rem">DOANH THU</div>
+        <div style="font-size:1.5rem;font-weight:700;color:#e91e8c">
+            @String.Format("{0:N0}đ", ViewBag.TotalRevenue)
+        </div>
+    </div>
+</div>
+
+<!-- Charts -->
+<div style="display:grid;grid-template-columns:2fr 1fr;gap:1.25rem;margin-bottom:1.5rem">
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <h5>Doanh thu 7 ngày gần nhất</h5>
+        </div>
+        <div style="padding:1.25rem"><canvas id="revenueChart" height="120"></canvas></div>
+    </div>
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <h5> Top sản phẩm bán chạy</h5>
+        </div>
+        <div style="padding:1.25rem"><canvas id="topChart" height="200"></canvas></div>
+    </div>
+</div>
+
+<!-- Đơn hàng gần nhất -->
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h5>Đơn hàng gần nhất</h5>
+        <a asp-area="Admin" asp-controller="Order" asp-action="Index"
+           class="btn-admin btn-primary-admin">Xem tất cả</a>
+    </div>
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>#</th><th>Khách hàng</th><th>Ngày đặt</th>
+                <th>Tổng tiền</th><th>Thanh toán</th><th>Trạng thái</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var o in orders)
+            {
+                <tr>
+                    <td><strong>#@o.Id</strong></td>
+                    <td>@o.User?.FullName</td>
+                    <td>@o.OrderDate.ToString("dd/MM/yyyy HH:mm")</td>
+                    <td style="font-weight:700;color:#e91e8c">
+                        @String.Format("{0:N0}đ", o.TotalAmount)
+                    </td>
+                    <td>@o.PaymentMethod</td>
+                    <td>
+                        <span class="status-pill badge-@o.Status.ToLower()">@o.Status</span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>
+
+@section Scripts {
+<script>
+new Chart(document.getElementById('revenueChart'), {
+    type: 'line',
+    data: {
+        labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(labels)),
+        datasets: [{
+            label: 'Doanh thu (đ)',
+            data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(data)),
+            borderColor: '#8e24aa', backgroundColor: 'rgba(142,36,170,0.08)',
+            borderWidth: 2.5, pointBackgroundColor: '#8e24aa',
+            pointRadius: 4, tension: 0.4, fill: true
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { display: false } },
+        scales: { y: { beginAtZero: true, ticks: { callback: v => v.toLocaleString('vi-VN') + 'đ' } } }
+    }
+});
+
+new Chart(document.getElementById('topChart'), {
+    type: 'doughnut',
+    data: {
+        labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(topLbl)),
+        datasets: [{
+            data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(topData)),
+            backgroundColor: ['#8e24aa','#e91e8c','#1976d2','#388e3c','#f57c00'],
+            borderWidth: 0
+        }]
+    },
+    options: {
+        responsive: true,
+        plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } }
+    }
+});
+</script>
+}

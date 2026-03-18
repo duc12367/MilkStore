@@ -1,0 +1,70 @@
+@model MilkStore.Models.Order
+@{
+    ViewData["Title"] = $"Chi tiết đơn #{Model.Id}";
+}
+
+<div style="max-width:800px">
+    <div class="admin-card">
+        <div class="admin-card-header">
+            <h5>Đơn hàng #@Model.Id</h5>
+            <a asp-area="Admin" asp-controller="Order" asp-action="Index"
+               class="btn-admin" style="background:#f3e5f5;color:#6a1b9a">← Quay lại</a>
+        </div>
+        <div style="padding:1.5rem;display:grid;grid-template-columns:1fr 1fr;gap:1.5rem">
+            <div>
+                <div style="font-size:.82rem;color:#999;margin-bottom:.25rem">Khách hàng</div>
+                <div style="font-weight:600">@Model.User?.FullName</div>
+                <div style="font-size:.88rem;color:#666">@Model.User?.Email</div>
+            </div>
+            <div>
+                <div style="font-size:.82rem;color:#999;margin-bottom:.25rem">Ngày đặt</div>
+                <div style="font-weight:600">@Model.OrderDate.ToString("dd/MM/yyyy HH:mm")</div>
+            </div>
+            <div>
+                <div style="font-size:.82rem;color:#999;margin-bottom:.25rem">Địa chỉ giao</div>
+                <div style="font-weight:600">@Model.ShippingAddress</div>
+            </div>
+            <div>
+                <div style="font-size:.82rem;color:#999;margin-bottom:.25rem">Thanh toán</div>
+                <div style="font-weight:600">@Model.PaymentMethod</div>
+            </div>
+            <div>
+                <div style="font-size:.82rem;color:#999;margin-bottom:.25rem">Trạng thái</div>
+                <span class="status-pill badge-@Model.Status.ToLower()">@Model.Status</span>
+            </div>
+            <div>
+                <div style="font-size:.82rem;color:#999;margin-bottom:.25rem">Ghi chú</div>
+                <div>@(Model.Note ?? "—")</div>
+            </div>
+        </div>
+
+        <table class="admin-table">
+            <thead>
+                <tr><th>Sản phẩm</th><th>Đơn giá</th><th>Số lượng</th><th>Thành tiền</th></tr>
+            </thead>
+            <tbody>
+                @foreach (var item in Model.OrderItems)
+                {
+                    <tr>
+                        <td style="font-weight:600">@item.Product?.ProductName</td>
+                        <td>@String.Format("{0:N0}đ", item.PriceAtTime)</td>
+                        <td>@item.Quantity</td>
+                        <td style="font-weight:700;color:#e91e8c">
+                            @String.Format("{0:N0}đ", item.PriceAtTime * item.Quantity)
+                        </td>
+                    </tr>
+                }
+            </tbody>
+            <tfoot>
+                <tr>
+                    <td colspan="3" style="text-align:right;font-weight:700;padding:.85rem 1rem">
+                        Tổng cộng
+                    </td>
+                    <td style="font-weight:800;color:#e91e8c;font-size:1.1rem;padding:.85rem 1rem">
+                        @String.Format("{0:N0}đ", Model.TotalAmount)
+                    </td>
+                </tr>
+            </tfoot>
+        </table>
+    </div>
+</div>

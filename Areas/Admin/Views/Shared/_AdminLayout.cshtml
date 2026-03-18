@@ -1,0 +1,177 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — Admin MilkStore</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <style>
+        *, *::before, *::after { box-sizing: border-box; }
+        body { margin: 0; background: #f4f6fb; font-family: 'Segoe UI', sans-serif; }
+
+        .sidebar {
+            position: fixed; top: 0; left: 0;
+            width: 240px; height: 100vh;
+            background: linear-gradient(180deg,#1a0533 0%,#3d1070 100%);
+            color: #fff; display: flex; flex-direction: column; z-index: 100;
+        }
+        .sidebar-logo {
+            padding: 1.5rem 1.25rem; font-size: 1.2rem; font-weight: 700;
+            border-bottom: 1px solid rgba(255,255,255,.12);
+            display: flex; align-items: center; gap: .6rem;
+        }
+        .sidebar-menu { flex: 1; padding: 1rem 0; overflow-y: auto; }
+        .menu-label {
+            font-size: .7rem; text-transform: uppercase; letter-spacing: 1px;
+            color: rgba(255,255,255,.4); padding: .75rem 1.25rem .3rem;
+        }
+        .menu-item {
+            display: flex; align-items: center; gap: .75rem;
+            padding: .65rem 1.25rem; color: rgba(255,255,255,.75);
+            text-decoration: none; font-size: .93rem;
+            transition: all .2s; border-left: 3px solid transparent;
+        }
+        .menu-item:hover, .menu-item.active {
+            background: rgba(255,255,255,.1); color: #fff;
+            border-left-color: #e91e8c;
+        }
+        .menu-icon { font-size: 1.1rem; width: 20px; text-align: center; }
+        .sidebar-footer {
+            padding: 1rem 1.25rem; border-top: 1px solid rgba(255,255,255,.12);
+            font-size: .82rem; color: rgba(255,255,255,.5);
+        }
+        .main-wrap { margin-left: 240px; min-height: 100vh; }
+        .topbar {
+            background: #fff; padding: .85rem 1.5rem;
+            display: flex; align-items: center; justify-content: space-between;
+            box-shadow: 0 2px 8px rgba(0,0,0,.06);
+            position: sticky; top: 0; z-index: 50;
+        }
+        .topbar-title { font-size: 1.1rem; font-weight: 700; color: #333; }
+        .topbar-user { display: flex; align-items: center; gap: .6rem; font-size: .9rem; color: #555; }
+        .avatar-sm {
+            width: 32px; height: 32px;
+            background: linear-gradient(135deg,#8e24aa,#e91e8c);
+            border-radius: 50%; color: #fff;
+            display: flex; align-items: center; justify-content: center;
+            font-weight: 700; font-size: .85rem;
+        }
+        .page-content { padding: 1.5rem; }
+        .stat-card {
+            background: #fff; border-radius: 12px;
+            padding: 1.25rem 1.5rem;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06);
+        }
+        .admin-card {
+            background: #fff; border-radius: 12px;
+            box-shadow: 0 2px 12px rgba(0,0,0,.06); overflow: hidden;
+            margin-bottom: 1.25rem;
+        }
+        .admin-card-header {
+            padding: 1rem 1.25rem; border-bottom: 1px solid #f0f0f0;
+            display: flex; align-items: center; justify-content: space-between;
+        }
+        .admin-card-header h5 { margin: 0; font-size: 1rem; font-weight: 700; }
+        .admin-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
+        .admin-table th {
+            background: #faf5ff; padding: .75rem 1rem; text-align: left;
+            font-weight: 600; color: #555; font-size: .82rem;
+            text-transform: uppercase; letter-spacing: .5px;
+        }
+        .admin-table td { padding: .75rem 1rem; border-top: 1px solid #f5f5f5; vertical-align: middle; }
+        .admin-table tr:hover td { background: #fdfaff; }
+        .badge-paid      { background:#e8f5e9; color:#2e7d32; }
+        .badge-pending   { background:#fff8e1; color:#f57f17; }
+        .badge-cancelled { background:#fce4ec; color:#c62828; }
+        .status-pill { padding: .25rem .75rem; border-radius: 20px; font-size: .78rem; font-weight: 700; }
+        .btn-admin {
+            padding: .45rem 1rem; border-radius: 8px; font-size: .85rem;
+            font-weight: 600; text-decoration: none; border: none; cursor: pointer;
+            display: inline-block;
+        }
+        .btn-primary-admin { background: #8e24aa; color: #fff !important; }
+        .btn-primary-admin:hover { background: #6a1b9a; }
+        .btn-danger-admin  { background: #fce4ec; color: #c62828; }
+        .btn-warning-admin { background: #fff8e1; color: #f57f17; }
+        .toast-success {
+            background: #e8f5e9; color: #1b5e20; padding: .65rem 1rem;
+            border-radius: 8px; margin-bottom: 1rem; font-size: .9rem;
+            border-left: 4px solid #43a047;
+        }
+        .form-label { display: block; font-size: .875rem; font-weight: 600; color: #555; margin-bottom: .3rem; }
+        .form-ctrl {
+            width: 100%; padding: .6rem .9rem; border: 1.5px solid #e0e0e0;
+            border-radius: 8px; font-size: .95rem; box-sizing: border-box; transition: border-color .2s;
+        }
+        .form-ctrl:focus { outline: none; border-color: #8e24aa; }
+    </style>
+</head>
+<body>
+
+<aside class="sidebar">
+    <div class="sidebar-logo">
+    <img src="https://img3.stockfresh.com/files/b/butenkow/m/23/6363960_stock-vector-vector-milk-logo.jpg" 
+         alt="logo" 
+         style="width:70px; height:70px; border-radius:50%; margin-right:8px; vertical-align:middle;">
+    <span>MilkStore Admin</span>
+</div>
+    <nav class="sidebar-menu">
+        <div class="menu-label">Tổng quan</div>
+        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index"
+           class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "active" : "")">
+            <span class="menu-icon"></span> Dashboard
+        </a>
+
+        <div class="menu-label">Quản lý</div>
+        <a asp-area="Admin" asp-controller="Product" asp-action="Index"
+           class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Product" ? "active" : "")">
+            <span class="menu-icon"></span> Sản phẩm
+        </a>
+        <a asp-area="Admin" asp-controller="Order" asp-action="Index"
+           class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Order" ? "active" : "")">
+            <span class="menu-icon"></span> Đơn hàng
+        </a>
+        <a asp-area="Admin" asp-controller="User" asp-action="Index"
+           class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "User" ? "active" : "")">
+            <span class="menu-icon"></span> Người dùng
+        </a>
+
+        <div class="menu-label">Hệ thống</div>
+        <a asp-area="" asp-controller="Home" asp-action="Index" class="menu-item">
+            <span class="menu-icon"></span> Về trang chủ
+        </a>
+    </nav>
+    <div class="sidebar-footer">
+        @Context.Session.GetString("FullName")
+    </div>
+</aside>
+
+<div class="main-wrap">
+    <div class="topbar">
+        <div class="topbar-title">@ViewData["Title"]</div>
+        <div class="topbar-user">
+            <div class="avatar-sm">
+                @Context.Session.GetString("FullName")?.Substring(0,1).ToUpper()
+            </div>
+            <span>@Context.Session.GetString("FullName")</span>
+            <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                @Html.AntiForgeryToken()
+                <button type="submit"
+                        style="background:none;border:none;color:#e53935;
+                               cursor:pointer;font-size:.85rem;font-weight:600">
+                    Đăng xuất
+                </button>
+            </form>
+        </div>
+    </div>
+
+    <div class="page-content">
+        @RenderBody()
+    </div>
+</div>
+
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

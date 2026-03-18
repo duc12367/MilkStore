@@ -1,0 +1,534 @@
+@using MilkStore.Models
+@{
+    ViewData["Title"] = "Trang chủ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    var featured = ViewBag.FeaturedProducts as List<Product> ?? new();
+}
+
+<!-- Hero Banner -->
+<div class="hero-section">
+    <div class="hero-content">
+        <div class="hero-badge">
+            <img src="https://cdn-icons-png.flaticon.com/512/1041/1041916.png" alt="star" style="width:14px;height:14px;filter:invert(1)">
+            Chất lượng cao cấp
+        </div>
+        <h1 class="hero-title">Sữa sạch cho<br/>cả gia đình</h1>
+        <p class="hero-sub">Hàng trăm sản phẩm sữa chính hãng từ các thương hiệu uy tín.<br>Giao hàng nhanh — Giá tốt nhất thị trường.</p>
+        <div class="hero-actions">
+            <a asp-area="" asp-controller="Product" asp-action="Index" class="hero-btn-primary">
+                Mua ngay
+                <img src="https://cdn-icons-png.flaticon.com/512/271/271228.png" alt="" style="width:14px;height:14px;filter:invert(1);margin-left:6px">
+            </a>
+            <a asp-area="" asp-controller="Product" asp-action="Index" class="hero-btn-outline">Xem danh mục</a>
+        </div>
+        <div class="hero-trust">
+            <div class="trust-item">
+                <img src="https://cdn-icons-png.flaticon.com/512/3514/3514491.png" alt="" style="width:20px;height:20px;filter:brightness(10)">
+                <span>Miễn phí ship</span>
+            </div>
+            <div class="trust-item">
+                <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" alt="" style="width:20px;height:20px;filter:brightness(10)">
+                <span>Đổi trả dễ dàng</span>
+            </div>
+            <div class="trust-item">
+                <img src="https://cdn-icons-png.flaticon.com/512/1828/1828640.png" alt="" style="width:20px;height:20px;filter:brightness(10)">
+                <span>100% chính hãng</span>
+            </div>
+        </div>
+    </div>
+    <div class="hero-image-wrap">
+        <img src="https://static.fireant.vn/Upload/20230212/images/2A.jpg"
+             alt="Milk Products" class="hero-img" onerror="this.src='https://placehold.co/520x400/f0f7f2/1a3a2a?text=MilkStore'" />
+        <div class="hero-img-badge">
+            <img src="https://cdn-icons-png.flaticon.com/512/1041/1041916.png" alt="" style="width:16px;height:16px">
+            <div>
+                <div style="font-weight:700;font-size:.9rem">Đánh giá 4.8/5</div>
+                <div style="font-size:.75rem;opacity:.7">500+ khách hàng</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Stats Bar -->
+<div class="stats-bar">
+    <div class="container">
+        <div class="stats-grid">
+            <div class="stat-item">
+                <img src="https://cdn-icons-png.flaticon.com/512/3050/3050157.png" alt="" class="stat-icon">
+                <div class="stat-num">100+</div>
+                <div class="stat-label">Sản phẩm</div>
+            </div>
+            <div class="stat-item">
+                <img src="https://cdn-icons-png.flaticon.com/512/1828/1828970.png" alt="" class="stat-icon">
+                <div class="stat-num">4</div>
+                <div class="stat-label">Thương hiệu</div>
+            </div>
+            <div class="stat-item">
+                <img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" alt="" class="stat-icon">
+                <div class="stat-num">500+</div>
+                <div class="stat-label">Khách hàng</div>
+            </div>
+            <div class="stat-item">
+                <img src="https://cdn-icons-png.flaticon.com/512/1041/1041916.png" alt="" class="stat-icon">
+                <div class="stat-num">4.8</div>
+                <div class="stat-label">Đánh giá TB</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Categories -->
+<div class="container section-block">
+    <div class="section-header">
+        <h2 class="sec-title">Danh mục sản phẩm</h2>
+        <a asp-area="" asp-controller="Product" asp-action="Index" class="see-all-link">
+            Xem tất cả
+            <img src="https://cdn-icons-png.flaticon.com/512/271/271228.png" alt="" style="width:12px;height:12px">
+        </a>
+    </div>
+    <div class="cat-grid">
+        <a asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="1" class="cat-card">
+            <div class="cat-img-wrap">
+                <img src="https://traicayhoabien.com/wp-content/uploads/2023/03/Sua-tuoi-tiet-trung-it-duong-Reta-Milk-1L-4.jpg" alt="Sữa tươi" style="width:70px;height:70px; border-radius:50%;">
+            </div>
+            <div class="cat-name">Sữa tươi</div>
+            <div class="cat-desc">Tươi ngon mỗi ngày</div>
+        </a>
+        <a asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="2" class="cat-card">
+            <div class="cat-img-wrap" style="background:#fff8e1">
+                <img src="https://nhatlamgroup.vn/wp-content/uploads/2025/06/nguyen-lieu-san-xuat-sua-bot.jpg?x82073" alt="Sữa bột" style="width:70px;height:70px; border-radius:50%;" >
+            </div>
+            <div class="cat-name">Sữa bột</div>
+            <div class="cat-desc">Dinh dưỡng đầy đủ</div>
+        </a>
+        <a asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="3" class="cat-card">
+            <div class="cat-img-wrap" style="background:#fce4ec">
+                <img src="https://dayphache.edu.vn/wp-content/uploads/2019/05/hinh-sua-chua-khong-dong-da.jpg" alt="Sữa chua"  style="width:70px;height:70px; border-radius:50%;" >
+            </div>
+            <div class="cat-name">Sữa chua</div>
+            <div class="cat-desc">Tốt cho tiêu hóa</div>
+        </a>
+        <a asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="4" class="cat-card">
+            <div class="cat-img-wrap" style="background:#fff3e0">
+                <img src="https://thucphamplaza.com/wp-content/uploads/products_img/bao-quan-san-pham-2.jpg" alt="Sữa đặc" style="width:70px;height:70px; border-radius:50%;" >
+            </div>
+            <div class="cat-name">Sữa đặc</div>
+            <div class="cat-desc">Béo ngọt truyền thống</div>
+        </a>
+    </div>
+</div>
+
+<!-- Featured Products -->
+@if (featured.Any())
+{
+    <div class="container section-block">
+        <div class="section-header">
+            <h2 class="sec-title">Sản phẩm nổi bật</h2>
+            <a asp-area="" asp-controller="Product" asp-action="Index" class="see-all-link">
+                Xem tất cả
+                <img src="https://cdn-icons-png.flaticon.com/512/271/271228.png" alt="" style="width:12px;height:12px">
+            </a>
+        </div>
+        <div class="prd-grid">
+            @foreach (var p in featured)
+            {
+                <div class="prd-card">
+                    <a asp-area="" asp-controller="Product" asp-action="Detail" asp-route-id="@p.Id" class="prd-img-link">
+                        <img src="@(p.ImageUrl ?? "https://placehold.co/400x300/f0f7f2/1a3a2a?text=Sữa")"
+                             alt="@p.ProductName" class="prd-img" />
+                        <div class="prd-overlay">
+                            <span>Xem chi tiết</span>
+                        </div>
+                    </a>
+                    <div class="prd-body">
+                        <div class="prd-brand">@p.Brand?.Name</div>
+                        <a asp-area="" asp-controller="Product" asp-action="Detail" asp-route-id="@p.Id" class="prd-name">
+                            @p.ProductName
+                        </a>
+                        <div class="prd-footer">
+                            <span class="prd-price">@String.Format("{0:N0}đ", p.Price)</span>
+                            <form asp-area="" asp-controller="Cart" asp-action="Add" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="productId" value="@p.Id"/>
+                                <input type="hidden" name="quantity" value="1"/>
+                                <button type="submit" class="btn-cart-sm">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/3144/3144456.png" alt="add" style="width:14px;height:14px;filter:brightness(10)">
+                                    Thêm
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    </div>
+}
+else
+{
+    <!-- placeholder grid when no featured products -->
+    <div class="container section-block">
+        <div class="section-header">
+            <h2 class="sec-title">Sản phẩm nổi bật</h2>
+        </div>
+        <div class="prd-grid">
+            @foreach (var p in Model){
+            <div class="prd-card">
+                <div class="prd-img-link">
+                    <img src="@p.ImageUrl" alt="@p.Name" class="prd-img" />
+                </div>
+                <div class="prd-body">
+                <div class="prd-brand">@p.Brand</div>
+                <div class="prd-name">@p.Name</div>
+                    <div class="prd-footer">
+                        <span class="prd-price">@p.Price.ToString("N0") đ</span>
+                        <button class="btn-cart-sm">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3144/3144456.png"
+                         style="width:14px;height:14px;filter:brightness(10)">
+                            Thêm
+                        </button>
+                    </div>
+                </div>
+            </div>
+}
+        </div>
+    </div>
+}
+
+<!-- Why Choose Us -->
+<div class="why-us-section">
+    <div class="container">
+        <h2 class="sec-title text-center" style="margin-bottom:2.5rem">Tại sao chọn MilkStore?</h2>
+        <div class="why-grid">
+            <div class="why-card">
+                <div class="why-icon-wrap" style="background:#e8f5e9">
+                    <img src="https://cdn-icons-png.flaticon.com/512/1828/1828640.png" alt="" style="width:32px;height:32px">
+                </div>
+                <h3>100% Chính hãng</h3>
+                <p>Tất cả sản phẩm đều có nguồn gốc rõ ràng, nhập khẩu trực tiếp từ nhà sản xuất.</p>
+            </div>
+            <div class="why-card">
+                <div class="why-icon-wrap" style="background:#e3f2fd">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3514/3514491.png" alt="" style="width:32px;height:32px">
+                </div>
+                <h3>Giao hàng nhanh</h3>
+                <p>Giao trong 2–4 giờ tại nội thành Hà Nội. Toàn quốc trong 1–3 ngày làm việc.</p>
+            </div>
+            <div class="why-card">
+                <div class="why-icon-wrap" style="background:#fff8e1">
+                    <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" alt="" style="width:32px;height:32px">
+                </div>
+                <h3>Đổi trả dễ dàng</h3>
+                <p>Hoàn tiền 100% nếu sản phẩm lỗi hoặc không đúng mô tả trong vòng 7 ngày.</p>
+            </div>
+            <div class="why-card">
+                <div class="why-icon-wrap" style="background:#fce4ec">
+                    <img src="https://cdn-icons-png.flaticon.com/512/597/597177.png" alt="" style="width:32px;height:32px">
+                </div>
+                <h3>Hỗ trợ 24/7</h3>
+                <p>Đội ngũ chăm sóc khách hàng luôn sẵn sàng hỗ trợ bạn mọi lúc mọi nơi.</p>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Promo Banner -->
+<div class="container section-block">
+    <div class="promo-banner">
+        <div class="promo-left">
+            <div class="promo-tag">
+                <img src="https://vinfastautothaibinh.com/wp-content/uploads/2021/09/icon-uu-dai-300x300.png" alt="" style="width:16px;height:16px">
+                Ưu đãi đặc biệt
+            </div>
+            <h3 class="promo-title">Mua 3 tặng 1</h3>
+            <p class="promo-desc">Áp dụng cho tất cả sản phẩm sữa tươi trong tháng này. Số lượng có hạn!</p>
+        </div>
+        <div style="display:flex;align-items:center;gap:2rem;flex-wrap:wrap">
+            <img src="https://png.pngtree.com/png-vector/20240203/ourlarge/pngtree-fresh-milk-drink-png-image_11594273.png"
+                 alt="Promo" style="width:140px;height:100px;object-fit:cover;border-radius:12px;flex-shrink:0"
+                 onerror="this.style.display='none'">
+            <a asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="1" class="promo-btn">
+                Mua ngay
+                <img src="https://cdn-icons-png.flaticon.com/512/271/271228.png" alt="" style="width:13px;height:13px;filter:invert(1);margin-left:6px">
+            </a>
+        </div>
+    </div>
+</div>
+
+<!-- Brand Logos -->
+<div class="container section-block">
+    <h2 class="sec-title text-center" style="margin-bottom:2rem">Thương hiệu đối tác</h2>
+    <div class="brands-row">
+        <div class="brand-logo-item">
+            <img src="https://upload.wikimedia.org/wikipedia/vi/thumb/0/06/Vinamilk_logo.jpg/250px-Vinamilk_logo.jpg" alt="Vinamilk" style="height:60px;object-fit:contain">
+        </div>
+        <div class="brand-logo-item">
+            <img src="https://batos.vn/images/articles/2023/04/19/logo-th-group-149.png" alt="TH True Milk" style="height:40px;object-fit:contain" onerror="this.parentElement.innerHTML='<span class=brand-name-text>TH True Milk</span>'">
+        </div>
+        <div class="brand-logo-item">
+            <img src="https://www.moby.com.vn/data/ck/images/mead%20johnson.jpg" alt="Vinamilk" style="height:60px;object-fit:contain">
+        </div>
+        <div class="brand-logo-item">
+            <img src="https://mbmart.com.vn/100/329/420/files/thuong-hieu-nestle-1.jpg.webp" alt="Nestle" style="height:36px;object-fit:contain" onerror="this.parentElement.innerHTML='<span class=brand-name-text>Nestlé</span>'">
+        </div>
+    </div>
+</div>
+
+<style>
+/* Hero */
+.hero-section {
+    background: linear-gradient(135deg, #0f2018 0%, #1a3a2a 45%, #2d5a40 100%);
+    color: #fff;
+    padding: 5rem 2rem 4rem;
+    display: flex; align-items: center; justify-content: center;
+    gap: 4rem; flex-wrap: wrap; min-height: 500px;
+}
+.hero-content { max-width: 500px; }
+.hero-badge {
+    display: inline-flex; align-items: center; gap: .4rem;
+    background: rgba(255,255,255,.12);
+    border: 1px solid rgba(255,255,255,.25);
+    padding: .3rem 1rem; border-radius: 20px;
+    font-size: .8rem; font-weight: 600; margin-bottom: 1.25rem;
+    letter-spacing: .3px;
+}
+.hero-title {
+    font-size: 3.2rem; font-weight: 800; line-height: 1.15;
+    margin-bottom: 1.1rem; letter-spacing: -.5px;
+}
+.hero-sub {
+    font-size: .97rem; opacity: .8; margin-bottom: 2rem; line-height: 1.75;
+}
+.hero-actions { display: flex; gap: 1rem; flex-wrap: wrap; margin-bottom: 2rem }
+.hero-btn-primary {
+    background: #fff; color: #1a3a2a;
+    padding: .85rem 2rem; border-radius: 30px;
+    font-weight: 700; font-size: .97rem;
+    display: inline-flex; align-items: center;
+    transition: transform .2s, box-shadow .2s;
+}
+.hero-btn-primary:hover { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(0,0,0,.2) }
+.hero-btn-outline {
+    background: transparent; color: #fff;
+    border: 2px solid rgba(255,255,255,.5);
+    padding: .85rem 2rem; border-radius: 30px;
+    font-weight: 700; font-size: .97rem;
+    transition: border-color .2s, background .2s;
+}
+.hero-btn-outline:hover { border-color: #fff; background: rgba(255,255,255,.08) }
+.hero-trust { display: flex; gap: 1.75rem; flex-wrap: wrap }
+.trust-item {
+    display: flex; align-items: center; gap: .5rem;
+    font-size: .83rem; opacity: .75;
+}
+.hero-image-wrap { position: relative; flex-shrink: 0 }
+.hero-img {
+    max-width: 420px; width: 100%;
+    border-radius: 20px;
+    box-shadow: 0 24px 60px rgba(0,0,0,.3);
+}
+.hero-img-badge {
+    position: absolute; bottom: -16px; left: -16px;
+    background: #fff; border-radius: 14px;
+    padding: .75rem 1.1rem;
+    display: flex; align-items: center; gap: .6rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,.15);
+    color: #1a3a2a;
+}
+
+/* Stats */
+.stats-bar {
+    background: #fff;
+    border-bottom: 1px solid #f0ece4;
+    padding: 1.75rem 0;
+}
+.stats-grid {
+    display: grid; grid-template-columns: repeat(4,1fr);
+    gap: 1rem; text-align: center;
+}
+.stat-item { padding: .5rem }
+.stat-icon { width: 28px; height: 28px; object-fit: contain; margin-bottom: .4rem; opacity: .7 }
+.stat-num {
+    font-size: 1.9rem; font-weight: 800;
+    font-family: 'Playfair Display', serif;
+    color: #1a3a2a;
+}
+.stat-label { font-size: .82rem; color: #888 }
+
+/* Section common */
+.section-block { margin-top: 4rem }
+.section-header {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 1.5rem;
+}
+.sec-title {
+    font-size: 1.6rem; font-weight: 700; color: #1a1a1a;
+    margin-bottom: 0;
+    position: relative; padding-bottom: .6rem;
+}
+.sec-title::after {
+    content: ''; position: absolute; bottom: 0; left: 0;
+    width: 44px; height: 3px;
+    background: linear-gradient(90deg, #1a3a2a, #4caf82);
+    border-radius: 2px;
+}
+.text-center .sec-title::after { left: 50%; transform: translateX(-50%) }
+.see-all-link {
+    display: inline-flex; align-items: center; gap: .4rem;
+    color: #1a3a2a; font-weight: 600; font-size: .88rem;
+    transition: gap .2s;
+}
+.see-all-link:hover { gap: .6rem }
+
+/* Categories */
+.cat-grid {
+    display: grid;
+    grid-template-columns: repeat(4,1fr);
+    gap: 1.25rem;
+}
+.cat-card {
+    background: #fff; border-radius: 16px;
+    padding: 1.75rem 1.25rem; text-align: center;
+    box-shadow: 0 2px 16px rgba(0,0,0,.06);
+    border: 2px solid transparent;
+    transition: all .25s;
+    display: block;
+}
+.cat-card:hover {
+    border-color: #1a3a2a;
+    transform: translateY(-5px);
+    box-shadow: 0 12px 32px rgba(26,58,42,.12);
+}
+.cat-img-wrap {
+    width: 72px; height: 72px;
+    border-radius: 50%; background: #e8f5e9;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1rem;
+    transition: transform .25s;
+}
+.cat-card:hover .cat-img-wrap { transform: scale(1.08) }
+.cat-icon-img { width: 36px; height: 36px; object-fit: contain }
+.cat-name { font-weight: 700; font-size: 1rem; color: #222; margin-bottom: .25rem }
+.cat-desc { font-size: .8rem; color: #999 }
+
+/* Products */
+.prd-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(210px,1fr));
+    gap: 1.25rem;
+}
+.prd-card {
+    background: #fff; border-radius: 14px;
+    box-shadow: 0 2px 16px rgba(0,0,0,.07);
+    overflow: hidden; transition: transform .2s, box-shadow .2s;
+}
+.prd-card:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 12px 32px rgba(26,58,42,.12);
+}
+.prd-img-link { display: block; position: relative; overflow: hidden }
+.prd-img {
+    width: 100%; height: 190px; object-fit: cover;
+    transition: transform .35s;
+}
+.prd-card:hover .prd-img { transform: scale(1.05) }
+.prd-overlay {
+    position: absolute; inset: 0;
+    background: rgba(26,58,42,.45);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-weight: 600; font-size: .9rem;
+    opacity: 0; transition: opacity .25s;
+}
+.prd-card:hover .prd-overlay { opacity: 1 }
+.prd-body { padding: .9rem }
+.prd-brand {
+    font-size: .73rem; color: #1a6b3c; font-weight: 700;
+    text-transform: uppercase; letter-spacing: .5px; margin-bottom: .3rem;
+}
+.prd-name {
+    display: block; font-size: .9rem; font-weight: 600;
+    color: #222; margin-bottom: .65rem; line-height: 1.35;
+    transition: color .2s;
+}
+.prd-name:hover { color: #1a3a2a }
+.prd-footer { display: flex; align-items: center; justify-content: space-between }
+.prd-price { font-size: 1rem; font-weight: 800; color: #c0392b }
+.btn-cart-sm {
+    background: #1a3a2a; color: #fff; border: none;
+    border-radius: 8px; padding: .38rem .8rem;
+    font-size: .8rem; font-weight: 600; cursor: pointer;
+    display: inline-flex; align-items: center; gap: .3rem;
+    transition: background .2s;
+}
+.btn-cart-sm:hover { background: #2d5a40 }
+.btn-cart-sm:disabled { background: #ccc; cursor: not-allowed }
+
+/* Why us */
+.why-us-section {
+    background: #f0f7f2; padding: 4.5rem 0; margin-top: 4rem;
+}
+.why-grid {
+    display: grid; grid-template-columns: repeat(4,1fr); gap: 2rem;
+}
+.why-card { text-align: center; padding: 1.5rem }
+.why-icon-wrap {
+    width: 72px; height: 72px; border-radius: 20px;
+    display: flex; align-items: center; justify-content: center;
+    margin: 0 auto 1.1rem;
+}
+.why-card h3 { font-size: 1.05rem; font-weight: 700; margin-bottom: .6rem; color: #1a1a1a }
+.why-card p { font-size: .88rem; color: #666; line-height: 1.65; margin: 0 }
+
+/* Promo */
+.promo-banner {
+    background: linear-gradient(135deg, #0f2018, #1a3a2a);
+    border-radius: 20px; padding: 2.5rem 3rem;
+    display: flex; justify-content: space-between;
+    align-items: center; flex-wrap: wrap; gap: 1.5rem;
+}
+.promo-left { color: #fff }
+.promo-tag {
+    display: inline-flex; align-items: center; gap: .4rem;
+    font-size: .8rem; font-weight: 700;
+    color: #7ecba1; margin-bottom: .6rem;
+    text-transform: uppercase; letter-spacing: .5px;
+}
+.promo-title { font-size: 2rem; font-weight: 800; margin-bottom: .5rem }
+.promo-desc { color: rgba(255,255,255,.7); font-size: .9rem; margin: 0 }
+.promo-btn {
+    background: #fff; color: #1a3a2a;
+    padding: .85rem 2rem; border-radius: 12px;
+    font-weight: 700; font-size: .95rem; white-space: nowrap;
+    display: inline-flex; align-items: center;
+    transition: transform .2s;
+}
+.promo-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(0,0,0,.2) }
+
+/* Brands */
+.brands-row {
+    display: flex; align-items: center; justify-content: center;
+    gap: 3rem; flex-wrap: wrap;
+    padding: 1.5rem 2rem;
+    background: #fff; border-radius: 16px;
+    box-shadow: 0 2px 16px rgba(0,0,0,.06);
+}
+.brand-logo-item {
+    display: flex; align-items: center; justify-content: center;
+    padding: 1rem 1.5rem; opacity: .65; transition: opacity .2s;
+}
+.brand-logo-item:hover { opacity: 1 }
+.brand-name-text { font-family: 'Playfair Display',serif; font-size: 1.1rem; font-weight: 700; color: #333 }
+
+/* Responsive */
+@@media(max-width:900px) {
+    .hero-section { padding: 3rem 1.5rem; gap: 2rem }
+    .hero-title { font-size: 2.4rem }
+    .cat-grid { grid-template-columns: repeat(2,1fr) }
+    .stats-grid { grid-template-columns: repeat(2,1fr) }
+    .why-grid { grid-template-columns: repeat(2,1fr) }
+}
+@@media(max-width:600px) {
+    .hero-title { font-size: 2rem }
+    .prd-grid { grid-template-columns: repeat(2,1fr) }
+    .footer-grid { grid-template-columns: 1fr }
+}
+</style>

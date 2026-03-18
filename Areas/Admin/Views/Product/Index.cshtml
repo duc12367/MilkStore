@@ -1,0 +1,96 @@
+@model List<MilkStore.Models.Product>
+@{
+    ViewData["Title"] = "Quản lý sản phẩm";
+}
+
+@if (TempData["Success"] != null)
+{
+    <div class="toast-success"> @TempData["Success"]</div>
+}
+
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h5>
+                Danh sách sản phẩm
+            </h5>
+        <a asp-area="Admin" asp-controller="Product" asp-action="Create"
+           class="btn-admin btn-primary-admin">+ Thêm sản phẩm</a>
+    </div>
+
+    <div style="padding:1rem 1.25rem;border-bottom:1px solid #f0f0f0">
+        <form method="get" style="display:flex;gap:.75rem">
+            <input type="text" name="search" value="@ViewBag.Search"
+                   placeholder="Tìm tên sản phẩm..."
+                   style="flex:1;padding:.5rem .9rem;border:1.5px solid #e0e0e0;
+                          border-radius:8px;font-size:.9rem" />
+            <button type="submit" class="btn-admin btn-primary-admin">Tìm</button>
+        </form>
+    </div>
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th><th>Ảnh</th><th>Tên sản phẩm</th>
+                <th>Danh mục</th><th>Thương hiệu</th>
+                <th>Giá</th><th>Tồn kho</th><th>Thao tác</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var p in Model)
+            {
+                <tr>
+                    <td style="color:#999">#@p.Id</td>
+                    <td>
+                        <img src="@(p.ImageUrl ?? "https://placehold.co/50x50")"
+                             style="width:46px;height:46px;object-fit:cover;border-radius:6px" />
+                    </td>
+                    <td style="font-weight:600;max-width:200px">@p.ProductName</td>
+                    <td>@p.Category?.Name</td>
+                    <td>@p.Brand?.Name</td>
+                    <td style="font-weight:700;color:#e91e8c">
+                        @String.Format("{0:N0}đ", p.Price)
+                    </td>
+                    <td>
+                        <span class="status-pill @(p.StockQuantity > 0 ? "badge-paid" : "badge-cancelled")">
+                            @(p.StockQuantity > 0 ? p.StockQuantity + " cái" : "Hết hàng")
+                        </span>
+                    </td>
+                    <td>
+                        <div style="display:flex;gap:.4rem">
+                            <a asp-area="Admin" asp-controller="Product"
+                               asp-action="Edit" asp-route-id="@p.Id"
+                               class="btn-admin btn-warning-admin"> Sửa</a>
+                            <form asp-area="Admin" asp-controller="Product"
+                                  asp-action="Delete" method="post">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@p.Id" />
+                                <button type="submit" class="btn-admin btn-danger-admin"
+                                        onclick="return confirm('Xóa sản phẩm này?')">
+                                     Xóa
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+
+    @if (ViewBag.TotalPages > 1)
+    {
+        <div style="display:flex;justify-content:center;gap:.5rem;padding:1rem">
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+            {
+                <a asp-area="Admin" asp-controller="Product" asp-action="Index"
+                   asp-route-page="@i" asp-route-search="@ViewBag.Search"
+                   style="width:36px;height:36px;display:flex;align-items:center;
+                          justify-content:center;border-radius:8px;text-decoration:none;
+                          font-weight:600;
+                          background:@(ViewBag.Page == i ? "#8e24aa" : "#f3e5f5");
+                          color:@(ViewBag.Page == i ? "#fff" : "#6a1b9a")">
+                    @i
+                </a>
+            }
+        </div>
+    }
+</div>

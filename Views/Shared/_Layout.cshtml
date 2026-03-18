@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>@ViewData["Title"] — MilkStore</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+
+    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+
+</head>
+
+<body>
+
+@if (TempData["Success"] != null)
+{
+    <div id="server-toast" data-message="@TempData["Success"]" data-type="success" style="display:none"></div>
+}
+@if (TempData["Error"] != null)
+{
+    <div id="server-toast" data-message="@TempData["Error"]" data-type="error" style="display:none"></div>
+}
+<div id="page-loader"><div class="spinner"></div></div>
+
+<!-- Top announcement bar -->
+<div class="announcement-bar">
+    <span>
+        <img src="https://cdn-icons-png.flaticon.com/512/3514/3514491.png" alt="delivery" style="width:15px;height:15px;vertical-align:middle;margin-right:6px;filter:brightness(10)">
+        Miễn phí giao hàng cho đơn từ 300.000đ &nbsp;|&nbsp;
+        <img src="https://cdn-icons-png.flaticon.com/512/1041/1041916.png" alt="star" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;filter:brightness(10)">
+        Sản phẩm chính hãng 100%
+    </span>
+</div>
+
+<nav class="navbar navbar-expand-lg navbar-light bg-white">
+    <div class="container">
+        <a class="navbar-brand d-flex align-items-center gap-2" asp-area="" asp-controller="Home" asp-action="Index">
+                <img src="https://img3.stockfresh.com/files/b/butenkow/m/23/6363960_stock-vector-vector-milk-logo.jpg" alt="MilkStore Logo" style="width:36px; height:36px; border-radius:50%; margin-right:10px">
+            <span class="brand-text">MilkStore</span>
+        </a>
+        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+            <span class="navbar-toggler-icon"></span>
+        </button>
+
+        <div class="collapse navbar-collapse" id="navMenu">
+            <ul class="navbar-nav me-auto gap-1">
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a>
+                </li>
+                <li class="nav-item">
+                    <a class="nav-link" asp-area="" asp-controller="Product" asp-action="Index">Sản phẩm</a>
+                </li>
+                <li class="nav-item dropdown">
+                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Danh mục</a>
+                    <ul class="dropdown-menu dropdown-menu-styled">
+                        <li>
+                            <a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="1">
+                                 Sữa tươi
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="2">
+                                 Sữa bột
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="3">
+                                 Sữa chua
+                            </a>
+                        </li>
+                        <li>
+                            <a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="4">
+                                 Sữa đặc
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+            </ul>
+
+            <form asp-area="" asp-controller="Product" asp-action="Index" method="get" class="d-flex me-3">
+                <div class="search-wrap">
+                    <img src="https://cdn-icons-png.flaticon.com/512/622/622669.png" alt="search" class="search-icon-img">
+                    <input type="text" name="search" placeholder="Tìm sản phẩm..." class="search-input" />
+                </div>
+            </form>
+
+            <ul class="navbar-nav align-items-center gap-2">
+                @{
+                    var userId   = Context.Session.GetInt32("UserId");
+                    var roleId   = Context.Session.GetInt32("RoleId");
+                    var fullName = Context.Session.GetString("FullName");
+                }
+                @if (userId == null)
+                {
+                    <li class="nav-item">
+                        <a class="nav-link" asp-area="" asp-controller="Account" asp-action="Login">Đăng nhập</a>
+                    </li>
+                    <li class="nav-item">
+                        <a asp-area="" asp-controller="Account" asp-action="Register" class="btn-register">
+                            Đăng ký
+                        </a>
+                    </li>
+                }
+                else
+                {
+                    @if (roleId == 1)
+                    {
+                        <li class="nav-item">
+                            <a class="nav-link nav-admin" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
+                                <img src="https://cdn-icons-png.flaticon.com/512/1828/1828490.png" alt="admin" style="width:16px;height:16px;margin-right:4px;vertical-align:middle"> Admin
+                            </a>
+                        </li>
+                    }
+                    <li class="nav-item">
+                        <a asp-area="" asp-controller="Cart" asp-action="Index" class="btn-cart-nav">
+                            <img src="https://cdn-icons-png.flaticon.com/512/3144/3144456.png" alt="cart" style="width:20px;height:20px">
+                            Giỏ hàng
+                        </a>
+                    </li>
+                    <li class="nav-item dropdown">
+                        <a href="#" class="nav-link dropdown-toggle user-menu-toggle" data-bs-toggle="dropdown">
+                            <div class="user-avatar">
+                                @fullName?.Substring(0,1).ToUpper()
+                            </div>
+                            <span class="user-name-nav">@fullName</span>
+                        </a>
+                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-styled shadow-sm">
+                            <li>
+                                <a class="dropdown-item" asp-area="" asp-controller="Account" asp-action="Profile">
+                                    <img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" alt="" class="dd-icon"> Tài khoản
+                                </a>
+                            </li>
+                            <li>
+                                <a class="dropdown-item" asp-area="" asp-controller="Order" asp-action="MyOrders">
+                                        <img src="https://cdn-icons-png.flaticon.com/512/3144/3144456.png" alt="" class="dd-icon"> Đơn hàng của tôi
+                                </a>
+                            </li>
+                            <li><hr class="dropdown-divider"/></li>
+                            <li>
+                                <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                                    @Html.AntiForgeryToken()
+                                    <button type="submit" class="dropdown-item text-danger">
+                                        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828479.png" alt="" class="dd-icon" style="filter:hue-rotate(300deg)"> Đăng xuất
+                                    </button>
+                                </form>
+                            </li>
+                        </ul>
+                    </li>
+                }
+            </ul>
+        </div>
+    </div>
+</nav>
+
+<main style="min-height:60vh">@RenderBody()</main>
+
+<footer class="site-footer">
+    <div class="container">
+        <div class="footer-grid">
+            <div class="footer-brand-col">
+                <div class="footer-logo">
+                        <img src="https://img3.stockfresh.com/files/b/butenkow/m/23/6363960_stock-vector-vector-milk-logo.jpg" alt="MilkStore" style="width:36px;height:36px; border-radius:50%;">
+                    <span>MilkStore</span>
+                </div>
+                <p class="footer-tagline">Cửa hàng sữa uy tín — chất lượng cao — giao hàng nhanh toàn quốc.</p>
+                <div class="footer-social">
+                    <a href="#" class="social-btn" title="Facebook">
+                            <img src="https://z-m-static.xx.fbcdn.net/rsrc.php/yt/r/DUiOg0mJTjz.webp" alt="Facebook" style="width:18px;height:18px;">
+                    </a>
+                    <a href="#" class="social-btn" title="Instagram">
+                            <img src="https://images.vexels.com/media/users/3/137380/isolated/preview/1b2ca367caa7eff8b45c09ec09b44c16-instagram-icon-logo.png" alt="Instagram" style="width:18px;height:18px;">
+                    </a>
+                    <a href="#" class="social-btn" title="YouTube">
+                            <img src="https://cdn-icons-png.freepik.com/256/1383/1383260.png?semt=ais_white_label" alt="YouTube" style="width:18px;height:18px;">
+                    </a>
+                </div>
+            </div>
+
+            <div>
+                <div class="footer-heading">Danh mục</div>
+                <a class="footer-link" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="1">Sữa tươi</a>
+                <a class="footer-link" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="2">Sữa bột</a>
+                <a class="footer-link" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="3">Sữa chua</a>
+                <a class="footer-link" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="4">Sữa đặc</a>
+            </div>
+
+            <div>
+                <div class="footer-heading">Hỗ trợ</div>
+                <a class="footer-link" href="#">Chính sách đổi trả</a>
+                <a class="footer-link" href="#">Hướng dẫn mua hàng</a>
+                <a class="footer-link" href="#">Câu hỏi thường gặp</a>
+                <a class="footer-link" href="#">Liên hệ</a>
+            </div>
+
+            <div>
+                <div class="footer-heading">Liên hệ</div>
+                <div class="footer-contact-item">
+                    <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="email" class="footer-contact-icon">
+                    <span>contact@milkstore.vn</span>
+                </div>
+                <div class="footer-contact-item">
+                    <img src="https://cdn-icons-png.flaticon.com/512/597/597177.png" alt="phone" class="footer-contact-icon">
+                    <span>1800 6789</span>
+                </div>
+                <div class="footer-contact-item">
+                    <img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" alt="location" class="footer-contact-icon">
+                    <span>Hà Nội, Việt Nam</span>
+                </div>
+                <div style="margin-top:1rem">
+                    <img src="https://cdn-icons-png.flaticon.com/512/5968/5968756.png" alt="Visa" style="width:36px;height:24px;object-fit:contain;margin-right:8px;background:#fff;border-radius:4px;padding:2px">
+                    <img src="https://cdn-icons-png.flaticon.com/512/349/349221.png" alt="Mastercard" style="width:36px;height:24px;object-fit:contain;margin-right:8px;background:#fff;border-radius:4px;padding:2px">
+                        <img src="https://rgb.vn/wp-content/uploads/2014/05/rgb_vn_new_branding_paypal_2014_logo_detail.png" alt="PayPal" style="width:36px;height:24px;object-fit:contain;background:#fff;border-radius:4px;padding:2px">
+                </div>
+            </div>
+        </div>
+
+        <div class="footer-bottom">
+            <span>© 2025 MilkStore. All rights reserved.</span>
+            <span>
+                <img src="https://cdn-icons-png.flaticon.com/512/197/197473.png" alt="Vietnam" style="width:18px;height:12px;object-fit:cover;border-radius:2px;margin-right:5px;vertical-align:middle">
+                Made in Vietnam
+            </span>
+        </div>
+    </div>
+</footer>
+
+<button id="back-to-top" class="back-to-top-btn" title="Lên đầu trang">
+    <img src="https://cdn-icons-png.flaticon.com/512/608/608336.png" alt="top" style="width:18px;height:18px;filter:brightness(10)">
+</button>
+
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
+</body>
+</html>

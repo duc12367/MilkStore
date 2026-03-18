@@ -1,0 +1,172 @@
+@{
+    ViewData["Title"] = "Đăng ký";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="auth-wrapper">
+    <div class="auth-left">
+        <div class="auth-left-content">
+            <img src="https://img3.stockfresh.com/files/b/butenkow/m/23/6363960_stock-vector-vector-milk-logo.jpg" alt="" style="width:60px; border-radius:50%;height:60px;margin-bottom:1.5rem">
+            <h2 style="font-size:1.8rem;font-weight:800;margin-bottom:.75rem">Tham gia MilkStore</h2>
+            <p style="opacity:.75;line-height:1.7;font-size:.95rem">Tạo tài khoản miễn phí để mua sắm dễ dàng, nhận ưu đãi và theo dõi đơn hàng của bạn.</p>
+            <div style="margin-top:2rem">
+                <div class="auth-feature-item">
+                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQN3P9DOqxXTMcI1ajNO1Y7PHLwFq4aQVIhLQ&s" alt="" style="width:18px;height:18px;border-radius:70%; filter:brightness(1);opacity:.8">
+                    <span>Ưu đãi thành viên mới 10%</span>
+                </div>
+                <div class="auth-feature-item">
+                    <img src="https://png.pngtree.com/png-clipart/20230919/original/pngtree-parcel-tracking-service-linear-icon-logo-clip-art-cargo-vector-png-image_12415351.png" alt="" style="width:18px;height:18px;border-radius:70%;filter:brightness(1);opacity:.8">
+                    <span>Theo dõi đơn hàng realtime</span>
+                </div>
+                <div class="auth-feature-item">
+                    <img src="https://cdn-icons-png.flaticon.com/512/3514/3514491.png" alt="" style="width:18px;height:18px;filter:brightness(10);opacity:.8">
+                    <span>Miễn phí giao hàng lần đầu</span>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="auth-right">
+        <div class="auth-card">
+            <div class="auth-card-header">
+                <img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" alt="" style="width:28px;height:28px;opacity:.6">
+                <h1 class="auth-card-title">Tạo tài khoản</h1>
+            </div>
+
+            @if (ViewBag.Error != null)
+            {
+                <div class="auth-alert auth-alert-error">
+                    <img src="https://cdn-icons-png.flaticon.com/512/564/564619.png" alt="" style="width:16px;height:16px">
+                    @ViewBag.Error
+                </div>
+            }
+
+            <form method="post" asp-action="Register">
+                @Html.AntiForgeryToken()
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" alt="" style="width:14px;height:14px;opacity:.5">
+                        Họ và tên
+                    </label>
+                    <input type="text" name="fullName" class="form-control"
+                           placeholder="Nguyễn Văn A" required />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="" style="width:14px;height:14px;opacity:.5">
+                        Email
+                    </label>
+                    <input type="email" name="email" class="form-control"
+                           placeholder="email@example.com" required />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <img src="https://cdn-icons-png.flaticon.com/512/597/597177.png" alt="" style="width:14px;height:14px;opacity:.5">
+                        Số điện thoại
+                    </label>
+                    <input type="text" name="phone" class="form-control"
+                           placeholder="0901234567" />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3064/3064197.png" alt="" style="width:14px;height:14px;opacity:.5">
+                        Mật khẩu
+                    </label>
+                    <input type="password" name="password" class="form-control"
+                           placeholder="..." required />
+                </div>
+
+                <div class="form-group">
+                    <label class="form-label">
+                        <img src="https://cdn-icons-png.flaticon.com/512/3064/3064197.png" alt="" style="width:14px;height:14px;opacity:.5">
+                        Xác nhận mật khẩu
+                    </label>
+                    <input type="password" name="confirmPassword" class="form-control"
+                           placeholder="..." required />
+                </div>
+
+                <button type="submit" class="btn-auth-submit">
+                    <img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" alt="" style="width:16px;height:16px;filter:brightness(10)">
+                    Tạo tài khoản
+                </button>
+            </form>
+
+            <div class="auth-divider"><span>hoặc</span></div>
+
+            <p class="auth-switch">
+                Đã có tài khoản?
+                <a asp-action="Login">Đăng nhập </a>
+            </p>
+        </div>
+    </div>
+</div>
+
+<style>
+.auth-wrapper { min-height: 80vh; display: flex }
+.auth-left {
+    flex: 1; background: linear-gradient(135deg, #0f2018, #1a3a2a);
+    display: flex; align-items: center; justify-content: center;
+    padding: 3rem 3.5rem; color: #fff;
+}
+.auth-left-content { max-width: 360px }
+.auth-feature-item {
+    display: flex; align-items: center; gap: .6rem;
+    margin-bottom: .85rem; font-size: .9rem; opacity: .85;
+}
+.auth-right {
+    flex: 1; display: flex; align-items: center; justify-content: center;
+    padding: 3rem 2rem; background: #faf9f7;
+}
+.auth-card {
+    background: #fff; border-radius: 20px; padding: 2.5rem;
+    width: 100%; max-width: 420px;
+    box-shadow: 0 8px 40px rgba(0,0,0,.08); border: 1px solid #f0ece4;
+}
+.auth-card-header { display: flex; align-items: center; gap: .65rem; margin-bottom: 1.5rem }
+.auth-card-title { font-size: 1.5rem; font-weight: 800; margin: 0; color: #111 }
+.auth-alert {
+    display: flex; align-items: center; gap: .5rem;
+    padding: .7rem 1rem; border-radius: 10px;
+    font-size: .88rem; margin-bottom: 1rem;
+}
+.auth-alert-error { background: #fce4ec; color: #c62828 }
+.form-group { margin-bottom: 1rem }
+.form-label {
+    display: flex; align-items: center; gap: .4rem;
+    font-size: .85rem; font-weight: 600; color: #444; margin-bottom: .35rem;
+}
+.form-control {
+    width: 100%; padding: .62rem .9rem;
+    border: 1.5px solid #e8e2d9; border-radius: 10px;
+    font-size: .92rem; outline: none; transition: border-color .2s, box-shadow .2s;
+    box-sizing: border-box; font-family: inherit; background: #faf9f7;
+}
+.form-control:focus {
+    border-color: #1a3a2a; box-shadow: 0 0 0 3px rgba(26,58,42,.1); background: #fff;
+}
+.btn-auth-submit {
+    width: 100%; padding: .8rem;
+    background: linear-gradient(135deg, #1a3a2a, #2d5a40);
+    color: #fff; border: none; border-radius: 10px;
+    font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: .5rem;
+    display: flex; align-items: center; justify-content: center; gap: .5rem;
+    transition: transform .2s, box-shadow .2s;
+}
+.btn-auth-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(26,58,42,.25) }
+.auth-divider {
+    text-align: center; margin: 1.25rem 0;
+    position: relative; color: #ccc; font-size: .82rem;
+}
+.auth-divider::before, .auth-divider::after {
+    content: ''; position: absolute; top: 50%;
+    width: calc(50% - 28px); height: 1px; background: #e8e2d9;
+}
+.auth-divider::before { left: 0 }
+.auth-divider::after { right: 0 }
+.auth-switch { text-align: center; font-size: .9rem; color: #777; margin: 0 }
+.auth-switch a { color: #1a3a2a; font-weight: 700 }
+@@media(max-width:768px) { .auth-left { display: none } .auth-right { padding: 2rem 1rem; min-height: 80vh } }
+</style>

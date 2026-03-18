@@ -1,0 +1,48 @@
+@model List<MilkStore.Models.User>
+@{
+    ViewData["Title"] = "Quản lý người dùng";
+}
+
+<div class="admin-card">
+    <div class="admin-card-header">
+        <h5> Danh sách người dùng</h5>
+        <span style="font-size:.85rem;color:#999">Tổng: @Model.Count người dùng</span>
+    </div>
+
+    <table class="admin-table">
+        <thead>
+            <tr>
+                <th>ID</th><th>Họ tên</th><th>Email</th>
+                <th>Điện thoại</th><th>Địa chỉ</th><th>Vai trò</th>
+            </tr>
+        </thead>
+        <tbody>
+            @foreach (var u in Model)
+            {
+                <tr>
+                    <td style="color:#999">#@u.Id</td>
+                    <td>
+                        <div style="display:flex;align-items:center;gap:.6rem">
+                            <div style="width:32px;height:32px;border-radius:50%;
+                                        background:linear-gradient(135deg,#8e24aa,#e91e8c);
+                                        color:#fff;display:flex;align-items:center;
+                                        justify-content:center;font-weight:700;
+                                        font-size:.85rem;flex-shrink:0">
+                                @u.FullName.Substring(0,1).ToUpper()
+                            </div>
+                            <strong>@u.FullName</strong>
+                        </div>
+                    </td>
+                    <td>@u.Email</td>
+                    <td>@(u.Phone ?? "—")</td>
+                    <td style="font-size:.85rem;color:#888">@(u.Address ?? "—")</td>
+                    <td>
+                        <span class="status-pill @(u.RoleId == 1 ? "badge-cancelled" : "badge-paid")">
+                            @(u.RoleId == 1 ? " Admin" : " User")
+                        </span>
+                    </td>
+                </tr>
+            }
+        </tbody>
+    </table>
+</div>

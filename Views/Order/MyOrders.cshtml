@@ -1,0 +1,112 @@
+﻿@model List<MilkStore.Models.Order>
+@{
+    ViewData["Title"] = "Đơn hàng của tôi";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="container mt-4" style="max-width:860px">
+    <h2 class="mb-4"> Đơn hàng của tôi</h2>
+
+    @if (!Model.Any())
+    {
+        <div class="empty-orders">
+            
+            <p>Bạn chưa có đơn hàng nào.</p>
+            <a asp-controller="Product" asp-action="Index" class="btn-shop">
+                Mua sắm ngay
+            </a>
+        </div>
+    }
+    else
+    {
+        @foreach (var order in Model)
+        {
+            <div class="order-card">
+                <div class="order-header">
+                    <div>
+                        <span class="order-id">Đơn #@order.Id</span>
+                        <span class="order-date">
+                            @order.OrderDate.ToString("dd/MM/yyyy HH:mm")
+                        </span>
+                    </div>
+                    <span class="status-badge status-@order.Status.ToLower()">
+                        @order.Status
+                    </span>
+                </div>
+
+                <div class="order-items-preview">
+                    @foreach (var item in order.OrderItems.Take(3))
+                    {
+                        <span class="item-chip">
+                            @item.Product?.ProductName
+                            (x@item.Quantity)
+                        </span>
+                    }
+                    @if (order.OrderItems.Count > 3)
+                    {
+                        <span class="item-chip more">
+                            +@(order.OrderItems.Count - 3) sản phẩm
+                        </span>
+                    }
+                </div>
+
+                <div class="order-footer">
+                    <span class="order-total">
+                        Tổng: <strong>
+                            @String.Format("{0:N0}đ", order.TotalAmount)
+                        </strong>
+                    </span>
+                    <a asp-action="Detail" asp-route-id="@order.Id"
+                       class="btn-detail">
+                        Xem chi tiết 
+                    </a>
+                </div>
+            </div>
+        }
+    }
+</div>
+
+<style>
+.empty-orders { text-align: center; padding: 4rem 0; color: #aaa; }
+.btn-shop {
+    display: inline-block; background: #8e24aa; color: #fff;
+    padding: .75rem 2rem; border-radius: 10px;
+    font-weight: 700; text-decoration: none; margin-top: 1rem;
+}
+.order-card {
+    background: #fff; border-radius: 12px;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
+    padding: 1.25rem; margin-bottom: 1rem;
+}
+.order-header {
+    display: flex; justify-content: space-between;
+    align-items: center; margin-bottom: .75rem;
+}
+.order-id { font-weight: 700; font-size: 1rem; margin-right: .75rem; }
+.order-date { font-size: .85rem; color: #999; }
+.status-badge {
+    padding: .3rem .85rem; border-radius: 20px;
+    font-size: .8rem; font-weight: 700;
+}
+.status-paid      { background: #e8f5e9; color: #2e7d32; }
+.status-pending   { background: #fff8e1; color: #f57f17; }
+.status-cancelled { background: #fce4ec; color: #c62828; }
+.order-items-preview {
+    display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .85rem;
+}
+.item-chip {
+    background: #f3e5f5; color: #6a1b9a;
+    padding: .25rem .65rem; border-radius: 20px; font-size: .8rem;
+}
+.item-chip.more { background: #ede7f6; color: #512da8; }
+.order-footer {
+    display: flex; justify-content: space-between; align-items: center;
+    border-top: 1px solid #f3e5f5; padding-top: .85rem;
+}
+.order-total strong { color: #e91e8c; }
+.btn-detail {
+    background: #8e24aa; color: #fff; border-radius: 8px;
+    padding: .45rem 1.1rem; font-size: .88rem;
+    font-weight: 600; text-decoration: none;
+}
+</style>
