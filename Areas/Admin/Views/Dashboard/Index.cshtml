@@ -1,4 +1,6 @@
+
 @{
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
     ViewData["Title"] = "Dashboard";
     var labels  = (string[])ViewBag.RevenueLabels;
     var data    = (decimal[])ViewBag.RevenueData;
@@ -40,13 +42,13 @@
         <div class="admin-card-header">
             <h5>Doanh thu 7 ngày gần nhất</h5>
         </div>
-        <div style="padding:1.25rem"><canvas id="revenueChart" height="120"></canvas></div>
+        <div style="padding:1.25rem"><canvas id="revenueChart" height="300"></canvas></div>
     </div>
     <div class="admin-card">
         <div class="admin-card-header">
             <h5> Top sản phẩm bán chạy</h5>
         </div>
-        <div style="padding:1.25rem"><canvas id="topChart" height="200"></canvas></div>
+        <div style="padding:1.25rem"><canvas id="topChart" height="300"></canvas></div>
     </div>
 </div>
 
@@ -85,40 +87,49 @@
 </div>
 
 @section Scripts {
-<script>
-new Chart(document.getElementById('revenueChart'), {
-    type: 'line',
-    data: {
-        labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(labels)),
-        datasets: [{
-            label: 'Doanh thu (đ)',
-            data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(data)),
-            borderColor: '#8e24aa', backgroundColor: 'rgba(142,36,170,0.08)',
-            borderWidth: 2.5, pointBackgroundColor: '#8e24aa',
-            pointRadius: 4, tension: 0.4, fill: true
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: { legend: { display: false } },
-        scales: { y: { beginAtZero: true, ticks: { callback: v => v.toLocaleString('vi-VN') + 'đ' } } }
-    }
-});
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
 
-new Chart(document.getElementById('topChart'), {
-    type: 'doughnut',
-    data: {
-        labels: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(topLbl)),
-        datasets: [{
-            data: @Html.Raw(System.Text.Json.JsonSerializer.Serialize(topData)),
-            backgroundColor: ['#8e24aa','#e91e8c','#1976d2','#388e3c','#f57c00'],
-            borderWidth: 0
-        }]
-    },
-    options: {
-        responsive: true,
-        plugins: { legend: { position: 'bottom', labels: { font: { size: 11 } } } }
-    }
-});
-</script>
+            const labels = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.RevenueLabels));
+            const data = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.RevenueData));
+
+            const topLbl = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.TopLabels));
+            const topData = @Html.Raw(System.Text.Json.JsonSerializer.Serialize(ViewBag.TopData));
+
+            console.log(labels, data);
+
+            const ctx1 = document.getElementById('revenueChart');
+            new Chart(ctx1, {
+                type: 'line',
+                data: {
+                    labels: labels,
+                    datasets: [{
+                        label: 'Doanh thu',
+                        data: data,
+                        borderColor: '#8e24aa'
+                    }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+            const ctx2 = document.getElementById('topChart');
+            new Chart(ctx2, {
+                type: 'doughnut',
+                data: {
+                    labels: topLbl,
+                    datasets: [{
+                    data: topData
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false
+            }
+        });
+
+        });
+    </script>
 }

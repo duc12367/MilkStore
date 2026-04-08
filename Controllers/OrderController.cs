@@ -81,6 +81,13 @@ public class OrderController(MilkStore4Context db) : Controller
         db.CartItems.RemoveRange(items);
         await db.SaveChangesAsync();
 
+        // Redirect to payment provider if needed
+        if (paymentMethod == "VNPay" || paymentMethod == "MoMo")
+        {
+            return RedirectToAction("CreatePayment", "Payment", new { orderId = order.Id });
+        }
+
+        // Default: show success page
         return RedirectToAction("Success", new { id = order.Id });
     }
 
@@ -107,7 +114,7 @@ public class OrderController(MilkStore4Context db) : Controller
 
         return View(orders);
     }
-
+    
     // GET: /Order/Detail/5
     public async Task<IActionResult> Detail(int id)
     {

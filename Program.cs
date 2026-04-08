@@ -40,3 +40,4 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 app.Run();
+app.Urls.Add("http://0.0.0.0:8080");

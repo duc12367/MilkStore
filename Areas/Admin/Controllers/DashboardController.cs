@@ -15,15 +15,15 @@ public class DashboardController(MilkStore4Context db) : Controller
         ViewBag.TotalOrders = await db.Orders.CountAsync();
         ViewBag.TotalUsers = await db.Users.CountAsync(u => u.RoleId == 2);
         ViewBag.TotalRevenue = await db.Orders
-            .Where(o => o.Status == "Paid")
             .SumAsync(o => o.TotalAmount);
 
         var last7 = Enumerable.Range(0, 7)
             .Select(i => DateTime.Today.AddDays(-6 + i)).ToList();
 
         var revenueRaw = await db.Orders
-            .Where(o => o.Status == "Paid" &&
-                        o.OrderDate >= DateTime.Today.AddDays(-6))
+
+            .Where(o => o.OrderDate >= DateTime.Today.AddDays(-6))
+
             .GroupBy(o => o.OrderDate.Date)
             .Select(g => new { Date = g.Key, Total = g.Sum(o => o.TotalAmount) })
             .ToListAsync();
@@ -51,5 +51,8 @@ public class DashboardController(MilkStore4Context db) : Controller
             .Take(8).ToListAsync();
 
         return View();
+
+        
     }
+    
 }
