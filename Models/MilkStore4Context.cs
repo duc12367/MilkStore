@@ -43,7 +43,7 @@ public partial class MilkStore4Context : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
 #warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseSqlServer("Server=localhost;Database=MilkStore4;Trusted_Connection=True;TrustServerCertificate=True");
+        => optionsBuilder.UseNpgsql("Host=dpg-d7blich17lss73als6hg-a;Database=milkstore;Username=milkstore_user;Password=qp4yuDPwfYGuNQnOxfrgr10fzmsFh3C7");
 
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
@@ -90,8 +90,8 @@ public partial class MilkStore4Context : DbContext
 
             entity.Property(e => e.Note).HasMaxLength(500);
             entity.Property(e => e.OrderDate)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
+                .HasDefaultValueSql("now()")
+		.HasColumnType("timestamp");
             entity.Property(e => e.PaymentMethod)
                 .HasMaxLength(50)
                 .HasDefaultValue("COD");

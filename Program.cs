@@ -4,7 +4,7 @@ using MilkStore.Models;
 var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<MilkStore4Context>(options =>
-    options.UseSqlServer(builder.Configuration.GetConnectionString("MilkStore")));
+    options.UseNpgsql(builder.Configuration.GetConnectionString("MilkStore")));
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout        = TimeSpan.FromMinutes(60);
