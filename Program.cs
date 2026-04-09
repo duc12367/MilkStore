@@ -2,6 +2,11 @@ using Microsoft.EntityFrameworkCore;
 using MilkStore.Models;
 
 var builder = WebApplication.CreateBuilder(args);
+builder.WebHost.ConfigureKestrel(options =>
+{
+    options.Limits.MaxConcurrentConnections = 10;
+    options.Limits.MaxRequestBodySize = 10 * 1024 * 1024;
+});
 builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<MilkStore4Context>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("MilkStore")));
