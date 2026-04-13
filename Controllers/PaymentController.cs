@@ -16,7 +16,6 @@ namespace MilkStore.Controllers
         private const string SecretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
         private const string MomoEndpoint = "https://test-payment.momo.vn/v2/gateway/api/create";
 
-        // ✅ SỬA: dùng domain Render thật, bỏ ngrok
         private const string BaseUrl = "https://milkstore-2.onrender.com";
         private const string ReturnUrl = BaseUrl + "/Payment/MomoReturn";
         private const string NotifyUrl = BaseUrl + "/Payment/MomoNotify";
@@ -27,14 +26,16 @@ namespace MilkStore.Controllers
             this.db = db;
         }
 
-        // GET /Payment/CreatePayment?orderId=5
         public async Task<IActionResult> CreatePayment(int orderId)
         {
             var order = db.Orders.FirstOrDefault(o => o.Id == orderId);
             if (order == null) return NotFound();
 
             string requestId = $"{PartnerCode}{DateTime.Now.Ticks}";
-            string orderId_str = order.Id.ToString();
+
+            // ✅ FIX: thêm timestamp để orderId luôn unique, tránh lỗi "trùng orderId"
+            string orderId_str = $"{order.Id}_{DateTime.Now.Ticks}";
+
             string amount = ((long)order.TotalAmount).ToString();
             string orderInfo = $"Thanh toan don hang #{order.Id} - MilkStore";
             string extraData = "";
@@ -107,7 +108,9 @@ namespace MilkStore.Controllers
             var resultCode = Request.Query["resultCode"].ToString();
             var orderId = Request.Query["orderId"].ToString();
 
-            var order = db.Orders.FirstOrDefault(o => o.Id.ToString() == orderId);
+            // ✅ FIX: tách lấy phần số trước dấu _ vì orderId_str = "5_638123456789"
+            var realId = orderId.Split('_')[0];
+            var order = db.Orders.FirstOrDefault(o => o.Id.ToString() == realId);
             if (order == null) return NotFound();
 
             order.Status = (resultCode == "0") ? "Paid" : "Failed";
