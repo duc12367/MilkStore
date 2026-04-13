@@ -12,12 +12,14 @@ namespace MilkStore.Controllers
 
         // ===== CẤU HÌNH MOMO =====
         private const string PartnerCode = "MOMO";
-        private const string AccessKey = "F8BBA842ECF85";           // Thay bằng key thật khi production
-        private const string SecretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz"; // Thay bằng key thật
-        private const string MomoEndpoint = "https://test-payment.momo.vn/v2/gateway/api/create"; // sandbox
-        // Production: https://payment.momo.vn/v2/gateway/api/create
-        private const string ReturnUrl = "https://tashia-uncalculable-pachydermatously.ngrok-free.dev/Payment/MomoReturn";
-        private const string NotifyUrl = "https://tashia-uncalculable-pachydermatously.ngrok-free.dev/Payment/MomoNotify";
+        private const string AccessKey = "F8BBA842ECF85";
+        private const string SecretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
+        private const string MomoEndpoint = "https://test-payment.momo.vn/v2/gateway/api/create";
+
+        // ✅ SỬA: dùng domain Render thật, bỏ ngrok
+        private const string BaseUrl = "https://milkstore-2.onrender.com";
+        private const string ReturnUrl = BaseUrl + "/Payment/MomoReturn";
+        private const string NotifyUrl = BaseUrl + "/Payment/MomoNotify";
         // ===========================
 
         public PaymentController(MilkStore4Context db)
@@ -36,10 +38,8 @@ namespace MilkStore.Controllers
             string amount = ((long)order.TotalAmount).ToString();
             string orderInfo = $"Thanh toan don hang #{order.Id} - MilkStore";
             string extraData = "";
-            //string requestType = "payWithMethod";
             string requestType = "payWithATM";
 
-            // Tạo chữ ký HMAC-SHA256
             string rawHash = $"accessKey={AccessKey}" +
                              $"&amount={amount}" +
                              $"&extraData={extraData}" +
@@ -53,7 +53,6 @@ namespace MilkStore.Controllers
 
             string signature = ComputeHmacSha256(rawHash, SecretKey);
 
-            // Body gửi lên MoMo
             var requestBody = new
             {
                 partnerCode = PartnerCode,
@@ -70,30 +69,39 @@ namespace MilkStore.Controllers
                 lang = "vi"
             };
 
-            // Gọi API MoMo
             using var httpClient = new HttpClient();
             var content = new StringContent(JsonSerializer.Serialize(requestBody), Encoding.UTF8, "application/json");
-            var response = await httpClient.PostAsync(MomoEndpoint, content);
-            var body = await response.Content.ReadAsStringAsync();
-            Console.WriteLine("=== MOMO RESPONSE ===");
-            Console.WriteLine(body); // Xem trong terminal chạy dotnet
 
-            using var doc = JsonDocument.Parse(body);
-            var root = doc.RootElement;
-
-            int resultCode = root.GetProperty("resultCode").GetInt32();
-            if (resultCode == 0)
+            try
             {
-                string payUrl = root.GetProperty("payUrl").GetString()!;
-                return Redirect(payUrl); // Chuyển user sang trang thanh toán MoMo
+                var response = await httpClient.PostAsync(MomoEndpoint, content);
+                var body = await response.Content.ReadAsStringAsync();
+                Console.WriteLine("=== MOMO RESPONSE ===");
+                Console.WriteLine(body);
+
+                using var doc = JsonDocument.Parse(body);
+                var root = doc.RootElement;
+
+                int resultCode = root.GetProperty("resultCode").GetInt32();
+                if (resultCode == 0)
+                {
+                    string payUrl = root.GetProperty("payUrl").GetString()!;
+                    return Redirect(payUrl);
+                }
+
+                TempData["Error"] = $"MoMo lỗi: {root.GetProperty("message").GetString()}";
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine("=== MOMO EXCEPTION ===");
+                Console.WriteLine(ex.Message);
+                TempData["Error"] = "Không kết nối được MoMo. Vui lòng thử lại!";
             }
 
-            // Thanh toán thất bại
-            TempData["Error"] = $"MoMo lỗi: {root.GetProperty("message").GetString()}";
             return RedirectToAction("Checkout", "Order");
         }
 
-        // GET /Payment/MomoReturn  — MoMo redirect về sau khi user thanh toán
+        // GET /Payment/MomoReturn
         public IActionResult MomoReturn()
         {
             var resultCode = Request.Query["resultCode"].ToString();
@@ -102,29 +110,19 @@ namespace MilkStore.Controllers
             var order = db.Orders.FirstOrDefault(o => o.Id.ToString() == orderId);
             if (order == null) return NotFound();
 
-            if (resultCode == "0")
-            {
-                order.Status = "Paid";
-            }
-            else
-            {
-                order.Status = "Failed";
-            }
-
+            order.Status = (resultCode == "0") ? "Paid" : "Failed";
             db.SaveChanges();
+
             return RedirectToAction("Success", "Order", new { id = order.Id });
         }
 
-        // POST /Payment/MomoNotify  — MoMo gọi server-to-server (IPN)
+        // POST /Payment/MomoNotify
         [HttpPost]
         public IActionResult MomoNotify()
         {
-            // MoMo tự gọi endpoint này để xác nhận thanh toán (không qua trình duyệt)
-            // Có thể log hoặc cập nhật DB tại đây nếu cần backup
             return Ok();
         }
 
-        // ---- Helper ----
         private static string ComputeHmacSha256(string message, string key)
         {
             using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(key));
