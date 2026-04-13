@@ -12,9 +12,10 @@ builder.Services.AddDbContext<MilkStore4Context>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("MilkStore")));
 builder.Services.AddSession(options =>
 {
-    options.IdleTimeout        = TimeSpan.FromMinutes(60);
-    options.Cookie.HttpOnly    = true;
+    options.IdleTimeout = TimeSpan.FromHours(2);   // tăng lên 2 giờ
+    options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
+    options.Cookie.SameSite = SameSiteMode.Lax;        // cần cho MoMo redirect
 });
 builder.Services.AddHttpContextAccessor();
 
@@ -44,5 +45,5 @@ app.MapControllerRoute(
     pattern: "{controller=Home}/{action=Index}/{id?}")
     .WithStaticAssets();
 
-app.Run();
 app.Urls.Add("http://0.0.0.0:8080");
+app.Run();

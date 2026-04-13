@@ -8,11 +8,15 @@ namespace MilkStore.Controllers;
 [LoginRequired]
 public class OrderController(MilkStore4Context db) : Controller
 {
+    private int? UserIdNullable => HttpContext.Session.GetInt32("UserId");
     private int UserId => HttpContext.Session.GetInt32("UserId")!.Value;
 
     // GET: /Order/Checkout
     public async Task<IActionResult> Checkout()
     {
+        if (UserIdNullable == null)
+            return RedirectToAction("Login", "Account");
+
         var items = await db.CartItems
             .Include(c => c.Product)
             .Where(c => c.UserId == UserId)
@@ -36,6 +40,10 @@ public class OrderController(MilkStore4Context db) : Controller
     public async Task<IActionResult> PlaceOrder(string shippingAddress,
         string paymentMethod, string? note)
     {
+        // session mất (Render sleep) → redirect login thay vì crash 400
+        if (UserIdNullable == null)
+            return RedirectToAction("Login", "Account");
+
         var items = await db.CartItems
             .Include(c => c.Product)
             .Where(c => c.UserId == UserId)
@@ -70,14 +78,14 @@ public class OrderController(MilkStore4Context db) : Controller
                 PriceAtTime = item.Product?.Price ?? 0m
             });
 
-            
+
             var product = await db.Products.FindAsync(item.ProductId);
             if (product != null)
                 product.StockQuantity = Math.Max(0,
                     product.StockQuantity - item.Quantity);
         }
 
-       
+
         db.CartItems.RemoveRange(items);
         await db.SaveChangesAsync();
 
@@ -94,6 +102,8 @@ public class OrderController(MilkStore4Context db) : Controller
     // GET: /Order/Success/5
     public async Task<IActionResult> Success(int id)
     {
+        if (UserIdNullable == null)
+            return RedirectToAction("Login", "Account");
         var order = await db.Orders
             .Include(o => o.OrderItems)
             .ThenInclude(oi => oi.Product)
@@ -106,6 +116,8 @@ public class OrderController(MilkStore4Context db) : Controller
     // GET: /Order/MyOrders
     public async Task<IActionResult> MyOrders()
     {
+        if (UserIdNullable == null)
+            return RedirectToAction("Login", "Account");
         var orders = await db.Orders
             .Include(o => o.OrderItems)
             .Where(o => o.UserId == UserId)
@@ -114,10 +126,12 @@ public class OrderController(MilkStore4Context db) : Controller
 
         return View(orders);
     }
-    
+
     // GET: /Order/Detail/5
     public async Task<IActionResult> Detail(int id)
     {
+        if (UserIdNullable == null)
+            return RedirectToAction("Login", "Account");
         var order = await db.Orders
             .Include(o => o.OrderItems)
             .ThenInclude(oi => oi.Product)
