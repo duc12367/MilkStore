@@ -4,26 +4,109 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] — MilkStore</title>
-
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
-
-    <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@600;700;800&family=DM+Sans:wght@400;500;600&display=swap" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <style>
-.dot {
-  animation: blink 1.4s infinite;
-}
-.dot:nth-child(2) { animation-delay: 0.2s; }
-.dot:nth-child(3) { animation-delay: 0.4s; }
-
-@Html.Raw("@keyframes blink {\n  0%, 80%, 100% { opacity: 0; }\n  40% { opacity: 1; }\n}")
-</style>
-
+*,*::before,*::after{box-sizing:border-box}
+body{font-family:'Nunito',sans-serif;font-size:15px;color:#2d3436;background:#f8f9fb}
+.announcement-bar{background:linear-gradient(90deg,#00b894,#00cec9);color:#fff;text-align:center;padding:7px 16px;font-size:13px;font-weight:600}
+.navbar{background:#fff!important;border-bottom:1px solid #e8ecef;padding:10px 0;position:sticky;top:0;z-index:1000;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.brand-text{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#00b894;letter-spacing:-.5px}
+.nav-link{color:#2d3436!important;font-weight:600;font-size:14px;padding:6px 12px!important;border-radius:8px;transition:background .15s,color .15s}
+.nav-link:hover{background:#f0faf8;color:#00b894!important}
+.nav-admin{color:#6c5ce7!important}
+.nav-admin:hover{background:#f3f0ff!important;color:#6c5ce7!important}
+.search-wrap{display:flex;align-items:center;background:#f4f6f8;border:1.5px solid #e0e6ea;border-radius:24px;padding:6px 14px;gap:8px;transition:border-color .2s;min-width:200px}
+.search-wrap:focus-within{border-color:#00b894;background:#fff}
+.search-icon-img{width:14px;height:14px;opacity:.5;flex-shrink:0}
+.search-input{border:none;background:transparent;outline:none;font-size:13px;font-family:'Nunito',sans-serif;width:100%;color:#2d3436}
+.btn-register{background:#00b894;color:#fff!important;padding:7px 18px;border-radius:20px;font-size:13px;font-weight:700;text-decoration:none;transition:background .2s;display:inline-block}
+.btn-register:hover{background:#00997a;color:#fff!important}
+.btn-cart-nav{display:flex;align-items:center;gap:6px;background:#fff8f0;border:1.5px solid #ffd6a5;color:#e17055!important;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;text-decoration:none;transition:background .2s}
+.btn-cart-nav:hover{background:#fff0e0;color:#e17055!important}
+.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#00b894,#00cec9);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
+.user-name-nav{font-size:13px;font-weight:600;color:#2d3436}
+.dropdown-menu-styled{border:none;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.12);padding:8px;min-width:180px}
+.dropdown-menu-styled .dropdown-item{border-radius:8px;font-size:13px;font-weight:600;padding:9px 14px;color:#2d3436;display:flex;align-items:center;gap:8px}
+.dropdown-menu-styled .dropdown-item:hover{background:#f0faf8}
+.dd-icon{width:15px;height:15px;opacity:.7}
+.site-footer{background:#1e272e;color:#b2bec3;padding:48px 0 24px;margin-top:60px}
+.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1.5fr;gap:40px;margin-bottom:32px}
+@@media(max-width:768px){.footer-grid{grid-template-columns:1fr 1fr;gap:24px}}
+@@media(max-width:480px){.footer-grid{grid-template-columns:1fr}}
+.footer-logo{display:flex;align-items:center;gap:10px;margin-bottom:12px}
+.footer-logo span{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#00b894}
+.footer-tagline{font-size:13px;line-height:1.7;color:#7f8c8d;margin-bottom:16px}
+.footer-social{display:flex;gap:8px}
+.social-btn{width:34px;height:34px;background:#2d3436;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background .2s}
+.social-btn:hover{background:#00b894}
+.footer-heading{font-size:12px;font-weight:700;color:#dfe6e9;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
+.footer-link{display:block;color:#7f8c8d;font-size:13px;text-decoration:none;margin-bottom:8px;transition:color .15s}
+.footer-link:hover{color:#00b894}
+.footer-contact-item{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:13px}
+.footer-contact-icon{width:14px;height:14px;opacity:.6;filter:brightness(5)}
+.footer-bottom{border-top:1px solid #2d3436;padding-top:20px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#636e72;flex-wrap:wrap;gap:8px}
+.back-to-top-btn{position:fixed;bottom:90px;right:26px;width:40px;height:40px;border-radius:50%;background:#00b894;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;z-index:999;box-shadow:0 4px 12px rgba(0,184,148,.4)}
+.back-to-top-btn.visible{opacity:1;pointer-events:auto}
+#page-loader{position:fixed;inset:0;background:#fff;display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s}
+#page-loader.hidden{opacity:0;pointer-events:none}
+.spinner{width:36px;height:36px;border:3px solid #e0e0e0;border-top-color:#00b894;border-radius:50%;animation:spin .7s linear infinite}
+@@keyframes spin{to{transform:rotate(360deg)}}
+.ms-toast{position:fixed;top:72px;right:20px;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;color:#fff;z-index:9998;opacity:0;transform:translateY(-10px);transition:all .3s;max-width:320px;box-shadow:0 4px 16px rgba(0,0,0,.15)}
+.ms-toast.show{opacity:1;transform:translateY(0)}
+.ms-toast.success{background:#00b894}
+.ms-toast.error{background:#e17055}
+/* Chatbot */
+#mb-chat{position:fixed;bottom:24px;right:24px;z-index:9000;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
+#mb-window{width:330px;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e0e6ea;display:none;flex-direction:column;transform:translateY(16px) scale(.97);opacity:0;transition:transform .2s ease,opacity .2s ease;box-shadow:0 8px 32px rgba(0,0,0,.12)}
+#mb-window.open{transform:translateY(0) scale(1);opacity:1}
+.mb-hdr{background:linear-gradient(135deg,#00b894,#00cec9);padding:10px 14px;display:flex;align-items:center;gap:10px}
+.mb-av-hdr{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
+.mb-hdr-info{flex:1;min-width:0;overflow:hidden}
+.mb-hdr-name{color:#fff;font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.mb-hdr-online{display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,.9)}
+.mb-online-dot{width:6px;height:6px;border-radius:50%;background:#55efc4;flex-shrink:0}
+.mb-hdr-close{color:#fff;font-size:18px;cursor:pointer;line-height:1;opacity:.85;transition:opacity .15s}
+.mb-hdr-close:hover{opacity:1}
+.mb-nav{display:flex;background:#f8f9fb;border-bottom:1px solid #e8ecef}
+.mb-nav a{flex:1;text-align:center;padding:8px 4px;font-size:11px;font-weight:700;color:#636e72;text-decoration:none;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;display:flex;flex-direction:column;align-items:center;gap:2px}
+.mb-nav a:hover{color:#00b894;border-bottom-color:#00b894}
+.mb-nav-icon{font-size:14px}
+#mb-msgs{height:250px;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;background:#f4f6f8}
+#mb-msgs::-webkit-scrollbar{width:4px}
+#mb-msgs::-webkit-scrollbar-thumb{background:#dfe6e9;border-radius:4px}
+.mb-time{text-align:center;font-size:10px;color:#b2bec3}
+.mb-row{display:flex;align-items:flex-end;gap:6px}
+.mb-row.me{flex-direction:row-reverse}
+.mb-av{width:26px;height:26px;border-radius:50%;background:#00b894;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;color:#fff;font-weight:700}
+.mb-av.u{background:#6c5ce7}
+.mb-bub{max-width:76%;padding:8px 12px;font-size:13px;line-height:1.55;word-break:break-word}
+.mb-bub.bot{background:#fff;color:#2d3436;border-radius:4px 14px 14px 14px;border:1px solid #e8ecef}
+.mb-bub.me{background:#00b894;color:#fff;border-radius:14px 4px 14px 14px}
+.mb-prod-card{background:#fff;border-radius:10px;border:1px solid #e8ecef;padding:9px 11px;max-width:200px}
+.mb-prod-name{font-size:12px;font-weight:700;color:#2d3436}
+.mb-prod-price{font-size:12px;color:#e17055;margin:3px 0;font-weight:700}
+.mb-prod-btn{background:#00b894;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;margin-top:4px;font-weight:600;font-family:'Nunito',sans-serif}
+.mb-quick{padding:6px 10px 5px;background:#fff;border-top:1px solid #f0f4f7;display:flex;gap:5px;flex-wrap:wrap}
+.mb-qbtn{padding:4px 10px;border-radius:20px;border:1.5px solid #b2f5ea;background:#f0faf8;color:#00b894;font-size:11px;font-weight:600;cursor:pointer;transition:background .12s,color .12s;white-space:nowrap;font-family:'Nunito',sans-serif}
+.mb-qbtn:hover,.mb-qbtn.used{background:#00b894;color:#fff;border-color:#00b894}
+.mb-inp-row{display:flex;gap:6px;padding:8px 10px;background:#fff;align-items:center;border-top:1px solid #f0f4f7}
+.mb-inp-row input{flex:1;border:1.5px solid #e0e6ea;border-radius:20px;padding:7px 14px;font-size:13px;outline:none;background:#f8f9fb;color:#2d3436;font-family:'Nunito',sans-serif}
+.mb-inp-row input:focus{border-color:#00b894;background:#fff}
+.mb-send{width:34px;height:34px;border-radius:50%;background:#00b894;color:#fff;border:none;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+.mb-send:hover{background:#00997a}
+.mb-typing{font-size:11px;color:#b2bec3;padding:2px 4px}
+#mb-fab{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#00b894,#00cec9);color:#fff;border:none;font-size:22px;cursor:pointer;box-shadow:0 4px 16px rgba(0,184,148,.45);transition:transform .2s,box-shadow .2s;display:flex;align-items:center;justify-content:center}
+#mb-fab:hover{transform:scale(1.08);box-shadow:0 6px 20px rgba(0,184,148,.55)}
+.dot{animation:blink 1.4s infinite}
+.dot:nth-child(2){animation-delay:.2s}
+.dot:nth-child(3){animation-delay:.4s}
+@@keyframes blink{0%,80%,100%{opacity:0}40%{opacity:1}}
+    </style>
 </head>
-
 <body>
-
 @if (TempData["Success"] != null)
 {
     <div id="server-toast" data-message="@TempData["Success"]" data-type="success" style="display:none"></div>
@@ -34,68 +117,42 @@
 }
 <div id="page-loader"><div class="spinner"></div></div>
 
-<!-- Top announcement bar -->
 <div class="announcement-bar">
-    <span>
-        <img src="https://cdn-icons-png.flaticon.com/512/3514/3514491.png" alt="delivery" style="width:15px;height:15px;vertical-align:middle;margin-right:6px;filter:brightness(10)">
-        Miễn phí giao hàng cho đơn từ 300.000đ &nbsp;|&nbsp;
-        <img src="https://cdn-icons-png.flaticon.com/512/1041/1041916.png" alt="star" style="width:14px;height:14px;vertical-align:middle;margin-right:4px;filter:brightness(10)">
-        Sản phẩm chính hãng 100%
-    </span>
+    <img src="https://cdn-icons-png.flaticon.com/512/3514/3514491.png" alt="" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;filter:brightness(10)">
+    Miễn phí giao hàng cho đơn từ 300.000đ &nbsp;·&nbsp;
+    <img src="https://cdn-icons-png.flaticon.com/512/1041/1041916.png" alt="" style="width:13px;height:13px;vertical-align:middle;margin-right:4px;filter:brightness(10)">
+    Sản phẩm chính hãng 100%
 </div>
 
 <nav class="navbar navbar-expand-lg navbar-light bg-white">
     <div class="container">
         <a class="navbar-brand d-flex align-items-center gap-2" asp-area="" asp-controller="Home" asp-action="Index">
-                <img src="https://img3.stockfresh.com/files/b/butenkow/m/23/6363960_stock-vector-vector-milk-logo.jpg" alt="MilkStore Logo" style="width:36px; height:36px; border-radius:50%; margin-right:10px">
+            <img src="https://img3.stockfresh.com/files/b/butenkow/m/23/6363960_stock-vector-vector-milk-logo.jpg" alt="MilkStore Logo" style="width:34px;height:34px;border-radius:50%;object-fit:cover">
             <span class="brand-text">MilkStore</span>
         </a>
         <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
             <span class="navbar-toggler-icon"></span>
         </button>
-
         <div class="collapse navbar-collapse" id="navMenu">
             <ul class="navbar-nav me-auto gap-1">
-                <li class="nav-item">
-                    <a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a>
-                </li>
-                <li class="nav-item">
-                    <a class="nav-link" asp-area="" asp-controller="Product" asp-action="Index">Sản phẩm</a>
-                </li>
+                <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Product" asp-action="Index">Sản phẩm</a></li>
                 <li class="nav-item dropdown">
                     <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Danh mục</a>
                     <ul class="dropdown-menu dropdown-menu-styled">
-                        <li>
-                            <a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="1">
-                                 Sữa tươi
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="2">
-                                 Sữa bột
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="3">
-                                 Sữa chua
-                            </a>
-                        </li>
-                        <li>
-                            <a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="4">
-                                 Sữa đặc
-                            </a>
-                        </li>
+                        <li><a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="1">🥛 Sữa tươi</a></li>
+                        <li><a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="2">🍼 Sữa bột</a></li>
+                        <li><a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="3">🧋 Sữa chua</a></li>
+                        <li><a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="4">🍮 Sữa đặc</a></li>
                     </ul>
                 </li>
             </ul>
-
             <form asp-area="" asp-controller="Product" asp-action="Index" method="get" class="d-flex me-3">
                 <div class="search-wrap">
                     <img src="https://cdn-icons-png.flaticon.com/512/622/622669.png" alt="search" class="search-icon-img">
                     <input type="text" name="search" placeholder="Tìm sản phẩm..." class="search-input" />
                 </div>
             </form>
-
             <ul class="navbar-nav align-items-center gap-2">
                 @{
                     var userId   = Context.Session.GetInt32("UserId");
@@ -104,49 +161,28 @@
                 }
                 @if (userId == null)
                 {
-                    <li class="nav-item">
-                        <a class="nav-link" asp-area="" asp-controller="Account" asp-action="Login">Đăng nhập</a>
-                    </li>
-                    <li class="nav-item">
-                        <a asp-area="" asp-controller="Account" asp-action="Register" class="btn-register">
-                            Đăng ký
-                        </a>
-                    </li>
+                    <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Account" asp-action="Login">Đăng nhập</a></li>
+                    <li class="nav-item"><a asp-area="" asp-controller="Account" asp-action="Register" class="btn-register">Đăng ký</a></li>
                 }
                 else
                 {
                     @if (roleId == 1)
                     {
                         <li class="nav-item">
-                            <a class="nav-link nav-admin" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">
-                                <img src="https://cdn-icons-png.flaticon.com/512/1828/1828490.png" alt="admin" style="width:16px;height:16px;margin-right:4px;vertical-align:middle"> Admin
-                            </a>
+                            <a class="nav-link nav-admin" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">⚙️ Admin</a>
                         </li>
                     }
                     <li class="nav-item">
-                        <a asp-area="" asp-controller="Cart" asp-action="Index" class="btn-cart-nav">
-                            <img src="https://cdn-icons-png.flaticon.com/512/3144/3144456.png" alt="cart" style="width:20px;height:20px">
-                            Giỏ hàng
-                        </a>
+                        <a asp-area="" asp-controller="Cart" asp-action="Index" class="btn-cart-nav">🛒 Giỏ hàng</a>
                     </li>
                     <li class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle user-menu-toggle" data-bs-toggle="dropdown">
-                            <div class="user-avatar">
-                                @fullName?.Substring(0,1).ToUpper()
-                            </div>
+                        <a href="#" class="nav-link dropdown-toggle user-menu-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+                            <div class="user-avatar">@fullName?.Substring(0,1).ToUpper()</div>
                             <span class="user-name-nav">@fullName</span>
                         </a>
                         <ul class="dropdown-menu dropdown-menu-end dropdown-menu-styled shadow-sm">
-                            <li>
-                                <a class="dropdown-item" asp-area="" asp-controller="Account" asp-action="Profile">
-                                    <img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" alt="" class="dd-icon"> Tài khoản
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item" asp-area="" asp-controller="Order" asp-action="MyOrders">
-                                        <img src="https://cdn-icons-png.flaticon.com/512/3144/3144456.png" alt="" class="dd-icon"> Đơn hàng của tôi
-                                </a>
-                            </li>
+                            <li><a class="dropdown-item" asp-area="" asp-controller="Account" asp-action="Profile"><img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" alt="" class="dd-icon"> Tài khoản</a></li>
+                            <li><a class="dropdown-item" asp-area="" asp-controller="Order" asp-action="MyOrders"><img src="https://cdn-icons-png.flaticon.com/512/3144/3144456.png" alt="" class="dd-icon"> Đơn hàng của tôi</a></li>
                             <li><hr class="dropdown-divider"/></li>
                             <li>
                                 <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
@@ -171,23 +207,16 @@
         <div class="footer-grid">
             <div class="footer-brand-col">
                 <div class="footer-logo">
-                        <img src="https://img3.stockfresh.com/files/b/butenkow/m/23/6363960_stock-vector-vector-milk-logo.jpg" alt="MilkStore" style="width:36px;height:36px; border-radius:50%;">
+                    <img src="https://img3.stockfresh.com/files/b/butenkow/m/23/6363960_stock-vector-vector-milk-logo.jpg" alt="MilkStore" style="width:34px;height:34px;border-radius:50%;object-fit:cover">
                     <span>MilkStore</span>
                 </div>
                 <p class="footer-tagline">Cửa hàng sữa uy tín — chất lượng cao — giao hàng nhanh toàn quốc.</p>
                 <div class="footer-social">
-                        <a href="https://www.facebook.com/" class="social-btn" title="Facebook">
-                            <img src="https://z-m-static.xx.fbcdn.net/rsrc.php/yt/r/DUiOg0mJTjz.webp" alt="Facebook" style="width:18px;height:18px;">
-                    </a>
-                        <a href="https://www.instagram.com/" class="social-btn" title="Instagram">
-                            <img src="https://images.vexels.com/media/users/3/137380/isolated/preview/1b2ca367caa7eff8b45c09ec09b44c16-instagram-icon-logo.png" alt="Instagram" style="width:18px;height:18px;">
-                    </a>
-                        <a href="https://www.youtube.com/" class="social-btn" title="YouTube">
-                            <img src="https://cdn-icons-png.freepik.com/256/1383/1383260.png?semt=ais_white_label" alt="YouTube" style="width:18px;height:18px;">
-                    </a>
+                    <a href="https://www.facebook.com/" class="social-btn" title="Facebook"><img src="https://z-m-static.xx.fbcdn.net/rsrc.php/yt/r/DUiOg0mJTjz.webp" alt="Facebook" style="width:16px;height:16px;"></a>
+                    <a href="https://www.instagram.com/" class="social-btn" title="Instagram"><img src="https://images.vexels.com/media/users/3/137380/isolated/preview/1b2ca367caa7eff8b45c09ec09b44c16-instagram-icon-logo.png" alt="Instagram" style="width:16px;height:16px;"></a>
+                    <a href="https://www.youtube.com/" class="social-btn" title="YouTube"><img src="https://cdn-icons-png.freepik.com/256/1383/1383260.png?semt=ais_white_label" alt="YouTube" style="width:16px;height:16px;"></a>
                 </div>
             </div>
-
             <div>
                 <div class="footer-heading">Danh mục</div>
                 <a class="footer-link" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="1">Sữa tươi</a>
@@ -195,7 +224,6 @@
                 <a class="footer-link" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="3">Sữa chua</a>
                 <a class="footer-link" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="4">Sữa đặc</a>
             </div>
-
             <div>
                 <div class="footer-heading">Hỗ trợ</div>
                 <a class="footer-link" href="#">Chính sách đổi trả</a>
@@ -203,331 +231,84 @@
                 <a class="footer-link" href="#">Câu hỏi thường gặp</a>
                 <a class="footer-link" href="#">Liên hệ</a>
             </div>
-
             <div>
                 <div class="footer-heading">Liên hệ</div>
-                <div class="footer-contact-item">
-                    <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="email" class="footer-contact-icon">
-                    <span><a href="/cdn-cgi/l/email-protection" class="__cf_email__" data-cfemail="294a46475d484a5d69444045425a5d465b4c075f47">[email&#160;protected]</a></span>
-                </div>
-                <div class="footer-contact-item">
-                    <img src="https://cdn-icons-png.flaticon.com/512/597/597177.png" alt="phone" class="footer-contact-icon">
-                    <span>1800 6789</span>
-                </div>
-                <div class="footer-contact-item">
-                    <img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" alt="location" class="footer-contact-icon">
-                    <span>Hà Nội, Việt Nam</span>
-                </div>
-                <div style="margin-top:1rem">
-                    <img src="https://cdn-icons-png.flaticon.com/512/5968/5968756.png" alt="Visa" style="width:36px;height:24px;object-fit:contain;margin-right:8px;background:#fff;border-radius:4px;padding:2px">
-                    <img src="https://cdn-icons-png.flaticon.com/512/349/349221.png" alt="Mastercard" style="width:36px;height:24px;object-fit:contain;margin-right:8px;background:#fff;border-radius:4px;padding:2px">
-                        <img src="https://rgb.vn/wp-content/uploads/2014/05/rgb_vn_new_branding_paypal_2014_logo_detail.png" alt="PayPal" style="width:36px;height:24px;object-fit:contain;background:#fff;border-radius:4px;padding:2px">
+                <div class="footer-contact-item"><img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="email" class="footer-contact-icon"><span>contact@@milkstore.vn</span></div>
+                <div class="footer-contact-item"><img src="https://cdn-icons-png.flaticon.com/512/597/597177.png" alt="phone" class="footer-contact-icon"><span>1800 6789</span></div>
+                <div class="footer-contact-item"><img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" alt="location" class="footer-contact-icon"><span>Hà Nội, Việt Nam</span></div>
+                <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">
+                    <img src="https://cdn-icons-png.flaticon.com/512/5968/5968756.png" alt="Visa" style="width:36px;height:24px;object-fit:contain;background:#fff;border-radius:4px;padding:2px">
+                    <img src="https://cdn-icons-png.flaticon.com/512/349/349221.png" alt="Mastercard" style="width:36px;height:24px;object-fit:contain;background:#fff;border-radius:4px;padding:2px">
+                    <img src="https://rgb.vn/wp-content/uploads/2014/05/rgb_vn_new_branding_paypal_2014_logo_detail.png" alt="PayPal" style="width:36px;height:24px;object-fit:contain;background:#fff;border-radius:4px;padding:2px">
                 </div>
             </div>
         </div>
-
         <div class="footer-bottom">
             <span>© 2025 MilkStore. All rights reserved.</span>
-            <span>
-                <img src="https://cdn-icons-png.flaticon.com/512/197/197473.png" alt="Vietnam" style="width:18px;height:12px;object-fit:cover;border-radius:2px;margin-right:5px;vertical-align:middle">
-                Made in Vietnam
-            </span>
+            <span><img src="https://cdn-icons-png.flaticon.com/512/197/197473.png" alt="Vietnam" style="width:16px;height:11px;object-fit:cover;border-radius:2px;margin-right:5px;vertical-align:middle">Made in Vietnam</span>
         </div>
     </div>
 </footer>
 
 <button id="back-to-top" class="back-to-top-btn" title="Lên đầu trang">
-    <img src="https://cdn-icons-png.flaticon.com/512/608/608336.png" alt="top" style="width:18px;height:18px;filter:brightness(10)">
+    <img src="https://cdn-icons-png.flaticon.com/512/608/608336.png" alt="top" style="width:16px;height:16px;filter:brightness(10)">
 </button>
 
-<script data-cfasync="false" src="/cdn-cgi/scripts/5c5dd728/cloudflare-static/email-decode.min.js"></script><script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<script src="~/js/site.js" asp-append-version="true"></script>
-@await RenderSectionAsync("Scripts", required: false)
-
-
-<!-- MilkBot Widget — Shopee Style -->
-<style>
-#milkbot *{box-sizing:border-box;margin:0;padding:0;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif}
-#mb-box{width:340px;border-radius:12px;overflow:hidden;background:#fff;border:1px solid #e0e0e0;flex-direction:column;transform:translateY(16px) scale(0.97);opacity:0;transition:transform .18s ease,opacity .18s ease}
-#mb-box.open{transform:translateY(0) scale(1);opacity:1}
-.mb-hdr{background:#ee4d2d;padding:9px 12px;display:flex;align-items:center;gap:8px}
-.mb-hdr-back{color:#fff;font-size:16px;cursor:pointer;line-height:1;flex-shrink:0}
-.mb-hdr-av{width:30px;height:30px;border-radius:50%;background:#fff;display:flex;align-items:center;justify-content:center;font-size:14px;flex-shrink:0;border:1.5px solid rgba(255,255,255,0.5)}
-.mb-hdr-info{flex:1;min-width:0;overflow:hidden}
-.mb-hdr-name{color:#fff;font-size:12px;font-weight:600;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;line-height:1.3}
-.mb-hdr-status{display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,0.9)}
-.mb-dot{width:6px;height:6px;border-radius:50%;background:#4cff91;flex-shrink:0}
-.mb-hdr-acts{display:flex;gap:10px;flex-shrink:0}
-.mb-hdr-acts span{color:#fff;font-size:14px;cursor:pointer}
-#mb-msgs{height:260px;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;background:#f7f7f7}
-.mb-time{text-align:center;font-size:10px;color:#aaa}
-.mb-row{display:flex;align-items:flex-end;gap:7px}
-.mb-row.me{flex-direction:row-reverse}
-.mb-av{width:28px;height:28px;border-radius:50%;background:#ee4d2d;display:flex;align-items:center;justify-content:center;font-size:12px;flex-shrink:0;color:#fff;font-weight:600}
-.mb-av.u{background:#1677ff}
-.mb-bub{max-width:74%;padding:9px 13px;font-size:13px;line-height:1.55;word-break:break-word}
-.mb-bub.bot{background:#fff;color:#222;border-radius:4px 16px 16px 16px;border:0.5px solid #e8e8e8}
-.mb-bub.me{background:#ee4d2d;color:#fff;border-radius:16px 4px 16px 16px}
-.mb-prod{background:#fff;border-radius:10px;border:0.5px solid #eee;padding:9px 11px;max-width:210px}
-.mb-prod .pn{font-size:13px;font-weight:600;color:#222}
-.mb-prod .pp{font-size:13px;color:#ee4d2d;margin:3px 0}
-.mb-prod .pa{background:#ee4d2d;color:#fff;border:none;border-radius:7px;padding:5px 12px;font-size:12px;cursor:pointer;margin-top:4px}
-.mb-qwrap{padding:6px 10px 5px;background:#fff;border-top:0.5px solid #f0f0f0;display:flex;gap:5px;flex-wrap:wrap}
-.mb-qbtn{padding:4px 10px;border-radius:20px;border:1px solid #ffcfc7;background:#fff5f3;color:#ee4d2d;font-size:11px;cursor:pointer;transition:background .12s,color .12s;white-space:nowrap}
-.mb-qbtn:hover,.mb-qbtn.used{background:#ee4d2d;color:#fff;border-color:#ee4d2d}
-.mb-inp-row{display:flex;gap:6px;padding:8px 10px;background:#fff;align-items:center;border-top:1px solid #eee}
-.mb-inp-row input{flex:1;border:1px solid #e0e0e0;border-radius:20px;padding:8px 14px;font-size:13px;outline:none;background:#f9f9f9;color:#222}
-.mb-inp-row input:focus{border-color:#ee4d2d;background:#fff}
-.mb-send{width:36px;height:36px;border-radius:50%;background:#ee4d2d;color:#fff;border:none;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.mb-tabs{display:flex;background:#fff;border-top:1px solid #eee}
-.mb-tab{flex:1;padding:8px 2px 7px;text-align:center;font-size:10px;color:#888;cursor:pointer;border-top:2px solid transparent;display:flex;flex-direction:column;align-items:center;gap:2px;transition:color .15s,border-color .15s}
-.mb-tab.on{color:#ee4d2d;border-top-color:#ee4d2d}
-.mb-ticon{font-size:16px}
-.mb-panel{display:none;background:#fff;flex-direction:column;border-top:0.5px solid #eee}
-.mb-panel.on{display:flex}
-.mb-ci{display:flex;align-items:center;gap:10px;padding:10px 12px;border-bottom:0.5px solid #f2f2f2}
-.mb-ci-img{width:48px;height:48px;border-radius:8px;background:#fff3f0;display:flex;align-items:center;justify-content:center;font-size:20px;flex-shrink:0;border:0.5px solid #ffe0d8}
-.mb-ci-name{font-size:13px;font-weight:500;color:#222}
-.mb-ci-price{font-size:13px;color:#ee4d2d;margin-top:2px}
-.mb-ci-qty{display:flex;align-items:center;gap:7px;margin-top:5px}
-.mb-qb2{width:23px;height:23px;border-radius:50%;border:1px solid #ddd;background:#fff;font-size:15px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:#555;line-height:1}
-.mb-qval{font-size:13px;min-width:16px;text-align:center;color:#222}
-.mb-srow{padding:10px 12px;border-bottom:0.5px solid #f2f2f2;display:flex;align-items:center;gap:10px}
-.mb-sico{font-size:18px;width:28px;text-align:center;flex-shrink:0}
-.mb-stxt{font-size:13px;color:#222;font-weight:500}
-.mb-ssub{font-size:11px;color:#aaa;margin-top:1px}
-.mb-sbadge{margin-left:auto;font-size:11px;padding:3px 8px;border-radius:10px;background:#fff3f0;color:#ee4d2d;border:0.5px solid #ee4d2d;white-space:nowrap}
-.mb-orow{padding:10px 12px;border-bottom:0.5px solid #f2f2f2;display:flex;align-items:center;gap:10px}
-.mb-onum{font-size:11px;color:#aaa;margin-top:1px}
-.mb-ostatus{font-size:11px;padding:2px 8px;border-radius:10px;margin-left:auto;white-space:nowrap}
-.mb-ostatus.w{background:#fff7e6;color:#d48806}
-.mb-ostatus.s{background:#e6f7ff;color:#1677ff}
-.mb-ostatus.d{background:#f6ffed;color:#389e0d}
-.mb-cart-foot{padding:10px 12px;display:flex;align-items:center;justify-content:space-between;border-top:1px solid #eee}
-.mb-ctotal{font-size:13px;color:#555}
-.mb-ctotal strong{color:#ee4d2d}
-.mb-cbuy{background:#ee4d2d;color:#fff;border:none;border-radius:8px;padding:8px 18px;font-size:13px;cursor:pointer;font-weight:500}
-.mb-typing{font-size:11px;color:#aaa;padding:2px 4px}
-#mb-toggle-btn{width:56px;height:56px;border-radius:50%;background:#ee4d2d;color:#fff;border:none;font-size:24px;cursor:pointer;box-shadow:0 2px 8px rgba(238,77,45,0.35)}
-</style>
-
-<div id="milkbot" style="position:fixed;bottom:24px;right:24px;z-index:9999;display:flex;flex-direction:column;align-items:flex-end;gap:10px">
-  <div id="mb-box" style="display:none">
+<!-- CHATBOT -->
+<div id="mb-chat">
+  <div id="mb-window">
     <div class="mb-hdr">
-      <div class="mb-hdr-back" onclick="toggleBot()">‹</div>
-      <div class="mb-hdr-av">🥛</div>
+      <div class="mb-av-hdr">🥛</div>
       <div class="mb-hdr-info">
         <div class="mb-hdr-name">Mai — Tư vấn sữa MilkStore</div>
-        <div class="mb-hdr-status"><div class="mb-dot"></div>Đang trực tuyến • Phản hồi ngay</div>
+        <div class="mb-hdr-online"><div class="mb-online-dot"></div>Đang trực tuyến</div>
       </div>
-      <div class="mb-hdr-acts"><span>📞</span><span onclick="toggleBot()">✕</span></div>
+      <div class="mb-hdr-close" onclick="mbToggle()">✕</div>
     </div>
-
+    <div class="mb-nav">
+      <a href="/Cart/Index"><div class="mb-nav-icon">🛒</div>Giỏ hàng</a>
+      <a href="/Order/MyOrders"><div class="mb-nav-icon">📦</div>Đơn hàng</a>
+      <a href="/Product"><div class="mb-nav-icon">🏪</div>Sản phẩm</a>
+    </div>
     <div id="mb-msgs">
       <div class="mb-time">Hôm nay @DateTime.Now.ToString("HH:mm")</div>
       <div class="mb-row">
         <div class="mb-av">M</div>
-        <div class="mb-bub bot">Xin chào! Mình là Mai 😊 Bạn đang cần tư vấn sữa gì ạ? Nhấn gợi ý bên dưới hoặc nhập câu hỏi nhé!</div>
+        <div class="mb-bub bot">Xin chào! Mình là Mai 😊 Bạn cần tư vấn sữa gì — cho bé, mẹ bầu hay người lớn ạ?</div>
       </div>
     </div>
-
-    <div class="mb-qwrap" id="mb-qwrap">
+    <div class="mb-quick" id="mb-quick">
       <button class="mb-qbtn" onclick="mbQs(this)">Sữa bé sơ sinh</button>
       <button class="mb-qbtn" onclick="mbQs(this)">Sữa tăng cân</button>
       <button class="mb-qbtn" onclick="mbQs(this)">Sữa tiểu đường</button>
       <button class="mb-qbtn" onclick="mbQs(this)">Sữa ít đường</button>
       <button class="mb-qbtn" onclick="mbQs(this)">Sữa hữu cơ</button>
-      <button class="mb-qbtn" onclick="mbQs(this)">Sữa cho mẹ bầu</button>
+      <button class="mb-qbtn" onclick="mbQs(this)">Sữa mẹ bầu</button>
     </div>
-
     <div class="mb-inp-row">
-      <input id="mb-inp" placeholder="Nhập tin nhắn..." onkeydown="if(event.key==='Enter')mbSend()"/>
+      <input id="mb-inp" placeholder="Nhập câu hỏi..." onkeydown="if(event.key==='Enter')mbSend()"/>
       <button class="mb-send" onclick="mbSend()">➤</button>
     </div>
-
-    <div class="mb-tabs">
-      <div class="mb-tab on" onclick="mbTab(0,this)"><div class="mb-ticon">💬</div>Chat</div>
-      <div class="mb-tab" onclick="mbTab(1,this)"><div class="mb-ticon">🛒</div>Giỏ hàng</div>
-      <div class="mb-tab" onclick="mbTab(2,this)"><div class="mb-ticon">🚚</div>Vận chuyển</div>
-      <div class="mb-tab" onclick="mbTab(3,this)"><div class="mb-ticon">📦</div>Đơn hàng</div>
-    </div>
-
-    <div class="mb-panel on" id="mb-p0"></div>
-
-    <div class="mb-panel" id="mb-p1">
-      <div class="mb-ci">
-        <div class="mb-ci-img">🍼</div>
-        <div style="flex:1">
-          <div class="mb-ci-name">Vinamilk 100% Tươi 1L</div>
-          <div class="mb-ci-price">30.000đ / hộp</div>
-          <div class="mb-ci-qty">
-            <button class="mb-qb2" onclick="mbChg(0,-1)">−</button>
-            <span class="mb-qval" id="mbq0">2</span>
-            <button class="mb-qb2" onclick="mbChg(0,1)">+</button>
-          </div>
-        </div>
-      </div>
-      <div class="mb-ci">
-        <div class="mb-ci-img">🥛</div>
-        <div style="flex:1">
-          <div class="mb-ci-name">TH True Milk Ít Đường 1L</div>
-          <div class="mb-ci-price">35.000đ / hộp</div>
-          <div class="mb-ci-qty">
-            <button class="mb-qb2" onclick="mbChg(1,-1)">−</button>
-            <span class="mb-qval" id="mbq1">1</span>
-            <button class="mb-qb2" onclick="mbChg(1,1)">+</button>
-          </div>
-        </div>
-      </div>
-      <div class="mb-ci">
-        <div class="mb-ci-img">🌿</div>
-        <div style="flex:1">
-          <div class="mb-ci-name">Organic Dalat Milk 500ml</div>
-          <div class="mb-ci-price">45.000đ / hộp</div>
-          <div class="mb-ci-qty">
-            <button class="mb-qb2" onclick="mbChg(2,-1)">−</button>
-            <span class="mb-qval" id="mbq2">1</span>
-            <button class="mb-qb2" onclick="mbChg(2,1)">+</button>
-          </div>
-        </div>
-      </div>
-      <div class="mb-cart-foot">
-        <div class="mb-ctotal">Tổng: <strong id="mb-tot">140.000đ</strong></div>
-        <button class="mb-cbuy" onclick="window.location.href='/Cart/Index'">Đặt hàng ngay</button>
-      </div>
-    </div>
-
-    <div class="mb-panel" id="mb-p2">
-      <div class="mb-srow"><div class="mb-sico">🚚</div><div><div class="mb-stxt">Giao hàng tiêu chuẩn</div><div class="mb-ssub">Dự kiến 2–3 ngày làm việc</div></div><div class="mb-sbadge">Miễn phí</div></div>
-      <div class="mb-srow"><div class="mb-sico">⚡</div><div><div class="mb-stxt">Giao hàng nhanh</div><div class="mb-ssub">Nhận trong ngày (trước 21:00)</div></div><div class="mb-sbadge">15.000đ</div></div>
-      <div class="mb-srow"><div class="mb-sico">🏍️</div><div><div class="mb-stxt">Giao siêu tốc</div><div class="mb-ssub">Nhận trong 2 giờ</div></div><div class="mb-sbadge">25.000đ</div></div>
-      <div class="mb-srow"><div class="mb-sico">📍</div><div><div class="mb-stxt">Địa chỉ giao hàng</div><div class="mb-ssub">Hà Nội, Việt Nam</div></div></div>
-      <div class="mb-srow"><div class="mb-sico">🏪</div><div><div class="mb-stxt">Nhận tại cửa hàng</div><div class="mb-ssub">Miễn phí — 12 điểm gần bạn</div></div></div>
-    </div>
-
-    <div class="mb-panel" id="mb-p3">
-      <div class="mb-orow"><div class="mb-sico">🕐</div><div style="flex:1"><div class="mb-stxt">Đơn #MK8821</div><div class="mb-onum">Vinamilk 1L x2 · 60.000đ</div></div><div class="mb-ostatus w">Chờ xác nhận</div></div>
-      <div class="mb-orow"><div class="mb-sico">🚚</div><div style="flex:1"><div class="mb-stxt">Đơn #MK7743</div><div class="mb-onum">TH True Milk x3 · 105.000đ</div></div><div class="mb-ostatus s">Đang giao</div></div>
-      <div class="mb-orow"><div class="mb-sico">✅</div><div style="flex:1"><div class="mb-stxt">Đơn #MK6612</div><div class="mb-onum">Organic Dalat x1 · 45.000đ</div></div><div class="mb-ostatus d">Đã nhận hàng</div></div>
-      <div class="mb-orow"><div class="mb-sico">✅</div><div style="flex:1"><div class="mb-stxt">Đơn #MK5501</div><div class="mb-onum">Vinamilk x4 · 120.000đ</div></div><div class="mb-ostatus d">Đã nhận hàng</div></div>
-    </div>
   </div>
-
-  <button id="mb-toggle-btn" onclick="toggleBot()">🥛</button>
+  <button id="mb-fab" onclick="mbToggle()">🥛</button>
 </div>
 
+<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+<script src="~/js/site.js" asp-append-version="true"></script>
+@await RenderSectionAsync("Scripts", required: false)
 <script>
-const MB_SERVER = "https://milkbot.onrender.com";
-const mbSid = Math.random().toString(36).slice(2);
-let mbOpen = false;
-
-function toggleBot() {
-  const box = document.getElementById('mb-box');
-  mbOpen = !mbOpen;
-  if (mbOpen) {
-    box.style.display = 'flex';
-    setTimeout(() => box.classList.add('open'), 10);
-  } else {
-    box.classList.remove('open');
-    setTimeout(() => { box.style.display = 'none'; }, 200);
-  }
-}
-
-const mbQmap = {
-  'sữa bé sơ sinh': 'Với bé sơ sinh, mình gợi ý Nan Optipro 1 hoặc Similac Gain IQ ạ 🍼 Bé được bao nhiêu tháng tuổi rồi?',
-  'sữa tăng cân': 'Bạn muốn tăng cân cho bé hay người lớn ạ? Mình có Pediasure (bé 1-10 tuổi) và Ensure Gold (người lớn) 💪',
-  'sữa tiểu đường': 'Dạ mình gợi ý Glucerna SR hoặc Diasure — ít đường, chỉ số GI thấp, tốt cho người tiểu đường ạ 😊',
-  'sữa ít đường': 'TH True Milk Ít Đường và Vinamilk Không Đường đều rất ngon ạ! Hộp 1L từ 28.000đ thôi 🥛',
-  'sữa hữu cơ': 'Organic Dalat Milk và Lothamilk Organic đang rất hot ạ! Sữa sạch, không chất bảo quản 🌿',
-  'sữa cho mẹ bầu': 'Mình gợi ý Enfamama A+ hoặc Friso Mom cho mẹ bầu và cho con bú ạ. Bạn đang mang thai tháng thứ mấy? 🤱'
-};
-
-function mbAddMsg(text, role) {
-  const msgs = document.getElementById('mb-msgs');
-  const row = document.createElement('div');
-  row.className = 'mb-row' + (role === 'user' ? ' me' : '');
-  const av = document.createElement('div');
-  av.className = 'mb-av' + (role === 'user' ? ' u' : '');
-  av.textContent = role === 'user' ? 'B' : 'M';
-  const bub = document.createElement('div');
-  bub.className = 'mb-bub ' + (role === 'user' ? 'me' : 'bot');
-  bub.textContent = text;
-  if (role === 'user') { row.appendChild(bub); row.appendChild(av); }
-  else { row.appendChild(av); row.appendChild(bub); }
-  msgs.appendChild(row);
-  msgs.scrollTop = msgs.scrollHeight;
-}
-
-function mbShowProds(products) {
-  const msgs = document.getElementById('mb-msgs');
-  products.forEach(p => {
-    const row = document.createElement('div');
-    row.className = 'mb-row';
-    const av = document.createElement('div'); av.className = 'mb-av'; av.textContent = 'M';
-    const card = document.createElement('div'); card.className = 'mb-prod';
-    card.innerHTML = `<div class="pn">${p.name}</div><div class="pp">${p.price.toLocaleString('vi-VN')}đ</div><button class="pa">🛒 Thêm vào giỏ</button>`;
-    card.querySelector('button').onclick = () => { window.location.href = '/Cart/Add/' + p.id; };
-    row.appendChild(av); row.appendChild(card);
-    msgs.appendChild(row);
-  });
-  msgs.scrollTop = msgs.scrollHeight;
-}
-
-function mbQs(btn) {
-  btn.classList.add('used');
-  const txt = btn.textContent;
-  mbAddMsg(txt, 'user');
-  const key = txt.toLowerCase();
-  setTimeout(() => {
-    const reply = mbQmap[key] || 'Mình sẽ tư vấn ngay ạ! Bạn có thể cho mình biết thêm nhu cầu cụ thể không? 😊';
-    mbAddMsg(reply, 'bot');
-    mbShowProds([{ id: 1, name: 'Vinamilk 100% Tươi 1L', price: 30000 }, { id: 2, name: 'TH True Milk Ít Đường 1L', price: 35000 }]);
-  }, 700);
-}
-
-async function mbSend() {
-  const inp = document.getElementById('mb-inp');
-  const msg = inp.value.trim();
-  if (!msg) return;
-  inp.value = '';
-  mbAddMsg(msg, 'user');
-  const t = document.createElement('div');
-  t.className = 'mb-typing'; t.id = 'mb-typing';
-  t.innerHTML = 'Mai đang nhập <span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>';
-  document.getElementById('mb-msgs').appendChild(t);
-  document.getElementById('mb-msgs').scrollTop = 9999;
-  try {
-    const r = await fetch(MB_SERVER + '/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ sessionId: mbSid, message: msg })
-    });
-    const data = await r.json();
-    document.getElementById('mb-typing')?.remove();
-    mbAddMsg(data.reply, 'bot');
-    if (data.products) mbShowProds(data.products);
-  } catch (e) {
-    document.getElementById('mb-typing')?.remove();
-    mbAddMsg('Xin lỗi, mình đang bận. Vui lòng thử lại!', 'bot');
-  }
-}
-
-const mbQQs = [2, 1, 1], mbPPs = [30000, 35000, 45000];
-function mbChg(i, d) {
-  mbQQs[i] = Math.max(1, mbQQs[i] + d);
-  document.getElementById('mbq' + i).textContent = mbQQs[i];
-  const tot = mbQQs[0]*mbPPs[0] + mbQQs[1]*mbPPs[1] + mbQQs[2]*mbPPs[2];
-  document.getElementById('mb-tot').textContent = tot.toLocaleString('vi-VN') + 'đ';
-}
-
-function mbTab(n, el) {
-  document.querySelectorAll('.mb-tab').forEach(t => t.classList.remove('on'));
-  el.classList.add('on');
-  document.querySelectorAll('.mb-panel').forEach((p, i) => p.classList.toggle('on', i === n));
-}
-
-window.addEventListener('load', () => { setTimeout(toggleBot, 1500); });
+window.addEventListener('load',()=>{const l=document.getElementById('page-loader');if(l){l.classList.add('hidden');setTimeout(()=>l.remove(),500)}});
+const topBtn=document.getElementById('back-to-top');
+if(topBtn){window.addEventListener('scroll',()=>topBtn.classList.toggle('visible',scrollY>300));topBtn.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));}
+const toastEl=document.getElementById('server-toast');
+if(toastEl){const msg=toastEl.dataset.message,type=toastEl.dataset.type;if(msg){const t=document.createElement('div');t.className=`ms-toast ${type}`;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.classList.add('show'),50);setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),300)},3500);}}
+const MB_SERVER="https://milkbot.onrender.com",mbSid=Math.random().toString(36).slice(2);let mbOpen=false;
+function mbToggle(){const w=document.getElementById('mb-window');mbOpen=!mbOpen;if(mbOpen){w.style.display='flex';setTimeout(()=>w.classList.add('open'),10);}else{w.classList.remove('open');setTimeout(()=>{w.style.display='none'},220);}}
+const mbQmap={'sữa bé sơ sinh':'Với bé sơ sinh mình gợi ý Nan Optipro 1 hoặc Similac Gain IQ 🍼 Bé được bao nhiêu tháng tuổi rồi ạ?','sữa tăng cân':'Bạn muốn tăng cân cho bé hay người lớn ạ? Mình có Pediasure và Ensure Gold 💪','sữa tiểu đường':'Mình gợi ý Glucerna SR hoặc Diasure — ít đường, GI thấp, phù hợp người tiểu đường 😊','sữa ít đường':'TH True Milk Ít Đường và Vinamilk Không Đường rất được ưa chuộng ạ! Từ 28.000đ/hộp 🥛','sữa hữu cơ':'Organic Dalat Milk và Lothamilk Organic sữa sạch không chất bảo quản 🌿','sữa mẹ bầu':'Mình gợi ý Enfamama A+ hoặc Friso Mom cho mẹ bầu và cho con bú 🤱 Bạn đang mang thai tháng thứ mấy?'};
+function mbAddMsg(txt,role){const m=document.getElementById('mb-msgs'),row=document.createElement('div');row.className='mb-row'+(role==='user'?' me':'');const av=document.createElement('div');av.className='mb-av'+(role==='user'?' u':'');av.textContent=role==='user'?'B':'M';const bub=document.createElement('div');bub.className='mb-bub '+(role==='user'?'me':'bot');bub.textContent=txt;if(role==='user'){row.appendChild(bub);row.appendChild(av);}else{row.appendChild(av);row.appendChild(bub);}m.appendChild(row);m.scrollTop=m.scrollHeight;}
+function mbShowProds(products){const m=document.getElementById('mb-msgs');products.forEach(p=>{const row=document.createElement('div');row.className='mb-row';const av=document.createElement('div');av.className='mb-av';av.textContent='M';const card=document.createElement('div');card.className='mb-prod-card';card.innerHTML=`<div class="mb-prod-name">${p.name}</div><div class="mb-prod-price">${p.price.toLocaleString('vi-VN')}đ</div><button class="mb-prod-btn">🛒 Xem sản phẩm</button>`;card.querySelector('button').onclick=()=>{window.location.href='/Product';};row.appendChild(av);row.appendChild(card);m.appendChild(row);});document.getElementById('mb-msgs').scrollTop=9999;}
+function mbQs(btn){btn.classList.add('used');const txt=btn.textContent;mbAddMsg(txt,'user');const key=txt.toLowerCase();setTimeout(()=>{const reply=mbQmap[key]||'Mình sẽ tư vấn ngay! Bạn cho mình biết thêm nhu cầu cụ thể được không ạ? 😊';mbAddMsg(reply,'bot');mbShowProds([{name:'Vinamilk 100% Tươi 1L',price:30000},{name:'TH True Milk Ít Đường 1L',price:35000}]);},650);}
+async function mbSend(){const inp=document.getElementById('mb-inp'),msg=inp.value.trim();if(!msg)return;inp.value='';mbAddMsg(msg,'user');const t=document.createElement('div');t.className='mb-typing';t.id='mb-typing';t.innerHTML='Mai đang nhập <span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>';document.getElementById('mb-msgs').appendChild(t);document.getElementById('mb-msgs').scrollTop=9999;try{const r=await fetch(MB_SERVER+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:mbSid,message:msg})});const data=await r.json();document.getElementById('mb-typing')?.remove();mbAddMsg(data.reply,'bot');if(data.products)mbShowProds(data.products);}catch{document.getElementById('mb-typing')?.remove();mbAddMsg('Xin lỗi, mình đang bận. Vui lòng thử lại sau nhé! 😊','bot');}}
 </script>
-
 </body>
 </html>
