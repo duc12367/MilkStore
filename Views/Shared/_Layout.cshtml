@@ -58,7 +58,6 @@ body{font-family:'Nunito',sans-serif;font-size:15px;color:#2d3436;background:#f8
 .ms-toast.show{opacity:1;transform:translateY(0)}
 .ms-toast.success{background:#00b894}
 .ms-toast.error{background:#e17055}
-/* Chatbot */
 #mb-chat{position:fixed;bottom:24px;right:24px;z-index:9000;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
 #mb-window{width:330px;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e0e6ea;display:none;flex-direction:column;transform:translateY(16px) scale(.97);opacity:0;transition:transform .2s ease,opacity .2s ease;box-shadow:0 8px 32px rgba(0,0,0,.12)}
 #mb-window.open{transform:translateY(0) scale(1);opacity:1}
@@ -68,7 +67,7 @@ body{font-family:'Nunito',sans-serif;font-size:15px;color:#2d3436;background:#f8
 .mb-hdr-name{color:#fff;font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
 .mb-hdr-online{display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,.9)}
 .mb-online-dot{width:6px;height:6px;border-radius:50%;background:#55efc4;flex-shrink:0}
-.mb-hdr-close{color:#fff;font-size:18px;cursor:pointer;line-height:1;opacity:.85;transition:opacity .15s}
+.mb-hdr-close{color:#fff;font-size:18px;cursor:pointer;line-height:1;opacity:.85}
 .mb-hdr-close:hover{opacity:1}
 .mb-nav{display:flex;background:#f8f9fb;border-bottom:1px solid #e8ecef}
 .mb-nav a{flex:1;text-align:center;padding:8px 4px;font-size:11px;font-weight:700;color:#636e72;text-decoration:none;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;display:flex;flex-direction:column;align-items:center;gap:2px}
@@ -82,24 +81,22 @@ body{font-family:'Nunito',sans-serif;font-size:15px;color:#2d3436;background:#f8
 .mb-row.me{flex-direction:row-reverse}
 .mb-av{width:26px;height:26px;border-radius:50%;background:#00b894;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;color:#fff;font-weight:700}
 .mb-av.u{background:#6c5ce7}
+.mb-av.ad{background:#e17055}
 .mb-bub{max-width:76%;padding:8px 12px;font-size:13px;line-height:1.55;word-break:break-word}
 .mb-bub.bot{background:#fff;color:#2d3436;border-radius:4px 14px 14px 14px;border:1px solid #e8ecef}
 .mb-bub.me{background:#00b894;color:#fff;border-radius:14px 4px 14px 14px}
-.mb-prod-card{background:#fff;border-radius:10px;border:1px solid #e8ecef;padding:9px 11px;max-width:200px}
-.mb-prod-name{font-size:12px;font-weight:700;color:#2d3436}
-.mb-prod-price{font-size:12px;color:#e17055;margin:3px 0;font-weight:700}
-.mb-prod-btn{background:#00b894;color:#fff;border:none;border-radius:6px;padding:4px 10px;font-size:11px;cursor:pointer;margin-top:4px;font-weight:600;font-family:'Nunito',sans-serif}
+.mb-bub.admin{background:#e17055;color:#fff;border-radius:14px 4px 14px 14px}
 .mb-quick{padding:6px 10px 5px;background:#fff;border-top:1px solid #f0f4f7;display:flex;gap:5px;flex-wrap:wrap}
 .mb-qbtn{padding:4px 10px;border-radius:20px;border:1.5px solid #b2f5ea;background:#f0faf8;color:#00b894;font-size:11px;font-weight:600;cursor:pointer;transition:background .12s,color .12s;white-space:nowrap;font-family:'Nunito',sans-serif}
 .mb-qbtn:hover,.mb-qbtn.used{background:#00b894;color:#fff;border-color:#00b894}
 .mb-inp-row{display:flex;gap:6px;padding:8px 10px;background:#fff;align-items:center;border-top:1px solid #f0f4f7}
 .mb-inp-row input{flex:1;border:1.5px solid #e0e6ea;border-radius:20px;padding:7px 14px;font-size:13px;outline:none;background:#f8f9fb;color:#2d3436;font-family:'Nunito',sans-serif}
 .mb-inp-row input:focus{border-color:#00b894;background:#fff}
-.mb-send{width:34px;height:34px;border-radius:50%;background:#00b894;color:#fff;border:none;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0;transition:background .15s}
+.mb-send{width:34px;height:34px;border-radius:50%;background:#00b894;color:#fff;border:none;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
 .mb-send:hover{background:#00997a}
 .mb-typing{font-size:11px;color:#b2bec3;padding:2px 4px}
-#mb-fab{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#00b894,#00cec9);color:#fff;border:none;font-size:22px;cursor:pointer;box-shadow:0 4px 16px rgba(0,184,148,.45);transition:transform .2s,box-shadow .2s;display:flex;align-items:center;justify-content:center}
-#mb-fab:hover{transform:scale(1.08);box-shadow:0 6px 20px rgba(0,184,148,.55)}
+#mb-fab{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#00b894,#00cec9);color:#fff;border:none;font-size:22px;cursor:pointer;box-shadow:0 4px 16px rgba(0,184,148,.45);transition:transform .2s;display:flex;align-items:center;justify-content:center}
+#mb-fab:hover{transform:scale(1.08)}
 .dot{animation:blink 1.4s infinite}
 .dot:nth-child(2){animation-delay:.2s}
 .dot:nth-child(3){animation-delay:.4s}
@@ -261,7 +258,7 @@ body{font-family:'Nunito',sans-serif;font-size:15px;color:#2d3436;background:#f8
       <div class="mb-av-hdr">🥛</div>
       <div class="mb-hdr-info">
         <div class="mb-hdr-name">Mai — Tư vấn sữa MilkStore</div>
-        <div class="mb-hdr-online"><div class="mb-online-dot"></div>Đang trực tuyến</div>
+        <div class="mb-hdr-online"><div class="mb-online-dot"></div><span id="mb-status-txt">Đang kết nối...</span></div>
       </div>
       <div class="mb-hdr-close" onclick="mbToggle()">✕</div>
     </div>
@@ -277,7 +274,7 @@ body{font-family:'Nunito',sans-serif;font-size:15px;color:#2d3436;background:#f8
         <div class="mb-bub bot">Xin chào! Mình là Mai 😊 Bạn cần tư vấn sữa gì — cho bé, mẹ bầu hay người lớn ạ?</div>
       </div>
     </div>
-    <div class="mb-quick" id="mb-quick">
+    <div class="mb-quick">
       <button class="mb-qbtn" onclick="mbQs(this)">Sữa bé sơ sinh</button>
       <button class="mb-qbtn" onclick="mbQs(this)">Sữa tăng cân</button>
       <button class="mb-qbtn" onclick="mbQs(this)">Sữa tiểu đường</button>
@@ -295,20 +292,110 @@ body{font-family:'Nunito',sans-serif;font-size:15px;color:#2d3436;background:#f8
 
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="~/js/site.js" asp-append-version="true"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
 @await RenderSectionAsync("Scripts", required: false)
 <script>
+// Page loader
 window.addEventListener('load',()=>{const l=document.getElementById('page-loader');if(l){l.classList.add('hidden');setTimeout(()=>l.remove(),500)}});
+
+// Back to top
 const topBtn=document.getElementById('back-to-top');
 if(topBtn){window.addEventListener('scroll',()=>topBtn.classList.toggle('visible',scrollY>300));topBtn.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));}
+
+// Toast
 const toastEl=document.getElementById('server-toast');
 if(toastEl){const msg=toastEl.dataset.message,type=toastEl.dataset.type;if(msg){const t=document.createElement('div');t.className=`ms-toast ${type}`;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.classList.add('show'),50);setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),300)},3500);}}
-const MB_SERVER="https://milkbot.onrender.com",mbSid=Math.random().toString(36).slice(2);let mbOpen=false;
-function mbToggle(){const w=document.getElementById('mb-window');mbOpen=!mbOpen;if(mbOpen){w.style.display='flex';setTimeout(()=>w.classList.add('open'),10);}else{w.classList.remove('open');setTimeout(()=>{w.style.display='none'},220);}}
-const mbQmap={'sữa bé sơ sinh':'Với bé sơ sinh mình gợi ý Nan Optipro 1 hoặc Similac Gain IQ 🍼 Bé được bao nhiêu tháng tuổi rồi ạ?','sữa tăng cân':'Bạn muốn tăng cân cho bé hay người lớn ạ? Mình có Pediasure và Ensure Gold 💪','sữa tiểu đường':'Mình gợi ý Glucerna SR hoặc Diasure — ít đường, GI thấp, phù hợp người tiểu đường 😊','sữa ít đường':'TH True Milk Ít Đường và Vinamilk Không Đường rất được ưa chuộng ạ! Từ 28.000đ/hộp 🥛','sữa hữu cơ':'Organic Dalat Milk và Lothamilk Organic sữa sạch không chất bảo quản 🌿','sữa mẹ bầu':'Mình gợi ý Enfamama A+ hoặc Friso Mom cho mẹ bầu và cho con bú 🤱 Bạn đang mang thai tháng thứ mấy?'};
-function mbAddMsg(txt,role){const m=document.getElementById('mb-msgs'),row=document.createElement('div');row.className='mb-row'+(role==='user'?' me':'');const av=document.createElement('div');av.className='mb-av'+(role==='user'?' u':'');av.textContent=role==='user'?'B':'M';const bub=document.createElement('div');bub.className='mb-bub '+(role==='user'?'me':'bot');bub.textContent=txt;if(role==='user'){row.appendChild(bub);row.appendChild(av);}else{row.appendChild(av);row.appendChild(bub);}m.appendChild(row);m.scrollTop=m.scrollHeight;}
-function mbShowProds(products){const m=document.getElementById('mb-msgs');products.forEach(p=>{const row=document.createElement('div');row.className='mb-row';const av=document.createElement('div');av.className='mb-av';av.textContent='M';const card=document.createElement('div');card.className='mb-prod-card';card.innerHTML=`<div class="mb-prod-name">${p.name}</div><div class="mb-prod-price">${p.price.toLocaleString('vi-VN')}đ</div><button class="mb-prod-btn">🛒 Xem sản phẩm</button>`;card.querySelector('button').onclick=()=>{window.location.href='/Product';};row.appendChild(av);row.appendChild(card);m.appendChild(row);});document.getElementById('mb-msgs').scrollTop=9999;}
-function mbQs(btn){btn.classList.add('used');const txt=btn.textContent;mbAddMsg(txt,'user');const key=txt.toLowerCase();setTimeout(()=>{const reply=mbQmap[key]||'Mình sẽ tư vấn ngay! Bạn cho mình biết thêm nhu cầu cụ thể được không ạ? 😊';mbAddMsg(reply,'bot');
-async function mbSend(){const inp=document.getElementById('mb-inp'),msg=inp.value.trim();if(!msg)return;inp.value='';mbAddMsg(msg,'user');const t=document.createElement('div');t.className='mb-typing';t.id='mb-typing';t.innerHTML='Mai đang nhập <span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>';document.getElementById('mb-msgs').appendChild(t);document.getElementById('mb-msgs').scrollTop=9999;try{const r=await fetch(MB_SERVER+'/chat',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({sessionId:mbSid,message:msg})});const data=await r.json();document.getElementById('mb-typing')?.remove();mbAddMsg(data.reply,'bot');if(data.products)mbShowProds(data.products);}catch{document.getElementById('mb-typing')?.remove();mbAddMsg('Xin lỗi, mình đang bận. Vui lòng thử lại sau nhé! 😊','bot');}}
+
+// Chatbot — SignalR
+const mbSid = localStorage.getItem('mb_sid') || Math.random().toString(36).slice(2);
+localStorage.setItem('mb_sid', mbSid);
+let mbOpen = false;
+
+const mbConn = new signalR.HubConnectionBuilder()
+    .withUrl("/chatHub")
+    .withAutomaticReconnect()
+    .build();
+
+mbConn.on("ReceiveMessage", (msg) => {
+    if (msg.sessionId !== mbSid) return;
+    if (msg.role === "bot" || msg.role === "admin") {
+        document.getElementById('mb-typing')?.remove();
+        mbAddMsg(msg.content, msg.role);
+    }
+});
+
+mbConn.start().then(() => {
+    mbConn.invoke("JoinSession", mbSid);
+    document.getElementById('mb-status-txt').textContent = "Đang trực tuyến";
+    // Load lịch sử chat cũ
+    fetch('/Chat/History?sessionId=' + mbSid)
+        .then(r => r.json())
+        .then(msgs => {
+            if (msgs && msgs.length > 1) {
+                const m = document.getElementById('mb-msgs');
+                m.innerHTML = '';
+                msgs.forEach(h => mbAddMsg(h.content, h.role));
+            }
+        }).catch(()=>{});
+}).catch(() => {
+    document.getElementById('mb-status-txt').textContent = "Offline";
+    document.querySelector('.mb-online-dot').style.background = '#b2bec3';
+});
+
+function mbToggle() {
+    const w = document.getElementById('mb-window');
+    mbOpen = !mbOpen;
+    if (mbOpen) { w.style.display='flex'; setTimeout(()=>w.classList.add('open'),10); }
+    else { w.classList.remove('open'); setTimeout(()=>{ w.style.display='none'; },220); }
+}
+
+function mbAddMsg(txt, role) {
+    const m = document.getElementById('mb-msgs');
+    const row = document.createElement('div');
+    row.className = 'mb-row' + (role==='user' ? ' me' : '');
+    const av = document.createElement('div');
+    av.className = 'mb-av' + (role==='user' ? ' u' : role==='admin' ? ' ad' : '');
+    av.textContent = role==='user' ? 'B' : role==='admin' ? 'AD' : 'M';
+    const bub = document.createElement('div');
+    bub.className = 'mb-bub ' + (role==='user' ? 'me' : role==='admin' ? 'admin' : 'bot');
+    bub.textContent = txt;
+    if (role==='user') { row.appendChild(bub); row.appendChild(av); }
+    else { row.appendChild(av); row.appendChild(bub); }
+    m.appendChild(row);
+    m.scrollTop = m.scrollHeight;
+}
+
+function mbQs(btn) {
+    btn.classList.add('used');
+    mbSend(btn.textContent);
+}
+
+async function mbSend(text) {
+    const inp = document.getElementById('mb-inp');
+    const msg = text || inp.value.trim();
+    if (!msg) return;
+    if (!text) inp.value = '';
+    mbAddMsg(msg, 'user');
+
+    const t = document.createElement('div');
+    t.className = 'mb-typing'; t.id = 'mb-typing';
+    t.innerHTML = 'Mai đang nhập <span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>';
+    document.getElementById('mb-msgs').appendChild(t);
+    document.getElementById('mb-msgs').scrollTop = 9999;
+
+    try {
+        await fetch('/Chat/Send', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ sessionId: mbSid, message: msg })
+        });
+    } catch {
+        document.getElementById('mb-typing')?.remove();
+        mbAddMsg('Xin lỗi, mình đang bận. Thử lại sau nhé!', 'bot');
+    }
+
+    setTimeout(() => document.getElementById('mb-typing')?.remove(), 8000);
+}
 </script>
 </body>
 </html>

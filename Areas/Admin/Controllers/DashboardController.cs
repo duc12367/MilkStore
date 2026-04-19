@@ -54,5 +54,8 @@ public class DashboardController(MilkStore4Context db) : Controller
 
         
     }
-    
+    public IActionResult Chat()
+    {
+        return View("~/Areas/Admin/Views/Dashboard/Chat.cshtml");
+    }
 }
