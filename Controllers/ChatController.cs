@@ -91,33 +91,54 @@ Bạn là Mai — chuyên gia tư vấn sữa của MilkStore.
 
         // 3. Gọi Groq AI
         string reply;
+
         try
         {
-            var groqKey = Environment.GetEnvironmentVariable("GROQ_API_KEY")
-                          ?? throw new Exception("GROQ_API_KEY not set");
+            var groqKey = Environment.GetEnvironmentVariable("GROQ_API_KEY");
+
+            if (string.IsNullOrEmpty(groqKey))
+                throw new Exception("Missing GROQ_API_KEY");
 
             var client = _http.CreateClient();
             client.DefaultRequestHeaders.Add("Authorization", $"Bearer {groqKey}");
 
-            var body = JsonSerializer.Serialize(new
+            var body = new
             {
                 model = "llama-3.3-70b-versatile",
                 messages,
                 max_tokens = 400
-            });
+            };
 
-            var res = await client.PostAsync(GROQ_API, new StringContent(body, Encoding.UTF8, "application/json"));
+            var res = await client.PostAsJsonAsync(GROQ_API, body);
+
             var json = await res.Content.ReadAsStringAsync();
-            using var doc = JsonDocument.Parse(json);
-            reply = doc.RootElement
-                .GetProperty("choices")[0]
-                .GetProperty("message")
-                .GetProperty("content")
-                .GetString() ?? "Xin lỗi, mình chưa hiểu ý bạn 😊";
+
+            // 🔥 CHECK RESPONSE TRƯỚC
+            if (!res.IsSuccessStatusCode)
+            {
+                reply = "API lỗi: " + json;
+            }
+            else
+            {
+                using var doc = JsonDocument.Parse(json);
+
+                if (doc.RootElement.TryGetProperty("choices", out var choices) &&
+                    choices.GetArrayLength() > 0)
+                {
+                    reply = choices[0]
+                        .GetProperty("message")
+                        .GetProperty("content")
+                        .GetString() ?? "Không có phản hồi";
+                }
+                else
+                {
+                    reply = "Không đọc được dữ liệu từ AI";
+                }
+            }
         }
-        catch
+        catch (Exception ex)
         {
-            reply = "Xin lỗi, mình đang bận. Vui lòng thử lại nhé!";
+            reply = "Lỗi server: " + ex.Message;
         }
 
         // 4. Lưu + broadcast reply
