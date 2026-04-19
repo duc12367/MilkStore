@@ -35,7 +35,19 @@ if (!app.Environment.IsDevelopment())
     app.UseHsts();
 }
 
-app.UseStatusCodePagesWithReExecute("/error/{0}");
+//app.UseStatusCodePagesWithReExecute("/error/{0}");
+app.UseStatusCodePages(async context =>
+{
+    var response = context.HttpContext.Response;
+
+    if (response.ContentType != null &&
+        response.ContentType.Contains("application/json"))
+    {
+        return;
+    }
+
+    response.Redirect($"/error/{response.StatusCode}");
+});
 app.UseStaticFiles();
 app.UseRouting();
 app.UseSession();
