@@ -308,40 +308,11 @@ const toastEl=document.getElementById('server-toast');
 if(toastEl){const msg=toastEl.dataset.message,type=toastEl.dataset.type;if(msg){const t=document.createElement('div');t.className=`ms-toast ${type}`;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.classList.add('show'),50);setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),300)},3500);}}
 
 // Chatbot — SignalR
+// Chatbot — SignalR
 const mbSid = localStorage.getItem('mb_sid') || Math.random().toString(36).slice(2);
 localStorage.setItem('mb_sid', mbSid);
 let mbOpen = false;
-
-const mbConn = new signalR.HubConnectionBuilder()
-    .withUrl("/chatHub")
-    .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
-    .configureLogging(signalR.LogLevel.Warning)
-
-mbConn.on("ReceiveMessage", (msg) => {
-    if (msg.sessionId !== mbSid) return;
-    if (msg.role === "bot" || msg.role === "admin") {
-        document.getElementById('mb-typing')?.remove();
-        mbAddMsg(msg.content, msg.role);
-    }
-});
-
-mbConn.start().then(() => {
-    mbConn.invoke("JoinSession", mbSid);
-    document.getElementById('mb-status-txt').textContent = "Đang trực tuyến";
-    // Load lịch sử chat cũ
-    fetch('/Chat/History?sessionId=' + mbSid)
-        .then(r => r.json())
-        .then(msgs => {
-            if (msgs && msgs.length > 1) {
-                const m = document.getElementById('mb-msgs');
-                m.innerHTML = '';
-                msgs.forEach(h => mbAddMsg(h.content, h.role));
-            }
-        }).catch(()=>{});
-}).catch(() => {
-    document.getElementById('mb-status-txt').textContent = "Offline";
-    document.querySelector('.mb-online-dot').style.background = '#b2bec3';
-});
+let mbConn = null;
 
 function mbToggle() {
     const w = document.getElementById('mb-window');
@@ -366,6 +337,11 @@ function mbAddMsg(txt, role) {
     m.scrollTop = m.scrollHeight;
 }
 
+function mbQs(btn) {
+    btn.classList.add('used');
+    mbSend(btn.textContent);
+}
+
 async function mbSend(text) {
     const inp = document.getElementById('mb-inp');
     const msg = text || inp.value.trim();
@@ -385,7 +361,8 @@ async function mbSend(text) {
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ sessionId: mbSid, message: msg })
         });
-        if (mbConn.state !== signalR.HubConnectionState.Connected) {
+        const isConnected = mbConn && mbConn.state === signalR.HubConnectionState.Connected;
+        if (!isConnected) {
             const data = await r.json();
             document.getElementById('mb-typing')?.remove();
             if (data.reply) mbAddMsg(data.reply, 'bot');
@@ -396,6 +373,41 @@ async function mbSend(text) {
     }
     setTimeout(() => document.getElementById('mb-typing')?.remove(), 8000);
 }
+
+// Khởi động SignalR SAU KHI trang load xong
+window.addEventListener('load', () => {
+    if (typeof signalR === 'undefined') return;
+
+    mbConn = new signalR.HubConnectionBuilder()
+        .withUrl("/chatHub")
+        .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+        .configureLogging(signalR.LogLevel.Warning)
+        .build();
+
+    mbConn.on("ReceiveMessage", (msg) => {
+        if (msg.sessionId !== mbSid) return;
+        if (msg.role === "bot" || msg.role === "admin") {
+            document.getElementById('mb-typing')?.remove();
+            mbAddMsg(msg.content, msg.role);
+        }
+    });
+
+    mbConn.start().then(() => {
+        mbConn.invoke("JoinSession", mbSid);
+        document.getElementById('mb-status-txt').textContent = "Đang trực tuyến";
+        fetch('/Chat/History?sessionId=' + mbSid)
+            .then(r => r.json())
+            .then(msgs => {
+                if (msgs && msgs.length > 1) {
+                    document.getElementById('mb-msgs').innerHTML = '';
+                    msgs.forEach(h => mbAddMsg(h.content, h.role));
+                }
+            }).catch(()=>{});
+    }).catch(() => {
+        document.getElementById('mb-status-txt').textContent = "Offline";
+        document.querySelector('.mb-online-dot').style.background = '#b2bec3';
+    });
+});
 </script>
 </body>
 </html>
