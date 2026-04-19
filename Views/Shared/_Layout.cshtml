@@ -314,8 +314,8 @@ let mbOpen = false;
 
 const mbConn = new signalR.HubConnectionBuilder()
     .withUrl("/chatHub")
-    .withAutomaticReconnect()
-    .build();
+    .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
+    .configureLogging(signalR.LogLevel.Warning)
 
 mbConn.on("ReceiveMessage", (msg) => {
     if (msg.sessionId !== mbSid) return;
@@ -366,44 +366,35 @@ function mbAddMsg(txt, role) {
     m.scrollTop = m.scrollHeight;
 }
 
-function mbQs(btn) {
-    btn.classList.add('used');
-    mbSend(btn.textContent);
-}
-
 async function mbSend(text) {
     const inp = document.getElementById('mb-inp');
     const msg = text || inp.value.trim();
     if (!msg) return;
-
     if (!text) inp.value = '';
     mbAddMsg(msg, 'user');
 
     const t = document.createElement('div');
-    t.className = 'mb-typing';
-    t.id = 'mb-typing';
-    t.innerHTML = 'Mai đang nhập...';
+    t.className = 'mb-typing'; t.id = 'mb-typing';
+    t.innerHTML = 'Mai đang nhập <span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>';
     document.getElementById('mb-msgs').appendChild(t);
+    document.getElementById('mb-msgs').scrollTop = 9999;
 
     try {
-        const res = await fetch('/Chat/Send', {
+        const r = await fetch('/Chat/Send', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ sessionId: mbSid, message: msg })
         });
-
-        const data = await res.json();
-
+        if (mbConn.state !== signalR.HubConnectionState.Connected) {
+            const data = await r.json();
+            document.getElementById('mb-typing')?.remove();
+            if (data.reply) mbAddMsg(data.reply, 'bot');
+        }
+    } catch {
         document.getElementById('mb-typing')?.remove();
-
-        // 👇 HIỂN THỊ TRẢ LỜI
-        mbAddMsg(data.reply || "Không có phản hồi", 'bot');
-
-    } catch (err) {
-        document.getElementById('mb-typing')?.remove();
-        mbAddMsg('Lỗi kết nối server!', 'bot');
-        console.error(err);
+        mbAddMsg('Xin lỗi, mình đang bận. Thử lại sau nhé!', 'bot');
     }
+    setTimeout(() => document.getElementById('mb-typing')?.remove(), 8000);
 }
 </script>
 </body>
