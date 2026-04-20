@@ -21,7 +21,7 @@ Bạn là Mai — chuyên gia tư vấn sữa của MilkStore.
 - Hỏi thêm nếu chưa đủ thông tin (tuổi, nhu cầu, ngân sách)
 - Xưng 'mình' - 'bạn', thêm emoji nhẹ
 - Trả lời ngắn gọn, thân thiện
-- Luôn hỏi cuối: 'Bạn có muốn mình đặt hàng luôn không ạ?'";
+- Luôn hỏi cuối: 'Bạn có muốn mình đặt hàng luôn không ạ?' evitare la ripetizione di var msgs già dichiarata sopra.";
 
     public ChatController(MilkStore4Context db, IHubContext<ChatHub> hub, IHttpClientFactory http)
     {
@@ -82,8 +82,9 @@ Bạn là Mai — chuyên gia tư vấn sữa của MilkStore.
         var history = await _db.ChatMessages
             .Where(m => m.SessionId == dto.SessionId && (m.Role == "user" || m.Role == "bot"))
             .OrderBy(m => m.CreatedAt)
-            .TakeLast(10)
             .ToListAsync();
+
+        history = history.TakeLast(10).ToList();
 
         var messages = new List<object> { new { role = "system", content = SYSTEM_PROMPT } };
         foreach (var h in history)
