@@ -136,6 +136,12 @@
             <span class="menu-icon"></span> Người dùng
         </a>
 
+        <div class="menu-label">Chăm sóc khách hàng</div>
+        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Chat"
+           class="menu-item @(ViewContext.RouteData.Values["action"]?.ToString() == "Chat" ? "active" : "")">
+            <span class="menu-icon">💬</span> Chat khách hàng
+        </a>
+
         <div class="menu-label">Hệ thống</div>
         <a asp-area="" asp-controller="Home" asp-action="Index" class="menu-item">
             <span class="menu-icon"></span> Về trang chủ
