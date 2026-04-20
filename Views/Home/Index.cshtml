@@ -37,13 +37,30 @@
         </div>
     </div>
     <div class="hero-image-wrap">
-        <img src="https://static.fireant.vn/Upload/20230212/images/2A.jpg"
-             alt="Milk Products" class="hero-img" onerror="this.src='https://placehold.co/520x400/f0f7f2/1a3a2a?text=MilkStore'" />
-        <div class="hero-img-badge">
+        <div class="hero-slider">
+            <img class="hero-slide active" src="https://static.fireant.vn/Upload/20230212/images/2A.jpg" alt="Milk 1" onerror="this.src='https://placehold.co/420x300/f0f7f2/1a3a2a?text=MilkStore'">
+            <img class="hero-slide" src="https://traicayhoabien.com/wp-content/uploads/2023/03/Sua-tuoi-tiet-trung-it-duong-Reta-Milk-1L-4.jpg" alt="Milk 2" onerror="this.src='https://placehold.co/420x300'">
+            <img class="hero-slide" src="https://nhatlamgroup.vn/wp-content/uploads/2025/06/nguyen-lieu-san-xuat-sua-bot.jpg?x82073" alt="Milk 3" onerror="this.src='https://placehold.co/420x300'">
+            <img class="hero-slide" src="https://dayphache.edu.vn/wp-content/uploads/2019/05/hinh-sua-chua-khong-dong-da.jpg" alt="Milk 4" onerror="this.src='https://placehold.co/420x300'">
+            <div class="hero-dots">
+                <span class="hero-dot active" onclick="goSlide(0)"></span>
+                <span class="hero-dot" onclick="goSlide(1)"></span>
+                <span class="hero-dot" onclick="goSlide(2)"></span>
+                <span class="hero-dot" onclick="goSlide(3)"></span>
+            </div>
+        </div>
+        <div class="hero-img-badge badge-float">
             <img src="https://cdn-icons-png.flaticon.com/512/1041/1041916.png" alt="" style="width:16px;height:16px">
             <div>
                 <div style="font-weight:700;font-size:.9rem">Đánh giá 4.8/5</div>
                 <div style="font-size:.75rem;opacity:.7">500+ khách hàng</div>
+            </div>
+        </div>
+        <div class="hero-img-badge2 badge-float2">
+            <img src="https://cdn-icons-png.flaticon.com/512/3514/3514491.png" alt="" style="width:16px;height:16px">
+            <div>
+                <div style="font-weight:700;font-size:.9rem">Miễn phí ship</div>
+                <div style="font-size:.75rem;opacity:.7">Đơn từ 300.000đ</div>
             </div>
         </div>
     </div>
@@ -335,6 +352,60 @@ else
     color: #1a3a2a;
 }
 
+.hero-slider {
+    position: relative;
+    width: 420px;
+    max-width: 100%;
+    border-radius: 20px;
+    overflow: hidden;
+    box-shadow: 0 24px 60px rgba(0,0,0,.3);
+}
+.hero-slide {
+    width: 100%; height: 300px;
+    object-fit: cover;
+    display: none;
+    border-radius: 20px;
+    animation: fadeIn .6s ease;
+}
+.hero-slide.active { display: block; }
+@@keyframes fadeIn {
+    from { opacity: 0; transform: scale(1.03); }
+    to   { opacity: 1; transform: scale(1); }
+}
+.hero-dots {
+    position: absolute; bottom: 12px; left: 50%;
+    transform: translateX(-50%);
+    display: flex; gap: 6px;
+}
+.hero-dot {
+    width: 8px; height: 8px; border-radius: 50%;
+    background: rgba(255,255,255,.5); cursor: pointer;
+    transition: background .2s, transform .2s;
+}
+.hero-dot.active {
+    background: #fff;
+    transform: scale(1.3);
+}
+.hero-img-badge2 {
+    position: absolute; top: 16px; right: -16px;
+    background: #1a3a2a; color: #fff;
+    border-radius: 14px;
+    padding: .75rem 1.1rem;
+    display: flex; align-items: center; gap: .6rem;
+    box-shadow: 0 8px 24px rgba(0,0,0,.2);
+}
+.badge-float {
+    animation: floatUp 3s ease-in-out infinite;
+}
+.badge-float2 {
+    animation: floatUp 3s ease-in-out infinite;
+    animation-delay: 1.5s;
+}
+@@keyframes floatUp {
+    0%, 100% { transform: translateY(0); }
+    50%       { transform: translateY(-8px); }
+}
+
 /* Stats */
 .stats-bar {
     background: #fff;
@@ -524,11 +595,28 @@ else
     .hero-title { font-size: 2.4rem }
     .cat-grid { grid-template-columns: repeat(2,1fr) }
     .stats-grid { grid-template-columns: repeat(2,1fr) }
-    .why-grid { grid-template-columns: repeat(2,1fr) }
+    .why-grid { grid-template-columns: repeat(2,1fr) }  
 }
 @@media(max-width:600px) {
     .hero-title { font-size: 2rem }
     .prd-grid { grid-template-columns: repeat(2,1fr) }
     .footer-grid { grid-template-columns: 1fr }
 }
+
+
 </style>
+<script>
+let slideIdx = 0;
+const slides = document.querySelectorAll('.hero-slide');
+const dots   = document.querySelectorAll('.hero-dot');
+
+function goSlide(n) {
+    slides[slideIdx].classList.remove('active');
+    dots[slideIdx].classList.remove('active');
+    slideIdx = n % slides.length;
+    slides[slideIdx].classList.add('active');
+    dots[slideIdx].classList.add('active');
+}
+
+setInterval(() => goSlide(slideIdx + 1), 3500);
+</script>
