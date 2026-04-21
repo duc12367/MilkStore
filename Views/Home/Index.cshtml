@@ -36,10 +36,10 @@
             </div>
         </div>
     </div>
-    <div class="hero-image-wrap">
+      <div class="hero-image-wrap">
         <div class="hero-slider">
-            <img class="hero-slide active" src="~/images/anh.png" alt="Milk 1" onerror="this.src='https://placehold.co/420x300/f0f7f2/1a3a2a?text=MilkStore'">
-            <img class="hero-slide" src="https://static.fireant.vn/Upload/20230212/images/2A.jpg" alt="Milk 2" onerror="this.src='https://placehold.co/420x300'">
+            <img class="hero-slide active" src="https://static.fireant.vn/Upload/20230212/images/2A.jpg" alt="Milk 1" onerror="this.src='https://placehold.co/420x300/f0f7f2/1a3a2a?text=MilkStore'">
+            <img class="hero-slide" src="~/images/anh.png" alt="Milk 2" onerror="this.src='https://placehold.co/420x300'">
             <img class="hero-slide" src="https://nhatlamgroup.vn/wp-content/uploads/2025/06/nguyen-lieu-san-xuat-sua-bot.jpg?x82073" alt="Milk 3" onerror="this.src='https://placehold.co/420x300'">
             <img class="hero-slide" src="https://dayphache.edu.vn/wp-content/uploads/2019/05/hinh-sua-chua-khong-dong-da.jpg" alt="Milk 4" onerror="this.src='https://placehold.co/420x300'">
             <div class="hero-dots">
@@ -352,60 +352,6 @@ else
     color: #1a3a2a;
 }
 
-.hero-slider {
-    position: relative;
-    width: 420px;
-    max-width: 100%;
-    border-radius: 20px;
-    overflow: hidden;
-    box-shadow: 0 24px 60px rgba(0,0,0,.3);
-}
-.hero-slide {
-    width: 100%; height: 300px;
-    object-fit: cover;
-    display: none;
-    border-radius: 20px;
-    animation: fadeIn .6s ease;
-}
-.hero-slide.active { display: block; }
-@@keyframes fadeIn {
-    from { opacity: 0; transform: scale(1.03); }
-    to   { opacity: 1; transform: scale(1); }
-}
-.hero-dots {
-    position: absolute; bottom: 12px; left: 50%;
-    transform: translateX(-50%);
-    display: flex; gap: 6px;
-}
-.hero-dot {
-    width: 8px; height: 8px; border-radius: 50%;
-    background: rgba(255,255,255,.5); cursor: pointer;
-    transition: background .2s, transform .2s;
-}
-.hero-dot.active {
-    background: #fff;
-    transform: scale(1.3);
-}
-.hero-img-badge2 {
-    position: absolute; top: 16px; right: -16px;
-    background: #1a3a2a; color: #fff;
-    border-radius: 14px;
-    padding: .75rem 1.1rem;
-    display: flex; align-items: center; gap: .6rem;
-    box-shadow: 0 8px 24px rgba(0,0,0,.2);
-}
-.badge-float {
-    animation: floatUp 3s ease-in-out infinite;
-}
-.badge-float2 {
-    animation: floatUp 3s ease-in-out infinite;
-    animation-delay: 1.5s;
-}
-@@keyframes floatUp {
-    0%, 100% { transform: translateY(0); }
-    50%       { transform: translateY(-8px); }
-}
-
 /* Stats */
 .stats-bar {
     background: #fff;
@@ -602,21 +548,4 @@ else
     .prd-grid { grid-template-columns: repeat(2,1fr) }
     .footer-grid { grid-template-columns: 1fr }
 }
-
-
 </style>
-<script>
-let slideIdx = 0;
-const slides = document.querySelectorAll('.hero-slide');
-const dots   = document.querySelectorAll('.hero-dot');
-
-function goSlide(n) {
-    slides[slideIdx].classList.remove('active');
-    dots[slideIdx].classList.remove('active');
-    slideIdx = n % slides.length;
-    slides[slideIdx].classList.add('active');
-    dots[slideIdx].classList.add('active');
-}
-
-setInterval(() => goSlide(slideIdx + 1), 3500);
-</script>
