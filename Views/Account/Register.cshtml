@@ -1,172 +1,260 @@
 @{
     ViewData["Title"] = "Đăng ký";
-    Layout = "~/Views/Shared/_Layout.cshtml";
+    Layout = null;
 }
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>Đăng ký — MilkStore</title>
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+body{font-family:'Nunito',sans-serif;min-height:100vh;display:flex;background:#f0f7f2}
+.auth-left{
+    flex:1;background:linear-gradient(145deg,#0f2018 0%,#1a3a2a 50%,#2d5a40 100%);
+    display:flex;flex-direction:column;align-items:center;justify-content:center;
+    padding:3rem 2rem;position:relative;overflow:hidden;
+}
+.auth-left::before{content:'';position:absolute;top:-80px;right:-80px;width:320px;height:320px;border-radius:50%;background:rgba(255,255,255,.04)}
+.auth-left::after{content:'';position:absolute;bottom:-100px;left:-60px;width:280px;height:280px;border-radius:50%;background:rgba(255,255,255,.03)}
+.brand-logo{display:flex;align-items:center;gap:.8rem;margin-bottom:2.5rem;z-index:1}
+.brand-logo img{width:54px;height:54px;border-radius:50%;border:3px solid rgba(255,255,255,.25)}
+.brand-logo span{font-size:1.6rem;font-weight:800;color:#fff;letter-spacing:-.5px}
+.auth-steps{z-index:1;width:100%;max-width:320px}
+.step-item{display:flex;align-items:flex-start;gap:1rem;margin-bottom:1.75rem;color:#fff}
+.step-num{
+    width:34px;height:34px;border-radius:50%;
+    background:rgba(255,255,255,.15);border:2px solid rgba(255,255,255,.3);
+    display:flex;align-items:center;justify-content:center;
+    font-size:.85rem;font-weight:800;flex-shrink:0;
+}
+.step-text h4{font-size:.95rem;font-weight:700;margin-bottom:.2rem}
+.step-text p{font-size:.8rem;opacity:.65;line-height:1.5}
+.auth-left-footer{z-index:1;margin-top:2rem;text-align:center}
+.auth-left-footer p{font-size:.8rem;color:rgba(255,255,255,.5)}
 
-<div class="auth-wrapper">
-    <div class="auth-left">
-        <div class="auth-left-content">
-            <img src="https://img3.stockfresh.com/files/b/butenkow/m/23/6363960_stock-vector-vector-milk-logo.jpg" alt="" style="width:60px; border-radius:50%;height:60px;margin-bottom:1.5rem">
-            <h2 style="font-size:1.8rem;font-weight:800;margin-bottom:.75rem">Tham gia MilkStore</h2>
-            <p style="opacity:.75;line-height:1.7;font-size:.95rem">Tạo tài khoản miễn phí để mua sắm dễ dàng, nhận ưu đãi và theo dõi đơn hàng của bạn.</p>
-            <div style="margin-top:2rem">
-                <div class="auth-feature-item">
-                    <img src="https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQN3P9DOqxXTMcI1ajNO1Y7PHLwFq4aQVIhLQ&s" alt="" style="width:18px;height:18px;border-radius:70%; filter:brightness(1);opacity:.8">
-                    <span>Ưu đãi thành viên mới 10%</span>
-                </div>
-                <div class="auth-feature-item">
-                    <img src="https://png.pngtree.com/png-clipart/20230919/original/pngtree-parcel-tracking-service-linear-icon-logo-clip-art-cargo-vector-png-image_12415351.png" alt="" style="width:18px;height:18px;border-radius:70%;filter:brightness(1);opacity:.8">
-                    <span>Theo dõi đơn hàng realtime</span>
-                </div>
-                <div class="auth-feature-item">
-                    <img src="https://cdn-icons-png.flaticon.com/512/3514/3514491.png" alt="" style="width:18px;height:18px;filter:brightness(10);opacity:.8">
-                    <span>Miễn phí giao hàng lần đầu</span>
-                </div>
+.auth-right{
+    width:520px;flex-shrink:0;display:flex;align-items:center;justify-content:center;
+    padding:2rem;background:#fff;overflow-y:auto;
+}
+.auth-form-wrap{width:100%;max-width:440px;padding:1rem 0}
+.auth-form-wrap h1{font-size:1.75rem;font-weight:800;color:#1a1a1a;margin-bottom:.4rem}
+.auth-form-wrap .sub{font-size:.9rem;color:#888;margin-bottom:1.5rem}
+.auth-form-wrap .sub a{color:#1a3a2a;font-weight:700;text-decoration:none}
+.auth-form-wrap .sub a:hover{text-decoration:underline}
+
+.social-row{display:flex;gap:.75rem;margin-bottom:1.25rem}
+.social-btn{
+    flex:1;display:flex;align-items:center;justify-content:center;gap:.5rem;
+    padding:.65rem;border-radius:12px;border:1.5px solid #e0e6ea;
+    font-size:.85rem;font-weight:700;cursor:pointer;
+    background:#fff;transition:all .2s;color:#333;
+}
+.social-btn:hover{background:#f8f9fb;border-color:#c0c8d0;transform:translateY(-1px)}
+.social-btn img{width:18px;height:18px}
+
+.divider{display:flex;align-items:center;gap:.75rem;margin-bottom:1.25rem}
+.divider::before,.divider::after{content:'';flex:1;height:1px;background:#e8ecef}
+.divider span{font-size:.8rem;color:#aaa;font-weight:600;white-space:nowrap}
+
+.field-grid{display:grid;grid-template-columns:1fr 1fr;gap:.85rem}
+.field{margin-bottom:.85rem}
+.field.full{grid-column:1/-1}
+.field label{display:block;font-size:.83rem;font-weight:700;color:#444;margin-bottom:.35rem}
+.field-wrap{position:relative}
+.field-wrap input{
+    width:100%;padding:.7rem 1rem;padding-right:2.6rem;
+    border:1.5px solid #e0e6ea;border-radius:12px;
+    font-size:.92rem;font-family:'Nunito',sans-serif;
+    color:#222;background:#fafbfc;transition:border-color .2s,background .2s;outline:none;
+}
+.field-wrap input:focus{border-color:#1a3a2a;background:#fff}
+.field-wrap input::placeholder{color:#bbb}
+.field-wrap input.error{border-color:#e74c3c}
+.field-wrap input.ok{border-color:#27ae60}
+.field-icon{position:absolute;right:.8rem;top:50%;transform:translateY(-50%);opacity:.4;cursor:pointer;font-size:.95rem}
+
+.err-box{
+    background:#fff0f0;border:1px solid #ffc5c5;border-radius:10px;
+    padding:.65rem 1rem;font-size:.85rem;color:#c0392b;
+    margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;
+}
+.pw-strength{height:4px;border-radius:4px;margin-top:.4rem;transition:all .3s;background:#e8ecef}
+.pw-strength.weak{background:#e74c3c;width:33%}
+.pw-strength.medium{background:#f39c12;width:66%}
+.pw-strength.strong{background:#27ae60;width:100%}
+.pw-hint{font-size:.75rem;color:#aaa;margin-top:.3rem}
+
+.terms{display:flex;align-items:flex-start;gap:.6rem;margin:.75rem 0 1rem;font-size:.83rem;color:#666;line-height:1.5}
+.terms input{margin-top:2px;accent-color:#1a3a2a;flex-shrink:0}
+.terms a{color:#1a3a2a;font-weight:700;text-decoration:none}
+
+.btn-submit{
+    width:100%;padding:.85rem;border:none;border-radius:12px;
+    background:linear-gradient(135deg,#1a3a2a,#2d5a40);
+    color:#fff;font-size:1rem;font-weight:800;cursor:pointer;
+    font-family:'Nunito',sans-serif;
+    transition:transform .2s,box-shadow .2s;
+}
+.btn-submit:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(26,58,42,.3)}
+
+@@media(max-width:900px){.field-grid{grid-template-columns:1fr}}
+@@media(max-width:768px){
+    body{flex-direction:column}
+    .auth-left{padding:1.5rem;min-height:auto}
+    .auth-steps{display:none}
+    .auth-right{width:100%;padding:1.5rem}
+}
+    </style>
+</head>
+<body>
+
+<div class="auth-left">
+    <div class="brand-logo">
+        <img src="https://img3.stockfresh.com/files/b/butenkow/m/23/6363960_stock-vector-vector-milk-logo.jpg" alt="MilkStore">
+        <span>MilkStore</span>
+    </div>
+    <div class="auth-steps">
+        <div class="step-item">
+            <div class="step-num">1</div>
+            <div class="step-text">
+                <h4>Tạo tài khoản miễn phí</h4>
+                <p>Chỉ mất 1 phút để đăng ký và bắt đầu mua sắm.</p>
+            </div>
+        </div>
+        <div class="step-item">
+            <div class="step-num">2</div>
+            <div class="step-text">
+                <h4>Khám phá sản phẩm</h4>
+                <p>Hàng trăm sản phẩm sữa chính hãng cho cả gia đình.</p>
+            </div>
+        </div>
+        <div class="step-item">
+            <div class="step-num">3</div>
+            <div class="step-text">
+                <h4>Giao hàng tận nơi</h4>
+                <p>Miễn phí ship cho đơn từ 300.000đ — nhanh chóng, tiện lợi.</p>
+            </div>
+        </div>
+        <div class="step-item">
+            <div class="step-num">🎁</div>
+            <div class="step-text">
+                <h4>Ưu đãi thành viên mới</h4>
+                <p>Giảm 10% cho đơn hàng đầu tiên khi đăng ký hôm nay!</p>
             </div>
         </div>
     </div>
-    <div class="auth-right">
-        <div class="auth-card">
-            <div class="auth-card-header">
-                <img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" alt="" style="width:28px;height:28px;opacity:.6">
-                <h1 class="auth-card-title">Tạo tài khoản</h1>
-            </div>
-
-            @if (ViewBag.Error != null)
-            {
-                <div class="auth-alert auth-alert-error">
-                    <img src="https://cdn-icons-png.flaticon.com/512/564/564619.png" alt="" style="width:16px;height:16px">
-                    @ViewBag.Error
-                </div>
-            }
-
-            <form method="post" asp-action="Register">
-                @Html.AntiForgeryToken()
-
-                <div class="form-group">
-                    <label class="form-label">
-                        <img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" alt="" style="width:14px;height:14px;opacity:.5">
-                        Họ và tên
-                    </label>
-                    <input type="text" name="fullName" class="form-control"
-                           placeholder="Nguyễn Văn A" required />
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">
-                        <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="" style="width:14px;height:14px;opacity:.5">
-                        Email
-                    </label>
-                    <input type="email" name="email" class="form-control"
-                           placeholder="email@example.com" required />
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">
-                        <img src="https://cdn-icons-png.flaticon.com/512/597/597177.png" alt="" style="width:14px;height:14px;opacity:.5">
-                        Số điện thoại
-                    </label>
-                    <input type="text" name="phone" class="form-control"
-                           placeholder="0901234567" />
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">
-                        <img src="https://cdn-icons-png.flaticon.com/512/3064/3064197.png" alt="" style="width:14px;height:14px;opacity:.5">
-                        Mật khẩu
-                    </label>
-                    <input type="password" name="password" class="form-control"
-                           placeholder="..." required />
-                </div>
-
-                <div class="form-group">
-                    <label class="form-label">
-                        <img src="https://cdn-icons-png.flaticon.com/512/3064/3064197.png" alt="" style="width:14px;height:14px;opacity:.5">
-                        Xác nhận mật khẩu
-                    </label>
-                    <input type="password" name="confirmPassword" class="form-control"
-                           placeholder="..." required />
-                </div>
-
-                <button type="submit" class="btn-auth-submit">
-                    <img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" alt="" style="width:16px;height:16px;filter:brightness(10)">
-                    Tạo tài khoản
-                </button>
-            </form>
-
-            <div class="auth-divider"><span>hoặc</span></div>
-
-            <p class="auth-switch">
-                Đã có tài khoản?
-                <a asp-action="Login">Đăng nhập </a>
-            </p>
-        </div>
+    <div class="auth-left-footer">
+        <p>Phù hợp cho bé sơ sinh · trẻ em · mẹ bầu · người lớn</p>
     </div>
 </div>
 
-<style>
-.auth-wrapper { min-height: 80vh; display: flex }
-.auth-left {
-    flex: 1; background: linear-gradient(135deg, #0f2018, #1a3a2a);
-    display: flex; align-items: center; justify-content: center;
-    padding: 3rem 3.5rem; color: #fff;
+<div class="auth-right">
+    <div class="auth-form-wrap">
+        <h1>Tạo tài khoản 🎉</h1>
+        <p class="sub">Đã có tài khoản? <a asp-controller="Account" asp-action="Login">Đăng nhập ngay</a></p>
+
+        <div class="social-row">
+            <button type="button" class="social-btn" onclick="alert('Tính năng đang phát triển!')">
+                <img src="https://cdn-icons-png.flaticon.com/512/2991/2991148.png" alt="Google">
+                Google
+            </button>
+            <button type="button" class="social-btn" onclick="alert('Tính năng đang phát triển!')">
+                <img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook">
+                Facebook
+            </button>
+        </div>
+
+        <div class="divider"><span>hoặc đăng ký bằng email</span></div>
+
+        @if (ViewBag.Error != null)
+        {
+            <div class="err-box">⚠️ @ViewBag.Error</div>
+        }
+
+        <form method="post" asp-action="Register" id="reg-form">
+            @Html.AntiForgeryToken()
+            <div class="field-grid">
+                <div class="field full">
+                    <label>Họ và tên *</label>
+                    <div class="field-wrap">
+                        <input type="text" name="fullName" placeholder="Nguyễn Văn A" required autocomplete="name"/>
+                        <span class="field-icon">👤</span>
+                    </div>
+                </div>
+                <div class="field full">
+                    <label>Email *</label>
+                    <div class="field-wrap">
+                        <input type="email" name="email" placeholder="email@example.com" required autocomplete="email"/>
+                        <span class="field-icon">📧</span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Số điện thoại</label>
+                    <div class="field-wrap">
+                        <input type="tel" name="phone" placeholder="0912 345 678" autocomplete="tel"/>
+                        <span class="field-icon">📱</span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Địa chỉ</label>
+                    <div class="field-wrap">
+                        <input type="text" name="address" placeholder="Hà Nội..." autocomplete="address-line1"/>
+                        <span class="field-icon">📍</span>
+                    </div>
+                </div>
+                <div class="field">
+                    <label>Mật khẩu *</label>
+                    <div class="field-wrap">
+                        <input type="password" name="password" id="pw1" placeholder="••••••••" required
+                               oninput="checkStrength(this.value)" autocomplete="new-password"/>
+                        <span class="field-icon" onclick="togglePw('pw1')">👁️</span>
+                    </div>
+                    <div class="pw-strength" id="pw-bar"></div>
+                    <div class="pw-hint" id="pw-hint">Tối thiểu 6 ký tự</div>
+                </div>
+                <div class="field">
+                    <label>Xác nhận mật khẩu *</label>
+                    <div class="field-wrap">
+                        <input type="password" name="confirmPassword" id="pw2" placeholder="••••••••" required
+                               oninput="checkMatch()" autocomplete="new-password"/>
+                        <span class="field-icon" onclick="togglePw('pw2')">👁️</span>
+                    </div>
+                </div>
+            </div>
+
+            <label class="terms">
+                <input type="checkbox" required/>
+                Tôi đồng ý với <a href="#">Điều khoản sử dụng</a> và <a href="#">Chính sách bảo mật</a> của MilkStore.
+            </label>
+
+            <button type="submit" class="btn-submit">Tạo tài khoản →</button>
+        </form>
+    </div>
+</div>
+
+<script>
+function togglePw(id){
+    const el = document.getElementById(id);
+    el.type = el.type === 'password' ? 'text' : 'password';
 }
-.auth-left-content { max-width: 360px }
-.auth-feature-item {
-    display: flex; align-items: center; gap: .6rem;
-    margin-bottom: .85rem; font-size: .9rem; opacity: .85;
+function checkStrength(val){
+    const bar = document.getElementById('pw-bar');
+    const hint = document.getElementById('pw-hint');
+    if (val.length === 0){ bar.className='pw-strength'; hint.textContent='Tối thiểu 6 ký tự'; return; }
+    const strong = val.length >= 8 && /[A-Z]/.test(val) && /[0-9]/.test(val);
+    const medium = val.length >= 6;
+    if (strong){ bar.className='pw-strength strong'; hint.textContent='✅ Mật khẩu mạnh'; hint.style.color='#27ae60'; }
+    else if (medium){ bar.className='pw-strength medium'; hint.textContent='⚠️ Trung bình — thêm chữ hoa và số'; hint.style.color='#f39c12'; }
+    else { bar.className='pw-strength weak'; hint.textContent='❌ Quá ngắn'; hint.style.color='#e74c3c'; }
 }
-.auth-right {
-    flex: 1; display: flex; align-items: center; justify-content: center;
-    padding: 3rem 2rem; background: #faf9f7;
+function checkMatch(){
+    const pw1 = document.getElementById('pw1').value;
+    const pw2 = document.getElementById('pw2');
+    pw2.className = pw2.value === pw1 ? 'ok' : pw2.value ? 'error' : '';
 }
-.auth-card {
-    background: #fff; border-radius: 20px; padding: 2.5rem;
-    width: 100%; max-width: 420px;
-    box-shadow: 0 8px 40px rgba(0,0,0,.08); border: 1px solid #f0ece4;
-}
-.auth-card-header { display: flex; align-items: center; gap: .65rem; margin-bottom: 1.5rem }
-.auth-card-title { font-size: 1.5rem; font-weight: 800; margin: 0; color: #111 }
-.auth-alert {
-    display: flex; align-items: center; gap: .5rem;
-    padding: .7rem 1rem; border-radius: 10px;
-    font-size: .88rem; margin-bottom: 1rem;
-}
-.auth-alert-error { background: #fce4ec; color: #c62828 }
-.form-group { margin-bottom: 1rem }
-.form-label {
-    display: flex; align-items: center; gap: .4rem;
-    font-size: .85rem; font-weight: 600; color: #444; margin-bottom: .35rem;
-}
-.form-control {
-    width: 100%; padding: .62rem .9rem;
-    border: 1.5px solid #e8e2d9; border-radius: 10px;
-    font-size: .92rem; outline: none; transition: border-color .2s, box-shadow .2s;
-    box-sizing: border-box; font-family: inherit; background: #faf9f7;
-}
-.form-control:focus {
-    border-color: #1a3a2a; box-shadow: 0 0 0 3px rgba(26,58,42,.1); background: #fff;
-}
-.btn-auth-submit {
-    width: 100%; padding: .8rem;
-    background: linear-gradient(135deg, #1a3a2a, #2d5a40);
-    color: #fff; border: none; border-radius: 10px;
-    font-size: 1rem; font-weight: 700; cursor: pointer; margin-top: .5rem;
-    display: flex; align-items: center; justify-content: center; gap: .5rem;
-    transition: transform .2s, box-shadow .2s;
-}
-.btn-auth-submit:hover { transform: translateY(-2px); box-shadow: 0 8px 20px rgba(26,58,42,.25) }
-.auth-divider {
-    text-align: center; margin: 1.25rem 0;
-    position: relative; color: #ccc; font-size: .82rem;
-}
-.auth-divider::before, .auth-divider::after {
-    content: ''; position: absolute; top: 50%;
-    width: calc(50% - 28px); height: 1px; background: #e8e2d9;
-}
-.auth-divider::before { left: 0 }
-.auth-divider::after { right: 0 }
-.auth-switch { text-align: center; font-size: .9rem; color: #777; margin: 0 }
-.auth-switch a { color: #1a3a2a; font-weight: 700 }
-@@media(max-width:768px) { .auth-left { display: none } .auth-right { padding: 2rem 1rem; min-height: 80vh } }
-</style>
+</script>
+</body>
+</html>
