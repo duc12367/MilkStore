@@ -309,8 +309,19 @@ if(toastEl){const msg=toastEl.dataset.message,type=toastEl.dataset.type;if(msg){
 
 // Chatbot — SignalR
 // Chatbot — SignalR
-const mbSid = localStorage.getItem('mb_sid') || Math.random().toString(36).slice(2);
-localStorage.setItem('mb_sid', mbSid);
+// Lấy userId từ session (null nếu chưa đăng nhập)
+const mbUserId = '@(Context.Session.GetInt32("UserId")?.ToString() ?? "")';
+
+let mbSid;
+if (mbUserId) {
+    // Đã đăng nhập → sessionId gắn với userId, lưu localStorage theo user
+    mbSid = 'user_' + mbUserId;
+    localStorage.setItem('mb_sid_user', mbSid);
+} else {
+    // Chưa đăng nhập → sessionId ngẫu nhiên, chỉ tồn tại trong tab hiện tại
+    mbSid = sessionStorage.getItem('mb_sid_guest') || ('guest_' + Math.random().toString(36).slice(2));
+    sessionStorage.setItem('mb_sid_guest', mbSid);
+}
 let mbOpen = false;
 let mbConn = null;
 
