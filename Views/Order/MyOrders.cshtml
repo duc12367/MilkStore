@@ -4,109 +4,181 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<div class="container mt-4" style="max-width:860px">
-    <h2 class="mb-4"> Đơn hàng của tôi</h2>
+<style>
+.orders-wrap{max-width:960px;margin:0 auto;padding:2rem 1rem}
+.orders-header{display:flex;align-items:center;gap:.75rem;margin-bottom:1.5rem}
+.orders-header h2{font-size:1.4rem;font-weight:700;color:#0f172a;margin:0}
+.order-count{background:#f0f9ff;color:#0ea5e9;border-radius:20px;padding:.2rem .75rem;font-size:.8rem;font-weight:700}
+.orders-layout{display:grid;grid-template-columns:1fr 340px;gap:1.25rem;align-items:start}
+.order-card{
+    background:#fff;border-radius:14px;border:1px solid #e2e8f0;
+    margin-bottom:.875rem;overflow:hidden;cursor:pointer;
+    transition:border-color .2s,box-shadow .2s;
+}
+.order-card:hover,.order-card.selected{border-color:#0ea5e9;box-shadow:0 0 0 3px rgba(14,165,233,.1)}
+.order-card-hdr{
+    padding:.875rem 1.25rem;
+    display:flex;justify-content:space-between;align-items:center;
+    border-bottom:1px solid #f1f5f9;
+}
+.order-id{font-weight:700;font-size:.92rem;color:#0f172a}
+.order-date{font-size:.78rem;color:#94a3b8;margin-top:.15rem}
+.order-items-row{padding:.75rem 1.25rem;display:flex;gap:.75rem;align-items:center}
+.order-item-img{
+    width:48px;height:48px;object-fit:cover;border-radius:8px;
+    border:1px solid #e2e8f0;flex-shrink:0;
+}
+.order-item-info{flex:1;min-width:0}
+.order-item-name{font-size:.85rem;font-weight:600;color:#374151;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.order-item-qty{font-size:.78rem;color:#94a3b8;margin-top:.1rem}
+.order-item-price{font-size:.88rem;font-weight:700;color:#0f172a;flex-shrink:0}
+.order-addr{
+    padding:.5rem 1.25rem;font-size:.8rem;color:#94a3b8;
+    display:flex;align-items:center;gap:.4rem;
+}
+.order-footer{
+    padding:.75rem 1.25rem;border-top:1px solid #f1f5f9;
+    display:flex;justify-content:space-between;align-items:center;
+}
+.order-total-label{font-size:.82rem;color:#94a3b8}
+.order-total-val{font-size:1rem;font-weight:700;color:#0ea5e9}
+
+.status-badge{display:inline-flex;align-items:center;gap:.3rem;padding:.3rem .8rem;border-radius:20px;font-size:.75rem;font-weight:700}
+.status-pending{background:#fef9c3;color:#854d0e}
+.status-paid{background:#dcfce7;color:#166534}
+.status-cancelled{background:#fee2e2;color:#991b1b}
+.status-shipping{background:#dbeafe;color:#1e40af}
+
+.detail-panel{
+    background:#fff;border-radius:14px;border:1px solid #e2e8f0;
+    position:sticky;top:80px;
+}
+.detail-panel-empty{
+    padding:3rem 1.5rem;text-align:center;color:#94a3b8;
+}
+.detail-panel-empty svg{width:48px;height:48px;margin-bottom:.75rem;opacity:.3}
+
+.empty-wrap{text-align:center;padding:5rem 2rem;color:#94a3b8}
+.empty-wrap svg{width:64px;height:64px;opacity:.2;margin-bottom:1rem}
+.empty-wrap h3{font-size:1.1rem;font-weight:600;color:#374151;margin-bottom:.5rem}
+.empty-wrap p{font-size:.88rem;margin-bottom:1.5rem}
+
+@@media(max-width:768px){
+    .orders-layout{grid-template-columns:1fr}
+    .detail-panel{display:none}
+}
+</style>
+
+<div class="orders-wrap">
+    <div class="orders-header">
+        <div style="width:36px;height:36px;border-radius:10px;background:linear-gradient(135deg,#0ea5e9,#06b6d4);display:flex;align-items:center;justify-content:center">
+            <svg viewBox="0 0 20 20" fill="white" style="width:18px;height:18px"><path d="M9 2a1 1 0 000 2h2a1 1 0 100-2H9z"/><path fill-rule="evenodd" d="M4 5a2 2 0 012-2 3 3 0 003 3h2a3 3 0 003-3 2 2 0 012 2v11a2 2 0 01-2 2H6a2 2 0 01-2-2V5zm3 4a1 1 0 000 2h.01a1 1 0 100-2H7zm3 0a1 1 0 000 2h3a1 1 0 100-2h-3zm-3 4a1 1 0 100 2h.01a1 1 0 100-2H7zm3 0a1 1 0 100 2h3a1 1 0 100-2h-3z" clip-rule="evenodd"/></svg>
+        </div>
+        <div>
+            <h2>Đơn hàng của tôi</h2>
+            <div style="font-size:.82rem;color:#94a3b8">Quản lý đơn hàng của bạn</div>
+        </div>
+        @if (Model.Any())
+        {
+            <span class="order-count">@Model.Count đơn hàng</span>
+        }
+    </div>
 
     @if (!Model.Any())
     {
-        <div class="empty-orders">
-            
-            <p>Bạn chưa có đơn hàng nào.</p>
-            <a asp-controller="Product" asp-action="Index" class="btn-shop">
+        <div class="empty-wrap">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-2.293 2.293c-.63.63-.184 1.707.707 1.707H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            <h3>Chưa có đơn hàng nào</h3>
+            <p>Hãy khám phá các sản phẩm sữa chất lượng của chúng mình!</p>
+            <a asp-controller="Product" asp-action="Index"
+               style="background:#0ea5e9;color:#fff;padding:.75rem 2rem;border-radius:10px;font-weight:700;text-decoration:none;display:inline-block">
                 Mua sắm ngay
             </a>
         </div>
     }
     else
     {
-        @foreach (var order in Model)
-        {
-            <div class="order-card">
-                <div class="order-header">
-                    <div>
-                        <span class="order-id">Đơn #@order.Id</span>
-                        <span class="order-date">
-                            @order.OrderDate.ToString("dd/MM/yyyy HH:mm")
-                        </span>
+        <div class="orders-layout">
+            <div id="order-list">
+                @foreach (var order in Model)
+                {
+                    var statusCls = order.Status?.ToLower() == "paid" ? "status-paid" :
+                                    order.Status?.ToLower() == "cancelled" ? "status-cancelled" :
+                                    order.Status?.ToLower() == "shipping" ? "status-shipping" : "status-pending";
+                    var statusLbl = order.Status?.ToLower() == "paid" ? "Đã giao hàng" :
+                                    order.Status?.ToLower() == "cancelled" ? "Đã hủy" :
+                                    order.Status?.ToLower() == "shipping" ? "Đang giao hàng" : "Đang đóng gói";
+                    <div class="order-card" onclick="selectOrder(@order.Id)" id="oc_@order.Id">
+                        <div class="order-card-hdr">
+                            <div>
+                                <div class="order-id">Đơn hàng #MS@order.Id.ToString("D11")</div>
+                                <div class="order-date">
+                                    <svg viewBox="0 0 20 20" fill="currentColor" style="width:11px;height:11px;display:inline;vertical-align:middle;margin-right:3px"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
+                                    @order.OrderDate.ToString("dd/MM/yyyy HH:mm")
+                                </div>
+                            </div>
+                            <span class="status-badge @statusCls">@statusLbl</span>
+                        </div>
+
+                        @foreach (var item in order.OrderItems.Take(2))
+                        {
+                            <div class="order-items-row">
+                                <img src="@(item.Product?.ImageUrl ?? "https://placehold.co/48x48/f0f4f8/94a3b8?text=SP")"
+                                     class="order-item-img"
+                                     onerror="this.src='https://placehold.co/48x48/f0f4f8/94a3b8?text=SP'"/>
+                                <div class="order-item-info">
+                                    <div class="order-item-name">@item.Product?.ProductName</div>
+                                    <div class="order-item-qty">Số lượng: @item.Quantity</div>
+                                </div>
+                                <div class="order-item-price">@String.Format("{0:N0}đ", item.PriceAtTime * item.Quantity)</div>
+                            </div>
+                        }
+                        @if (order.OrderItems.Count > 2)
+                        {
+                            <div style="padding:.3rem 1.25rem;font-size:.78rem;color:#94a3b8">+@(order.OrderItems.Count-2) sản phẩm khác</div>
+                        }
+
+                        <div class="order-addr">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" style="width:13px;height:13px;flex-shrink:0"><path stroke-linecap="round" stroke-linejoin="round" d="M17.657 16.657L13.414 20.9a1.998 1.998 0 01-2.827 0l-4.244-4.243a8 8 0 1111.314 0z"/><path stroke-linecap="round" stroke-linejoin="round" d="M15 11a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+                            @order.ShippingAddress
+                        </div>
+
+                        @if (order.Status?.ToLower() == "shipping")
+                        {
+                            <div style="margin:.5rem 1.25rem;padding:.5rem .875rem;background:#eff6ff;border-radius:8px;font-size:.78rem;color:#1d4ed8;display:flex;align-items:center;gap:.4rem">
+                                <svg viewBox="0 0 20 20" fill="currentColor" style="width:13px;height:13px"><path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z"/><path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z"/></svg>
+                                Dự kiến giao hàng: @order.OrderDate.AddDays(1).ToString("dd/MM/yyyy") - @order.OrderDate.AddDays(1).ToString("HH:00")
+                            </div>
+                        }
+
+                        <div class="order-footer">
+                            <div>
+                                <div class="order-total-label">Tổng cộng:</div>
+                                <div class="order-total-val">@String.Format("{0:N0}đ", order.TotalAmount)</div>
+                            </div>
+                            <a asp-action="Detail" asp-route-id="@order.Id"
+                               style="background:#f0f9ff;color:#0ea5e9;padding:.45rem 1rem;border-radius:8px;font-size:.82rem;font-weight:600;text-decoration:none">
+                                Xem chi tiết →
+                            </a>
+                        </div>
                     </div>
-                    <span class="status-badge status-@order.Status.ToLower()">
-                        @order.Status
-                    </span>
-                </div>
+                }
+            </div>
 
-                <div class="order-items-preview">
-                    @foreach (var item in order.OrderItems.Take(3))
-                    {
-                        <span class="item-chip">
-                            @item.Product?.ProductName
-                            (x@item.Quantity)
-                        </span>
-                    }
-                    @if (order.OrderItems.Count > 3)
-                    {
-                        <span class="item-chip more">
-                            +@(order.OrderItems.Count - 3) sản phẩm
-                        </span>
-                    }
-                </div>
-
-                <div class="order-footer">
-                    <span class="order-total">
-                        Tổng: <strong>
-                            @String.Format("{0:N0}đ", order.TotalAmount)
-                        </strong>
-                    </span>
-                    <a asp-action="Detail" asp-route-id="@order.Id"
-                       class="btn-detail">
-                        Xem chi tiết 
-                    </a>
+            <div class="detail-panel" id="detail-panel">
+                <div class="detail-panel-empty">
+                    <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+                    <div style="font-weight:600;color:#374151;margin-bottom:.4rem">Chọn đơn hàng</div>
+                    <div style="font-size:.83rem">Nhấn vào đơn hàng để xem chi tiết theo dõi</div>
                 </div>
             </div>
-        }
+        </div>
     }
 </div>
 
-<style>
-.empty-orders { text-align: center; padding: 4rem 0; color: #aaa; }
-.btn-shop {
-    display: inline-block; background: #8e24aa; color: #fff;
-    padding: .75rem 2rem; border-radius: 10px;
-    font-weight: 700; text-decoration: none; margin-top: 1rem;
+<script>
+function selectOrder(id) {
+    document.querySelectorAll('.order-card').forEach(c => c.classList.remove('selected'));
+    document.getElementById('oc_' + id)?.classList.add('selected');
 }
-.order-card {
-    background: #fff; border-radius: 12px;
-    box-shadow: 0 2px 10px rgba(0,0,0,0.07);
-    padding: 1.25rem; margin-bottom: 1rem;
-}
-.order-header {
-    display: flex; justify-content: space-between;
-    align-items: center; margin-bottom: .75rem;
-}
-.order-id { font-weight: 700; font-size: 1rem; margin-right: .75rem; }
-.order-date { font-size: .85rem; color: #999; }
-.status-badge {
-    padding: .3rem .85rem; border-radius: 20px;
-    font-size: .8rem; font-weight: 700;
-}
-.status-paid      { background: #e8f5e9; color: #2e7d32; }
-.status-pending   { background: #fff8e1; color: #f57f17; }
-.status-cancelled { background: #fce4ec; color: #c62828; }
-.order-items-preview {
-    display: flex; flex-wrap: wrap; gap: .4rem; margin-bottom: .85rem;
-}
-.item-chip {
-    background: #f3e5f5; color: #6a1b9a;
-    padding: .25rem .65rem; border-radius: 20px; font-size: .8rem;
-}
-.item-chip.more { background: #ede7f6; color: #512da8; }
-.order-footer {
-    display: flex; justify-content: space-between; align-items: center;
-    border-top: 1px solid #f3e5f5; padding-top: .85rem;
-}
-.order-total strong { color: #e91e8c; }
-.btn-detail {
-    background: #8e24aa; color: #fff; border-radius: 8px;
-    padding: .45rem 1.1rem; font-size: .88rem;
-    font-weight: 600; text-decoration: none;
-}
-</style>
+</script>

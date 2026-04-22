@@ -1,184 +1,303 @@
 <!DOCTYPE html>
 <html lang="vi">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>@ViewData["Title"] — Admin MilkStore</title>
-    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+    <title>@ViewData["Title"] — MilkStore Admin</title>
+    <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css"/>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <style>
-        *, *::before, *::after { box-sizing: border-box; }
-        body { margin: 0; background: #f4f6fb; font-family: 'Segoe UI', sans-serif; }
+*,*::before,*::after{box-sizing:border-box}
+body{margin:0;background:#f0f4f8;font-family:'Inter',sans-serif;font-size:14px;color:#1a202c}
 
-        .sidebar {
-            position: fixed; top: 0; left: 0;
-            width: 240px; height: 100vh;
-            background: linear-gradient(180deg,#1a0533 0%,#3d1070 100%);
-            color: #fff; display: flex; flex-direction: column; z-index: 100;
-        }
-        .sidebar-logo {
-            padding: 1.5rem 1.25rem; font-size: 1.2rem; font-weight: 700;
-            border-bottom: 1px solid rgba(255,255,255,.12);
-            display: flex; align-items: center; gap: .6rem;
-        }
-        .sidebar-menu { flex: 1; padding: 1rem 0; overflow-y: auto; }
-        .menu-label {
-            font-size: .7rem; text-transform: uppercase; letter-spacing: 1px;
-            color: rgba(255,255,255,.4); padding: .75rem 1.25rem .3rem;
-        }
-        .menu-item {
-            display: flex; align-items: center; gap: .75rem;
-            padding: .65rem 1.25rem; color: rgba(255,255,255,.75);
-            text-decoration: none; font-size: .93rem;
-            transition: all .2s; border-left: 3px solid transparent;
-        }
-        .menu-item:hover, .menu-item.active {
-            background: rgba(255,255,255,.1); color: #fff;
-            border-left-color: #e91e8c;
-        }
-        .menu-icon { font-size: 1.1rem; width: 20px; text-align: center; }
-        .sidebar-footer {
-            padding: 1rem 1.25rem; border-top: 1px solid rgba(255,255,255,.12);
-            font-size: .82rem; color: rgba(255,255,255,.5);
-        }
-        .main-wrap { margin-left: 240px; min-height: 100vh; }
-        .topbar {
-            background: #fff; padding: .85rem 1.5rem;
-            display: flex; align-items: center; justify-content: space-between;
-            box-shadow: 0 2px 8px rgba(0,0,0,.06);
-            position: sticky; top: 0; z-index: 50;
-        }
-        .topbar-title { font-size: 1.1rem; font-weight: 700; color: #333; }
-        .topbar-user { display: flex; align-items: center; gap: .6rem; font-size: .9rem; color: #555; }
-        .avatar-sm {
-            width: 32px; height: 32px;
-            background: linear-gradient(135deg,#8e24aa,#e91e8c);
-            border-radius: 50%; color: #fff;
-            display: flex; align-items: center; justify-content: center;
-            font-weight: 700; font-size: .85rem;
-        }
-        .page-content { padding: 1.5rem; }
-        .stat-card {
-            background: #fff; border-radius: 12px;
-            padding: 1.25rem 1.5rem;
-            box-shadow: 0 2px 12px rgba(0,0,0,.06);
-        }
-        .admin-card {
-            background: #fff; border-radius: 12px;
-            box-shadow: 0 2px 12px rgba(0,0,0,.06); overflow: hidden;
-            margin-bottom: 1.25rem;
-        }
-        .admin-card-header {
-            padding: 1rem 1.25rem; border-bottom: 1px solid #f0f0f0;
-            display: flex; align-items: center; justify-content: space-between;
-        }
-        .admin-card-header h5 { margin: 0; font-size: 1rem; font-weight: 700; }
-        .admin-table { width: 100%; border-collapse: collapse; font-size: .9rem; }
-        .admin-table th {
-            background: #faf5ff; padding: .75rem 1rem; text-align: left;
-            font-weight: 600; color: #555; font-size: .82rem;
-            text-transform: uppercase; letter-spacing: .5px;
-        }
-        .admin-table td { padding: .75rem 1rem; border-top: 1px solid #f5f5f5; vertical-align: middle; }
-        .admin-table tr:hover td { background: #fdfaff; }
-        .badge-paid      { background:#e8f5e9; color:#2e7d32; }
-        .badge-pending   { background:#fff8e1; color:#f57f17; }
-        .badge-cancelled { background:#fce4ec; color:#c62828; }
-        .status-pill { padding: .25rem .75rem; border-radius: 20px; font-size: .78rem; font-weight: 700; }
-        .btn-admin {
-            padding: .45rem 1rem; border-radius: 8px; font-size: .85rem;
-            font-weight: 600; text-decoration: none; border: none; cursor: pointer;
-            display: inline-block;
-        }
-        .btn-primary-admin { background: #8e24aa; color: #fff !important; }
-        .btn-primary-admin:hover { background: #6a1b9a; }
-        .btn-danger-admin  { background: #fce4ec; color: #c62828; }
-        .btn-warning-admin { background: #fff8e1; color: #f57f17; }
-        .toast-success {
-            background: #e8f5e9; color: #1b5e20; padding: .65rem 1rem;
-            border-radius: 8px; margin-bottom: 1rem; font-size: .9rem;
-            border-left: 4px solid #43a047;
-        }
-        .form-label { display: block; font-size: .875rem; font-weight: 600; color: #555; margin-bottom: .3rem; }
-        .form-ctrl {
-            width: 100%; padding: .6rem .9rem; border: 1.5px solid #e0e0e0;
-            border-radius: 8px; font-size: .95rem; box-sizing: border-box; transition: border-color .2s;
-        }
-        .form-ctrl:focus { outline: none; border-color: #8e24aa; }
+/* Top brand bar */
+.brand-bar{
+    background:#fff;padding:.75rem 1.5rem;
+    display:flex;align-items:center;justify-content:space-between;
+    border-bottom:1px solid #e2e8f0;
+}
+.brand-bar-left{display:flex;align-items:center;gap:.75rem}
+.brand-icon{
+    width:36px;height:36px;border-radius:10px;
+    background:linear-gradient(135deg,#0ea5e9,#06b6d4);
+    display:flex;align-items:center;justify-content:center;flex-shrink:0;
+}
+.brand-icon img{width:22px;height:22px;border-radius:50%;object-fit:cover}
+.brand-name{font-size:1rem;font-weight:700;color:#0f172a}
+.brand-sub{font-size:.75rem;color:#94a3b8}
+.brand-bar-right{display:flex;align-items:center;gap:.75rem;font-size:.85rem;color:#64748b}
+.date-badge{
+    background:#f1f5f9;border-radius:8px;padding:.3rem .7rem;
+    font-size:.78rem;color:#475569;font-weight:500;display:flex;align-items:center;gap:.4rem;
+}
+
+/* Nav tabs */
+.nav-bar{
+    background:#fff;border-bottom:1px solid #e2e8f0;
+    padding:0 1.5rem;display:flex;gap:0;
+    position:sticky;top:0;z-index:100;
+}
+.nav-tab{
+    display:flex;align-items:center;gap:.5rem;
+    padding:.875rem 1.1rem;font-size:.85rem;font-weight:500;
+    color:#64748b;text-decoration:none;border-bottom:2px solid transparent;
+    transition:all .15s;white-space:nowrap;
+}
+.nav-tab:hover{color:#0ea5e9;background:#f8fafc}
+.nav-tab.active{color:#0ea5e9;border-bottom-color:#0ea5e9;font-weight:600}
+.nav-tab svg{width:16px;height:16px;flex-shrink:0}
+
+/* Page */
+.page-wrap{padding:1.5rem;max-width:1400px;margin:0 auto}
+.page-title{font-size:1.25rem;font-weight:700;color:#0f172a;margin-bottom:.25rem}
+.page-sub{font-size:.83rem;color:#94a3b8;margin-bottom:1.25rem}
+
+/* Cards */
+.card{background:#fff;border-radius:14px;border:1px solid #e2e8f0;overflow:hidden}
+.card-header{
+    padding:1rem 1.25rem;border-bottom:1px solid #f1f5f9;
+    display:flex;align-items:center;justify-content:space-between;
+}
+.card-header h5{margin:0;font-size:.95rem;font-weight:600;color:#0f172a}
+.card-body{padding:1.25rem}
+
+/* Stat cards */
+.stat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:1rem;margin-bottom:1.25rem}
+.stat-card{
+    background:#fff;border-radius:14px;border:1px solid #e2e8f0;
+    padding:1.25rem;position:relative;overflow:hidden;
+}
+.stat-card::after{
+    content:'';position:absolute;top:-20px;right:-20px;
+    width:80px;height:80px;border-radius:50%;opacity:.06;
+}
+.stat-card.blue::after{background:#0ea5e9}
+.stat-card.green::after{background:#10b981}
+.stat-card.purple::after{background:#8b5cf6}
+.stat-card.pink::after{background:#ec4899}
+.stat-change{
+    display:inline-flex;align-items:center;gap:.2rem;
+    font-size:.72rem;font-weight:600;padding:.15rem .5rem;border-radius:6px;
+    margin-bottom:.6rem;
+}
+.stat-change.up{background:#dcfce7;color:#16a34a}
+.stat-change.down{background:#fee2e2;color:#dc2626}
+.stat-label{font-size:.78rem;color:#94a3b8;margin-bottom:.3rem;font-weight:500;text-transform:uppercase;letter-spacing:.4px}
+.stat-val{font-size:1.7rem;font-weight:700;color:#0f172a;line-height:1.2}
+.stat-icon-wrap{
+    position:absolute;top:1rem;right:1rem;width:40px;height:40px;
+    border-radius:10px;display:flex;align-items:center;justify-content:center;
+}
+.stat-icon-wrap.blue{background:#eff6ff}
+.stat-icon-wrap.green{background:#f0fdf4}
+.stat-icon-wrap.purple{background:#faf5ff}
+.stat-icon-wrap.pink{background:#fdf2f8}
+.stat-icon-wrap svg{width:20px;height:20px}
+
+/* Table */
+.tbl{width:100%;border-collapse:collapse;font-size:.86rem}
+.tbl th{
+    background:#f8fafc;padding:.7rem 1rem;text-align:left;
+    font-weight:600;color:#64748b;font-size:.75rem;
+    text-transform:uppercase;letter-spacing:.5px;border-bottom:1px solid #e2e8f0;
+}
+.tbl td{padding:.75rem 1rem;border-bottom:1px solid #f1f5f9;vertical-align:middle;color:#374151}
+.tbl tr:last-child td{border-bottom:none}
+.tbl tr:hover td{background:#fafbff}
+
+/* Badges */
+.badge{display:inline-flex;align-items:center;gap:.3rem;padding:.25rem .7rem;border-radius:20px;font-size:.75rem;font-weight:600}
+.badge-pending{background:#fef9c3;color:#854d0e}
+.badge-paid{background:#dcfce7;color:#166534}
+.badge-cancelled{background:#fee2e2;color:#991b1b}
+.badge-shipping{background:#dbeafe;color:#1e40af}
+.badge-admin{background:#ede9fe;color:#5b21b6}
+.badge-user{background:#f0f9ff;color:#0369a1}
+.badge-low{background:#fef3c7;color:#92400e}
+
+/* Buttons */
+.btn{
+    display:inline-flex;align-items:center;gap:.4rem;
+    padding:.5rem 1rem;border-radius:8px;font-size:.83rem;
+    font-weight:600;border:none;cursor:pointer;text-decoration:none;
+    transition:all .15s;font-family:'Inter',sans-serif;
+}
+.btn-primary{background:#0ea5e9;color:#fff}
+.btn-primary:hover{background:#0284c7;color:#fff}
+.btn-success{background:#10b981;color:#fff}
+.btn-success:hover{background:#059669;color:#fff}
+.btn-danger{background:#fee2e2;color:#dc2626}
+.btn-danger:hover{background:#fecaca;color:#dc2626}
+.btn-warning{background:#fef3c7;color:#d97706}
+.btn-warning:hover{background:#fde68a;color:#d97706}
+.btn-ghost{background:#f1f5f9;color:#475569}
+.btn-ghost:hover{background:#e2e8f0;color:#334155}
+.btn-sm{padding:.35rem .7rem;font-size:.78rem}
+
+/* Form */
+.form-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.form-group{margin-bottom:1rem}
+.form-group.full{grid-column:1/-1}
+.form-label{display:block;font-size:.82rem;font-weight:600;color:#374151;margin-bottom:.35rem}
+.form-label span{color:#ef4444;margin-left:2px}
+.form-ctrl{
+    width:100%;padding:.65rem .9rem;border:1.5px solid #e2e8f0;
+    border-radius:10px;font-size:.9rem;font-family:'Inter',sans-serif;
+    color:#1a202c;background:#fff;transition:border-color .2s;outline:none;
+}
+.form-ctrl:focus{border-color:#0ea5e9;box-shadow:0 0 0 3px rgba(14,165,233,.1)}
+.form-ctrl::placeholder{color:#cbd5e1}
+select.form-ctrl{cursor:pointer}
+
+/* Search */
+.search-wrap{
+    display:flex;align-items:center;gap:.5rem;
+    background:#f8fafc;border:1.5px solid #e2e8f0;border-radius:10px;
+    padding:.5rem 1rem;transition:border-color .2s;
+}
+.search-wrap:focus-within{border-color:#0ea5e9;background:#fff}
+.search-wrap svg{width:16px;height:16px;color:#94a3b8;flex-shrink:0}
+.search-wrap input{border:none;background:transparent;outline:none;font-size:.86rem;font-family:'Inter',sans-serif;width:100%;color:#1a202c}
+
+/* Upload zone */
+.upload-zone{
+    border:2px dashed #cbd5e1;border-radius:12px;padding:2.5rem;
+    text-align:center;cursor:pointer;transition:all .2s;background:#fafbfc;
+}
+.upload-zone:hover{border-color:#0ea5e9;background:#f0f9ff}
+.upload-zone input{display:none}
+
+/* Avatar */
+.avatar{
+    width:36px;height:36px;border-radius:50%;
+    background:linear-gradient(135deg,#0ea5e9,#8b5cf6);
+    color:#fff;display:flex;align-items:center;justify-content:center;
+    font-weight:700;font-size:.85rem;flex-shrink:0;
+}
+
+/* Toast */
+.toast-box{
+    background:#f0fdf4;border:1px solid #bbf7d0;border-left:4px solid #16a34a;
+    border-radius:10px;padding:.75rem 1rem;font-size:.86rem;color:#166534;
+    margin-bottom:1rem;display:flex;align-items:center;gap:.5rem;
+}
+.toast-err{background:#fef2f2;border-color:#fecaca;border-left-color:#dc2626;color:#991b1b}
+
+/* Tabs filter */
+.filter-tabs{display:flex;gap:.4rem;flex-wrap:wrap}
+.filter-tab{
+    padding:.4rem .9rem;border-radius:20px;font-size:.8rem;font-weight:600;
+    border:none;cursor:pointer;transition:all .15s;text-decoration:none;
+}
+.filter-tab.active{background:#0ea5e9;color:#fff}
+.filter-tab:not(.active){background:#f1f5f9;color:#64748b}
+.filter-tab:not(.active):hover{background:#e2e8f0;color:#334155}
+
+/* Logout btn */
+.logout-btn{
+    background:none;border:none;color:#ef4444;cursor:pointer;
+    font-size:.82rem;font-weight:600;font-family:'Inter',sans-serif;padding:.3rem .6rem;border-radius:6px;
+}
+.logout-btn:hover{background:#fee2e2}
+
+@@media(max-width:768px){
+    .stat-grid{grid-template-columns:1fr 1fr}
+    .form-grid{grid-template-columns:1fr}
+    .nav-bar{overflow-x:auto}
+}
+@@media(max-width:480px){
+    .stat-grid{grid-template-columns:1fr}
+    .page-wrap{padding:1rem}
+}
     </style>
 </head>
 <body>
 
-<aside class="sidebar">
-    <div class="sidebar-logo">
-    <img src="https://img3.stockfresh.com/files/b/butenkow/m/23/6363960_stock-vector-vector-milk-logo.jpg" 
-         alt="logo" 
-         style="width:70px; height:70px; border-radius:50%; margin-right:8px; vertical-align:middle;">
-    <span>MilkStore Admin</span>
-</div>
-    <nav class="sidebar-menu">
-        <div class="menu-label">Tổng quan</div>
-        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index"
-           class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Dashboard" ? "active" : "")">
-            <span class="menu-icon"></span> Dashboard
-        </a>
-
-        <div class="menu-label">Quản lý</div>
-        <a asp-area="Admin" asp-controller="Product" asp-action="Index"
-           class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Product" ? "active" : "")">
-            <span class="menu-icon"></span> Sản phẩm
-        </a>
-        <a asp-area="Admin" asp-controller="Order" asp-action="Index"
-           class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "Order" ? "active" : "")">
-            <span class="menu-icon"></span> Đơn hàng
-        </a>
-        <a asp-area="Admin" asp-controller="User" asp-action="Index"
-           class="menu-item @(ViewContext.RouteData.Values["controller"]?.ToString() == "User" ? "active" : "")">
-            <span class="menu-icon"></span> Người dùng
-        </a>
-
-        <div class="menu-label">Chăm sóc khách hàng</div>
-        <a asp-area="Admin" asp-controller="Dashboard" asp-action="Chat"
-           class="menu-item @(ViewContext.RouteData.Values["action"]?.ToString() == "Chat" ? "active" : "")">
-            <span class="menu-icon">💬</span> Chat khách hàng
-        </a>
-
-        <div class="menu-label">Hệ thống</div>
-        <a asp-area="" asp-controller="Home" asp-action="Index" class="menu-item">
-            <span class="menu-icon"></span> Về trang chủ
-        </a>
-    </nav>
-    <div class="sidebar-footer">
-        @Context.Session.GetString("FullName")
-    </div>
-</aside>
-
-<div class="main-wrap">
-    <div class="topbar">
-        <div class="topbar-title">@ViewData["Title"]</div>
-        <div class="topbar-user">
-            <div class="avatar-sm">
-                @Context.Session.GetString("FullName")?.Substring(0,1).ToUpper()
-            </div>
-            <span>@Context.Session.GetString("FullName")</span>
-            <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
-                @Html.AntiForgeryToken()
-                <button type="submit"
-                        style="background:none;border:none;color:#e53935;
-                               cursor:pointer;font-size:.85rem;font-weight:600">
-                    Đăng xuất
-                </button>
-            </form>
+<!-- Brand bar -->
+<div class="brand-bar">
+    <div class="brand-bar-left">
+        <div class="brand-icon">
+            <img src="https://img3.stockfresh.com/files/b/butenkow/m/23/6363960_stock-vector-vector-milk-logo.jpg" alt="logo">
+        </div>
+        <div>
+            <div class="brand-name">MilkStore Admin</div>
+            <div class="brand-sub">Hệ thống quản lý cửa hàng</div>
         </div>
     </div>
-
-    <div class="page-content">
-        @RenderBody()
+    <div class="brand-bar-right">
+        <div class="date-badge">
+            <svg viewBox="0 0 20 20" fill="currentColor" style="width:13px;height:13px"><path fill-rule="evenodd" d="M6 2a1 1 0 00-1 1v1H4a2 2 0 00-2 2v10a2 2 0 002 2h12a2 2 0 002-2V6a2 2 0 00-2-2h-1V3a1 1 0 10-2 0v1H7V3a1 1 0 00-1-1zm0 5a1 1 0 000 2h8a1 1 0 100-2H6z" clip-rule="evenodd"/></svg>
+            @DateTime.Now.ToString("dd 'Tháng' MM, yyyy")
+        </div>
+        <div class="avatar" style="width:30px;height:30px;font-size:.78rem">
+            @Context.Session.GetString("FullName")?.Substring(0,1).ToUpper()
+        </div>
+        <span style="font-weight:500;color:#374151">@Context.Session.GetString("FullName")</span>
+        <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+            @Html.AntiForgeryToken()
+            <button type="submit" class="logout-btn">Đăng xuất</button>
+        </form>
     </div>
+</div>
+
+<!-- Nav tabs -->
+<nav class="nav-bar">
+    <a asp-area="Admin" asp-controller="Product" asp-action="Index"
+       class="nav-tab @(ViewContext.RouteData.Values["controller"]?.ToString()=="Product" && ViewContext.RouteData.Values["action"]?.ToString()!="Create" && ViewContext.RouteData.Values["action"]?.ToString()!="Edit" ? "active" : "")">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
+        Quản lý kho
+    </a>
+    <a asp-area="Admin" asp-controller="Product" asp-action="Create"
+       class="nav-tab @(ViewContext.RouteData.Values["action"]?.ToString()=="Create" || ViewContext.RouteData.Values["action"]?.ToString()=="Edit" ? "active" : "")">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4v16m8-8H4"/></svg>
+        Thêm sản phẩm
+    </a>
+    <a asp-area="Admin" asp-controller="Dashboard" asp-action="Index"
+       class="nav-tab @(ViewContext.RouteData.Values["controller"]?.ToString()=="Dashboard" && ViewContext.RouteData.Values["action"]?.ToString()=="Index" ? "active" : "")">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 19v-6a2 2 0 00-2-2H5a2 2 0 00-2 2v6a2 2 0 002 2h2a2 2 0 002-2zm0 0V9a2 2 0 012-2h2a2 2 0 012 2v10m-6 0a2 2 0 002 2h2a2 2 0 002-2m0 0V5a2 2 0 012-2h2a2 2 0 012 2v14a2 2 0 01-2 2h-2a2 2 0 01-2-2z"/></svg>
+        Dashboard
+    </a>
+    <a asp-area="Admin" asp-controller="Order" asp-action="Index"
+       class="nav-tab @(ViewContext.RouteData.Values["controller"]?.ToString()=="Order" ? "active" : "")">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+        Hóa đơn
+    </a>
+    <a asp-area="Admin" asp-controller="User" asp-action="Index"
+       class="nav-tab @(ViewContext.RouteData.Values["controller"]?.ToString()=="User" ? "active" : "")">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+        Người dùng
+    </a>
+    <a asp-area="Admin" asp-controller="Dashboard" asp-action="Chat"
+       class="nav-tab @(ViewContext.RouteData.Values["action"]?.ToString()=="Chat" ? "active" : "")">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M8 12h.01M12 12h.01M16 12h.01M21 12c0 4.418-4.03 8-9 8a9.863 9.863 0 01-4.255-.949L3 20l1.395-3.72C3.512 15.042 3 13.574 3 12c0-4.418 4.03-8 9-8s9 3.582 9 8z"/></svg>
+        Chat khách hàng
+    </a>
+    <a asp-area="" asp-controller="Home" asp-action="Index" class="nav-tab" style="margin-left:auto">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/></svg>
+        Trang chủ
+    </a>
+</nav>
+
+<div class="page-wrap">
+    @if (TempData["Success"] != null)
+    {
+        <div class="toast-box">
+            <svg viewBox="0 0 20 20" fill="currentColor" style="width:16px;height:16px"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+            @TempData["Success"]
+        </div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="toast-box toast-err">
+            <svg viewBox="0 0 20 20" fill="currentColor" style="width:16px;height:16px"><path fill-rule="evenodd" d="M18 10a8 8 0 11-16 0 8 8 0 0116 0zm-7 4a1 1 0 11-2 0 1 1 0 012 0zm-1-9a1 1 0 00-1 1v4a1 1 0 102 0V6a1 1 0 00-1-1z" clip-rule="evenodd"/></svg>
+            @TempData["Error"]
+        </div>
+    }
+    @RenderBody()
 </div>
 
 <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/Chart.js/4.4.1/chart.umd.min.js"></script>
-
 @RenderSection("Scripts", required: false)
 </body>
 </html>

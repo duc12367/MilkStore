@@ -3,46 +3,72 @@
     ViewData["Title"] = "Quản lý người dùng";
 }
 
-<div class="admin-card">
-    <div class="admin-card-header">
-        <h5> Danh sách người dùng</h5>
-        <span style="font-size:.85rem;color:#999">Tổng: @Model.Count người dùng</span>
+<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem">
+    <div>
+        <div class="page-title">Quản lý người dùng</div>
+        <div class="page-sub">Phân quyền và quản lý tài khoản người dùng</div>
     </div>
+</div>
 
-    <table class="admin-table">
-        <thead>
-            <tr>
-                <th>ID</th><th>Họ tên</th><th>Email</th>
-                <th>Điện thoại</th><th>Địa chỉ</th><th>Vai trò</th>
-            </tr>
-        </thead>
-        <tbody>
-            @foreach (var u in Model)
-            {
-                <tr>
-                    <td style="color:#999">#@u.Id</td>
-                    <td>
-                        <div style="display:flex;align-items:center;gap:.6rem">
-                            <div style="width:32px;height:32px;border-radius:50%;
-                                        background:linear-gradient(135deg,#8e24aa,#e91e8c);
-                                        color:#fff;display:flex;align-items:center;
-                                        justify-content:center;font-weight:700;
-                                        font-size:.85rem;flex-shrink:0">
-                                @u.FullName.Substring(0,1).ToUpper()
-                            </div>
-                            <strong>@u.FullName</strong>
+<!-- Search + filter -->
+<div class="card" style="margin-bottom:1.25rem">
+    <div class="card-body" style="padding:.875rem 1.25rem;display:flex;gap:.75rem;align-items:center;flex-wrap:wrap">
+        <div class="search-wrap" style="flex:1;min-width:220px">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
+            <input type="text" placeholder="Tìm kiếm theo tên, email..." />
+        </div>
+        <div class="filter-tabs">
+            <button class="filter-tab active">Tất cả</button>
+            <button class="filter-tab">Khách hàng</button>
+            <button class="filter-tab">Nhân viên</button>
+            <button class="filter-tab">Admin</button>
+        </div>
+    </div>
+</div>
+
+<!-- User cards -->
+<div style="display:flex;flex-direction:column;gap:.75rem">
+    @foreach (var u in Model)
+    {
+        var roleLabel = u.RoleId == 1 ? "Quản trị viên" : u.RoleId == 2 ? "Khách hàng" : "Nhân viên kho";
+        var roleStyle = u.RoleId == 1 ? "background:#dcfce7;color:#166534" :
+                        u.RoleId == 2 ? "background:#f0f9ff;color:#0369a1" : "background:#faf5ff;color:#5b21b6";
+        var initials = u.FullName?.Length > 0 ? u.FullName.Substring(0, 1).ToUpper() : "?";
+        <div class="card">
+            <div style="padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem">
+                <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#8b5cf6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;flex-shrink:0">
+                    @initials
+                </div>
+                <div style="flex:1;min-width:0">
+                    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.3rem">
+                        <span style="font-weight:600;font-size:.95rem;color:#0f172a">@u.FullName</span>
+                        <span class="badge" style="@roleStyle">@roleLabel</span>
+                    </div>
+                    <div style="font-size:.82rem;color:#94a3b8">@u.Email</div>
+                    <div style="display:grid;grid-template-columns:repeat(3,auto);gap:1.5rem;margin-top:.6rem">
+                        <div>
+                            <span style="font-size:.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px">Mã người dùng</span>
+                            <div style="font-size:.85rem;font-weight:600;color:#374151">U@u.Id.ToString("D3")</div>
                         </div>
-                    </td>
-                    <td>@u.Email</td>
-                    <td>@(u.Phone ?? "—")</td>
-                    <td style="font-size:.85rem;color:#888">@(u.Address ?? "—")</td>
-                    <td>
-                        <span class="status-pill @(u.RoleId == 1 ? "badge-cancelled" : "badge-paid")">
-                            @(u.RoleId == 1 ? " Admin" : " User")
-                        </span>
-                    </td>
-                </tr>
-            }
-        </tbody>
-    </table>
+                        <div>
+                            <span style="font-size:.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px">Điện thoại</span>
+                            <div style="font-size:.85rem;color:#374151">@(u.Phone ?? "—")</div>
+                        </div>
+                        <div>
+                            <span style="font-size:.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px">Trạng thái</span>
+                            <div style="font-size:.85rem;color:#10b981;font-weight:600">Đang hoạt động</div>
+                        </div>
+                    </div>
+                </div>
+                <div style="display:flex;gap:.4rem;flex-shrink:0">
+                    <button class="btn btn-ghost btn-sm">
+                        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
+                    </button>
+                    <button class="btn btn-danger btn-sm" onclick="return confirm('Xóa người dùng này?')">
+                        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
+                    </button>
+                </div>
+            </div>
+        </div>
+    }
 </div>
