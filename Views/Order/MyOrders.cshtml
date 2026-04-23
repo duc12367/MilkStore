@@ -120,11 +120,9 @@
                     var statusLbl = order.Status?.ToLower() == "paid" ? "Đã giao hàng" :
                                     order.Status?.ToLower() == "cancelled" ? "Đã hủy" :
                                     order.Status?.ToLower() == "shipping" ? "Đang giao hàng" : "Đang đóng gói";
-                    // ✅ FIX 1: Bọc trong @(...) để Razor không bị lỗi
                     <div class="order-card" onclick="selectOrder(@(order.Id))" id="oc_@(order.Id)">
                         <div class="order-card-hdr">
                             <div>
-                                {{!-- ✅ FIX 2: Bọc trong @(...) thay vì @order.Id.ToString("D11") --}}
                                 <div class="order-id">Đơn hàng #MS@(order.Id.ToString("D11"))</div>
                                 <div class="order-date">
                                     <svg viewBox="0 0 20 20" fill="currentColor" style="width:11px;height:11px;display:inline;vertical-align:middle;margin-right:3px"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm1-12a1 1 0 10-2 0v4a1 1 0 00.293.707l2.828 2.829a1 1 0 101.415-1.415L11 9.586V6z" clip-rule="evenodd"/></svg>
@@ -176,7 +174,6 @@
                                 <div class="order-total-val">@String.Format("{0:N0}đ", order.TotalAmount)</div>
                             </div>
                             <div style="display:flex;gap:.5rem;align-items:center" onclick="event.stopPropagation()">
-                                {{!-- ✅ FIX 4: Nút hủy đơn chỉ hiện khi đơn Pending --}}
                                 @if (order.Status?.ToLower() == "pending")
                                 {
                                     <form asp-controller="Order" asp-action="CancelOrder" method="post"
@@ -199,7 +196,6 @@
                 }
             </div>
 
-            {{!-- ✅ FIX 5: Panel chi tiết đơn bên phải hiển thị đúng khi click --}}
             <div class="detail-panel" id="detail-panel">
                 <div class="detail-panel-empty" id="detail-empty">
                     <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1"><path stroke-linecap="round" stroke-linejoin="round" d="M20 7l-8-4-8 4m16 0l-8 4m8-4v10l-8 4m0-10L4 7m8 4v10M4 7v10l8 4"/></svg>
