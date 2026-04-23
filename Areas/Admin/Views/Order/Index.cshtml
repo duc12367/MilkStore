@@ -14,9 +14,15 @@
 <div class="filter-tabs" style="margin-bottom:1.25rem">
     @{
         var statuses = new[] {
-            ("", "Tất cả"),("Pending","Chờ duyệt"),("Paid","Đã duyệt"),("Cancelled","Từ chối")
+            ("", "Tất cả"),("Pending","Chờ duyệt"),("Paid","Đã duyệt"),("Shipping","Đang giao"),("Cancelled","Từ chối")
         };
-        var counts = new[] { Model.Count, Model.Count(o => o.Status == "Pending"), Model.Count(o => o.Status == "Paid"), Model.Count(o => o.Status == "Cancelled") };
+        var counts = new[] {
+            Model.Count,
+            Model.Count(o => o.Status == "Pending"),
+            Model.Count(o => o.Status == "Paid"),
+            Model.Count(o => o.Status == "Shipping"),
+            Model.Count(o => o.Status == "Cancelled")
+        };
         int si = 0;
     }
     @foreach (var (val, label) in statuses)
@@ -33,29 +39,39 @@
     }
 </div>
 
+@if (!Model.Any())
+{
+    <div style="text-align:center;padding:4rem;color:#94a3b8">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1" style="width:56px;height:56px;opacity:.25;margin-bottom:1rem"><path stroke-linecap="round" stroke-linejoin="round" d="M9 5H7a2 2 0 00-2 2v10a2 2 0 002 2h8a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2" /></svg>
+        <div style="font-weight:600;color:#374151">Không có đơn hàng nào</div>
+    </div>
+}
+
 <!-- Order cards -->
 <div style="display:flex;flex-direction:column;gap:.75rem">
     @foreach (var o in Model)
     {
         var statusClass = o.Status?.ToLower() == "paid" ? "badge-paid" :
-                          o.Status?.ToLower() == "cancelled" ? "badge-cancelled" : "badge-pending";
+                          o.Status?.ToLower() == "cancelled" ? "badge-cancelled" :
+                          o.Status?.ToLower() == "shipping" ? "badge-shipping" : "badge-pending";
         var statusLabel = o.Status?.ToLower() == "paid" ? "Đã duyệt" :
-                          o.Status?.ToLower() == "cancelled" ? "Từ chối" : "Chờ duyệt";
+                          o.Status?.ToLower() == "cancelled" ? "Từ chối" :
+                          o.Status?.ToLower() == "shipping" ? "Đang giao" : "Chờ duyệt";
         <div class="card">
             <div style="padding:1rem 1.25rem">
                 <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:.875rem">
                     <div>
-                        <span style="font-weight:700;font-size:.95rem;color:#0f172a">Đơn hàng #MS@o.Id.ToString("D11")</span>
+                        @* ✅ FIX: Bọc trong @(...) để Razor render đúng *@
+                        <span style="font-weight:700;font-size:.95rem;color:#0f172a">Đơn hàng #MS@(o.Id.ToString("D11"))</span>
                         <span style="color:#94a3b8;font-size:.82rem;margin-left:.75rem">@o.User?.FullName • @o.OrderDate.ToString("dd/MM/yyyy HH:mm")</span>
                     </div>
                     <span class="badge @statusClass">@statusLabel</span>
                 </div>
                 <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:1.5rem;padding:.75rem;background:#f8fafc;border-radius:10px;margin-bottom:.875rem">
                     <div>
-                        <div style="font-size:.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;margin-bottom:.25rem">Số lượng</div>
+                        <div style="font-size:.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px;margin-bottom:.25rem">Số sản phẩm</div>
                         <div style="display:flex;align-items:center;gap:.4rem;font-weight:600;color:#374151">
-                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><path stroke-linecap="round" stroke-linejoin="round" d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15" /></svg>
-                            @o.OrderItems?.Count sản phẩm
+                            @(o.OrderItems?.Count ?? 0) sản phẩm
                         </div>
                     </div>
                     <div>
@@ -67,26 +83,28 @@
                         <div style="font-size:.82rem;color:#374151;overflow:hidden;text-overflow:ellipsis;white-space:nowrap">@o.ShippingAddress</div>
                     </div>
                 </div>
-                <div style="display:flex;gap:.5rem;align-items:center">
-                    <a asp-area="Admin" asp-controller="Order" asp-action="Detail" asp-route-id="@o.Id"
+                <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+                    <a asp-area="Admin" asp-controller="Order" asp-action="Detail" asp-route-id="@(o.Id)"
                            class="btn btn-ghost btn-sm">
                         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                         Chi tiết
                     </a>
                     @if (o.Status == "Pending")
                     {
-                        <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post" style="display:inline">
+                        <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post" style="display:inline"
+                              onsubmit="this.querySelector('button').disabled=true; this.querySelector('button').textContent='Đang xử lý...'">
                             @Html.AntiForgeryToken()
-                            <input type="hidden" name="orderId" value="@o.Id" />
+                            <input type="hidden" name="orderId" value="@(o.Id)" />
                             <input type="hidden" name="status" value="Paid" />
                             <button type="submit" class="btn btn-success btn-sm">
                                 <svg viewBox="0 0 20 20" fill="currentColor" style="width:14px;height:14px"><path fill-rule="evenodd" d="M16.707 5.293a1 1 0 010 1.414l-8 8a1 1 0 01-1.414 0l-4-4a1 1 0 011.414-1.414L8 12.586l7.293-7.293a1 1 0 011.414 0z" clip-rule="evenodd" /></svg>
                                 Duyệt đơn
                             </button>
                         </form>
-                        <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post" style="display:inline">
+                        <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post" style="display:inline"
+                              onsubmit="return confirm('Xác nhận từ chối đơn hàng #@(o.Id)?')">
                             @Html.AntiForgeryToken()
-                            <input type="hidden" name="orderId" value="@o.Id" />
+                            <input type="hidden" name="orderId" value="@(o.Id)" />
                             <input type="hidden" name="status" value="Cancelled" />
                             <button type="submit" class="btn btn-danger btn-sm">
                                 <svg viewBox="0 0 20 20" fill="currentColor" style="width:14px;height:14px"><path fill-rule="evenodd" d="M4.293 4.293a1 1 0 011.414 0L10 8.586l4.293-4.293a1 1 0 111.414 1.414L11.414 10l4.293 4.293a1 1 0 01-1.414 1.414L10 11.414l-4.293 4.293a1 1 0 01-1.414-1.414L8.586 10 4.293 5.707a1 1 0 010-1.414z" clip-rule="evenodd" /></svg>
@@ -96,12 +114,13 @@
                     }
                     @if (o.Status == "Paid")
                     {
-                        <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post" style="display:inline">
+                        <form asp-area="Admin" asp-controller="Order" asp-action="UpdateStatus" method="post" style="display:inline"
+                              onsubmit="this.querySelector('button').disabled=true">
                             @Html.AntiForgeryToken()
-                            <input type="hidden" name="orderId" value="@o.Id" />
+                            <input type="hidden" name="orderId" value="@(o.Id)" />
                             <input type="hidden" name="status" value="Shipping" />
                             <button type="submit" class="btn btn-sm" style="background:#dbeafe;color:#1e40af">
-                                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><path d="M5 3a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2V5a2 2 0 00-2-2H5zM5 11a2 2 0 00-2 2v2a2 2 0 002 2h2a2 2 0 002-2v-2a2 2 0 00-2-2H5zM11 5a2 2 0 012-2h2a2 2 0 012 2v2a2 2 0 01-2 2h-2a2 2 0 01-2-2V5zM14 11a1 1 0 011 1v1h1a1 1 0 110 2h-1v1a1 1 0 11-2 0v-1h-1a1 1 0 110-2h1v-1a1 1 0 011-1z" /></svg>
+                                <svg viewBox="0 0 20 20" fill="currentColor" style="width:14px;height:14px"><path d="M8 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0zM15 16.5a1.5 1.5 0 11-3 0 1.5 1.5 0 013 0z" /><path d="M3 4a1 1 0 00-1 1v10a1 1 0 001 1h1.05a2.5 2.5 0 014.9 0H10a1 1 0 001-1V5a1 1 0 00-1-1H3zM14 7a1 1 0 00-1 1v6.05A2.5 2.5 0 0115.95 16H17a1 1 0 001-1v-5a1 1 0 00-.293-.707l-2-2A1 1 0 0015 7h-1z" /></svg>
                                 Giao hàng
                             </button>
                         </form>
@@ -122,4 +141,12 @@
                class="btn btn-sm @(ViewBag.Page == i ? "btn-primary" : "btn-ghost")">@i</a>
         }
     </div>
+}
+
+@if (TempData["Success"] != null)
+{
+    <div style="position:fixed;bottom:1.5rem;right:1.5rem;background:#16a34a;color:#fff;padding:.85rem 1.5rem;border-radius:12px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.15)">
+        ✓ @TempData["Success"]
+    </div>
+    <script>setTimeout(()=>document.querySelector('[style*="position:fixed"]')?.remove(),3000)</script>
 }

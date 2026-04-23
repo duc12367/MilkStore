@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MilkStore.Filters;
 using MilkStore.Models;
@@ -34,13 +35,11 @@ public class OrderController(MilkStore4Context db) : Controller
         return View();
     }
 
-
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> PlaceOrder(string shippingAddress,
         string paymentMethod, string? note)
     {
-        // session mất (Render sleep) → redirect login thay vì crash 400
         if (UserIdNullable == null)
             return RedirectToAction("Login", "Account");
 
@@ -78,24 +77,18 @@ public class OrderController(MilkStore4Context db) : Controller
                 PriceAtTime = item.Product?.Price ?? 0m
             });
 
-
             var product = await db.Products.FindAsync(item.ProductId);
             if (product != null)
                 product.StockQuantity = Math.Max(0,
                     product.StockQuantity - item.Quantity);
         }
 
-
         db.CartItems.RemoveRange(items);
         await db.SaveChangesAsync();
 
-        // Redirect to payment provider if needed
         if (paymentMethod == "VNPay" || paymentMethod == "MoMo")
-        {
             return RedirectToAction("CreatePayment", "Payment", new { orderId = order.Id });
-        }
 
-        // Default: show success page
         return RedirectToAction("Success", new { id = order.Id });
     }
 
@@ -104,6 +97,7 @@ public class OrderController(MilkStore4Context db) : Controller
     {
         if (UserIdNullable == null)
             return RedirectToAction("Login", "Account");
+
         var order = await db.Orders
             .Include(o => o.OrderItems)
             .ThenInclude(oi => oi.Product)
@@ -118,8 +112,11 @@ public class OrderController(MilkStore4Context db) : Controller
     {
         if (UserIdNullable == null)
             return RedirectToAction("Login", "Account");
+
+        // ✅ FIX: Include Product để lấy ảnh và tên sản phẩm trong OrderItems
         var orders = await db.Orders
             .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
             .Where(o => o.UserId == UserId)
             .OrderByDescending(o => o.OrderDate)
             .ToListAsync();
@@ -132,6 +129,7 @@ public class OrderController(MilkStore4Context db) : Controller
     {
         if (UserIdNullable == null)
             return RedirectToAction("Login", "Account");
+
         var order = await db.Orders
             .Include(o => o.OrderItems)
             .ThenInclude(oi => oi.Product)
@@ -139,5 +137,41 @@ public class OrderController(MilkStore4Context db) : Controller
 
         if (order == null) return NotFound();
         return View(order);
+    }
+
+    // ✅ FIX MỚI: POST /Order/CancelOrder - Cho phép khách hủy đơn Pending
+    [HttpPost]
+    [ValidateAntiForgeryToken]
+    public async Task<IActionResult> CancelOrder(int id)
+    {
+        if (UserIdNullable == null)
+            return RedirectToAction("Login", "Account");
+
+        var order = await db.Orders
+            .Include(o => o.OrderItems)
+                .ThenInclude(oi => oi.Product)
+            .FirstOrDefaultAsync(o => o.Id == id && o.UserId == UserId);
+
+        if (order == null) return NotFound();
+
+        // Chỉ hủy được đơn đang Pending
+        if (order.Status != "Pending")
+        {
+            TempData["Error"] = "Chỉ có thể hủy đơn hàng đang chờ xử lý.";
+            return RedirectToAction("MyOrders");
+        }
+
+        order.Status = "Cancelled";
+
+        // Hoàn lại tồn kho
+        foreach (var item in order.OrderItems)
+        {
+            if (item.Product != null)
+                item.Product.StockQuantity += item.Quantity;
+        }
+
+        await db.SaveChangesAsync();
+        TempData["Success"] = "Đã hủy đơn hàng thành công.";
+        return RedirectToAction("MyOrders");
     }
 }

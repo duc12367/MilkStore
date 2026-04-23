@@ -114,3 +114,15 @@ INSERT INTO "Reviews" ("UserId", "ProductId", "Rating", "Comment", "CreatedAt") 
 (3,  3, 5, 'TH True Milk ngon hơn nhiều so với các loại khác. Sẽ mua thường xuyên.',    now() - INTERVAL '5 days'),
 (6, 12, 3, 'Sữa đặc bình thường, vừa đủ ngọt. Dùng để pha cà phê thì ok.',              now() - INTERVAL '3 days'),
 (4, 10, 5, 'Sữa chua uống rất ngon, mua cho cả nhà uống mỗi buổi sáng.',                now() - INTERVAL '1 days');
+-- ============================================================
+-- SQL: Thêm cột ParentReviewId và IsAdminReply vào bảng Review
+-- Chạy script này trên database (SQL Server hoặc PostgreSQL)
+-- ============================================================
+
+
+
+PostgreSQL:
+ALTER TABLE "Reviews" ADD COLUMN "ParentReviewId" INT NULL;
+ALTER TABLE "Reviews" ADD COLUMN "IsAdminReply" BOOLEAN NOT NULL DEFAULT FALSE;
+ALTER TABLE "Reviews" ADD CONSTRAINT fk_reviews_parent 
+FOREIGN KEY ("ParentReviewId") REFERENCES "Reviews"("Id");
