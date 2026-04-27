@@ -1,6 +1,7 @@
 @using MilkStore.Models
 @{
     ViewData["Title"] = "Trang chủ";
+    <link rel="icon" type="image/png" href="~/images/logo-transparent.png" />
     Layout = "~/Views/Shared/_Layout.cshtml";
     var featured = ViewBag.FeaturedProducts as List<Product> ?? new();
 }

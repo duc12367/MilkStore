@@ -1,6 +1,7 @@
 @model MilkStore.Models.Product
 @{
     ViewData["Title"] = Model.ProductName;
+    <link rel="icon" type="image/png" href="~/images/logo-transparent.png" />
     Layout = "~/Views/Shared/_Layout.cshtml";
     var reviews = (List<MilkStore.Models.Review>)ViewBag.Reviews;
     var avg     = (double)ViewBag.AvgRating;

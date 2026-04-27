@@ -78,7 +78,7 @@ public class OrderController(MilkStore4Context db) : Controller
             ProductId = productId,
             Rating = 5,
             Comment = comment,
-            CreatedAt = DateTime.Now,
+            CreatedAt = DateTime.UtcNow,
             ParentReviewId = reviewId,
             IsAdminReply = true
         });
