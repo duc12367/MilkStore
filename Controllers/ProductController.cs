@@ -86,7 +86,7 @@ public class ProductController(MilkStore4Context db) : Controller
                 UserId = userId,
                 Rating = rating,
                 Comment = comment,
-                CreatedAt = DateTime.Now
+                CreatedAt = DateTime.UtcNow
             });
             await db.SaveChangesAsync();
         }
