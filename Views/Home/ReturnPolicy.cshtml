@@ -1,0 +1,361 @@
+﻿@{
+    ViewData["Title"] = "Chính sách đổi trả";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+.policy-hero{
+    background:linear-gradient(135deg,#0f2018 0%,#1a3a2a 50%,#2d5a40 100%);
+    padding:4rem 2rem 5rem;text-align:center;color:#fff;position:relative;overflow:hidden;
+}
+.policy-hero::after{
+    content:'';position:absolute;bottom:-1px;left:0;right:0;height:60px;
+    background:#f0f7f2;clip-path:ellipse(55% 100% at 50% 100%);
+}
+.policy-hero h1{font-size:2.5rem;font-weight:800;margin-bottom:.75rem;letter-spacing:-.5px}
+.policy-hero p{font-size:1rem;opacity:.75;max-width:520px;margin:0 auto}
+
+.policy-nav{
+    background:#fff;border-bottom:1px solid #e2e8f0;
+    display:flex;justify-content:center;gap:0;
+    position:sticky;top:64px;z-index:50;
+}
+.policy-nav a{
+    padding:.875rem 1.25rem;font-size:.85rem;font-weight:600;color:#64748b;
+    text-decoration:none;border-bottom:2px solid transparent;transition:all .15s;white-space:nowrap;
+}
+.policy-nav a:hover{color:#1a3a2a}
+.policy-nav a.active{color:#1a3a2a;border-bottom-color:#1a3a2a}
+
+.policy-wrap{max-width:900px;margin:0 auto;padding:3rem 1.5rem}
+
+/* Summary cards */
+.summary-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:1rem;margin-bottom:3rem}
+.summary-card{
+    background:#fff;border-radius:16px;border:1px solid #e2e8f0;
+    padding:1.5rem;text-align:center;transition:box-shadow .2s;
+}
+.summary-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.summary-icon{
+    width:56px;height:56px;border-radius:16px;margin:0 auto .875rem;
+    display:flex;align-items:center;justify-content:center;
+}
+.summary-icon img{width:28px;height:28px;object-fit:contain}
+.summary-num{font-size:1.6rem;font-weight:800;color:#1a3a2a;margin-bottom:.25rem}
+.summary-label{font-size:.82rem;color:#94a3b8;font-weight:500}
+
+/* Sections */
+.policy-section{margin-bottom:2.5rem}
+.section-title{
+    display:flex;align-items:center;gap:.75rem;
+    font-size:1.2rem;font-weight:700;color:#0f172a;margin-bottom:1.25rem;
+    padding-bottom:.75rem;border-bottom:2px solid #f0f7f2;
+}
+.section-num{
+    width:32px;height:32px;border-radius:50%;
+    background:linear-gradient(135deg,#1a3a2a,#2d5a40);
+    color:#fff;display:flex;align-items:center;justify-content:center;
+    font-size:.85rem;font-weight:700;flex-shrink:0;
+}
+
+/* Steps */
+.steps{display:flex;flex-direction:column;gap:.75rem}
+.step-item{
+    display:flex;align-items:flex-start;gap:1rem;
+    background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:1rem 1.25rem;
+}
+.step-num{
+    width:28px;height:28px;border-radius:50%;background:#f0fdf4;border:2px solid #bbf7d0;
+    color:#16a34a;display:flex;align-items:center;justify-content:center;
+    font-size:.8rem;font-weight:700;flex-shrink:0;margin-top:.1rem;
+}
+.step-content h4{font-size:.92rem;font-weight:600;color:#0f172a;margin-bottom:.25rem}
+.step-content p{font-size:.85rem;color:#64748b;margin:0;line-height:1.6}
+
+/* Conditions */
+.condition-grid{display:grid;grid-template-columns:1fr 1fr;gap:1rem}
+.condition-card{background:#fff;border:1px solid #e2e8f0;border-radius:12px;padding:1.25rem}
+.condition-card.ok{border-left:4px solid #16a34a}
+.condition-card.no{border-left:4px solid #dc2626}
+.condition-card h4{
+    font-size:.88rem;font-weight:700;margin-bottom:.75rem;display:flex;align-items:center;gap:.4rem;
+}
+.condition-card.ok h4{color:#16a34a}
+.condition-card.no h4{color:#dc2626}
+.condition-list{list-style:none;padding:0;margin:0}
+.condition-list li{
+    font-size:.85rem;color:#374151;padding:.35rem 0;
+    border-bottom:1px solid #f8fafc;display:flex;align-items:flex-start;gap:.5rem;line-height:1.5;
+}
+.condition-list li:last-child{border-bottom:none}
+.condition-list li span{flex-shrink:0;margin-top:.1rem}
+
+/* Timeline */
+.timeline{position:relative;padding-left:2rem}
+.timeline::before{content:'';position:absolute;left:.7rem;top:0;bottom:0;width:2px;background:#e2e8f0}
+.tl-item{position:relative;margin-bottom:1.5rem}
+.tl-dot{
+    position:absolute;left:-1.7rem;top:.2rem;width:16px;height:16px;
+    border-radius:50%;background:#1a3a2a;border:3px solid #fff;
+    box-shadow:0 0 0 2px #1a3a2a;
+}
+.tl-title{font-size:.92rem;font-weight:700;color:#0f172a;margin-bottom:.25rem}
+.tl-desc{font-size:.85rem;color:#64748b;line-height:1.6}
+.tl-time{
+    display:inline-block;background:#f0fdf4;color:#16a34a;
+    border-radius:6px;padding:.15rem .6rem;font-size:.75rem;font-weight:700;margin-top:.3rem;
+}
+
+/* Alert boxes */
+.alert{border-radius:12px;padding:1rem 1.25rem;font-size:.88rem;line-height:1.65}
+.alert-info{background:#eff6ff;border:1px solid #bfdbfe;color:#1e40af}
+.alert-warn{background:#fffbeb;border:1px solid #fde68a;color:#92400e}
+.alert-success{background:#f0fdf4;border:1px solid #bbf7d0;color:#166534}
+.alert h4{font-weight:700;margin-bottom:.35rem;font-size:.92rem}
+.alert ul{margin:.35rem 0 0 1rem;padding:0}
+.alert ul li{margin-bottom:.25rem}
+
+/* CTA */
+.cta-box{
+    background:linear-gradient(135deg,#1a3a2a,#2d5a40);border-radius:20px;
+    padding:2.5rem;text-align:center;color:#fff;margin-top:3rem;
+}
+.cta-box h2{font-size:1.5rem;font-weight:800;margin-bottom:.5rem}
+.cta-box p{opacity:.75;font-size:.92rem;margin-bottom:1.5rem}
+.cta-btns{display:flex;gap:.875rem;justify-content:center;flex-wrap:wrap}
+.cta-btn-w{
+    background:#fff;color:#1a3a2a;padding:.75rem 1.75rem;
+    border-radius:30px;font-weight:700;text-decoration:none;transition:transform .2s;
+}
+.cta-btn-w:hover{transform:translateY(-2px);color:#1a3a2a}
+.cta-btn-t{
+    background:rgba(255,255,255,.15);color:#fff;padding:.75rem 1.75rem;
+    border-radius:30px;font-weight:700;text-decoration:none;border:2px solid rgba(255,255,255,.4);transition:all .2s;
+}
+.cta-btn-t:hover{background:rgba(255,255,255,.25);color:#fff}
+
+@@media(max-width:768px){
+    .summary-grid{grid-template-columns:1fr}
+    .condition-grid{grid-template-columns:1fr}
+    .policy-hero h1{font-size:1.8rem}
+    .policy-nav{overflow-x:auto}
+    .cta-btns{flex-direction:column;align-items:center}
+}
+</style>
+
+<!-- Hero -->
+<div class="policy-hero">
+    <h1>Chính sách đổi trả 🔄</h1>
+    <p>MilkStore cam kết bảo vệ quyền lợi khách hàng — đổi trả dễ dàng, hoàn tiền nhanh chóng.</p>
+</div>
+
+<!-- Nav -->
+<div class="policy-nav">
+    <a href="#dieu-kien" class="active" onclick="setActive(this)">Điều kiện</a>
+    <a href="#quy-trinh" onclick="setActive(this)">Quy trình</a>
+    <a href="#thoi-gian" onclick="setActive(this)">Thời gian</a>
+    <a href="#hoan-tien" onclick="setActive(this)">Hoàn tiền</a>
+    <a href="#luu-y" onclick="setActive(this)">Lưu ý</a>
+</div>
+
+<div class="policy-wrap">
+
+    <!-- Summary -->
+    <div class="summary-grid">
+        <div class="summary-card">
+            <div class="summary-icon" style="background:#f0fdf4">
+                <img src="https://cdn-icons-png.flaticon.com/512/190/190411.png" alt="days">
+            </div>
+            <div class="summary-num">7 ngày</div>
+            <div class="summary-label">Thời gian đổi trả kể từ ngày nhận hàng</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-icon" style="background:#eff6ff">
+                <img src="https://cdn-icons-png.flaticon.com/512/1019/1019607.png" alt="refund">
+            </div>
+            <div class="summary-num">100%</div>
+            <div class="summary-label">Hoàn tiền nếu lỗi từ phía MilkStore</div>
+        </div>
+        <div class="summary-card">
+            <div class="summary-icon" style="background:#fff7ed">
+                <img src="https://cdn-icons-png.flaticon.com/512/3081/3081559.png" alt="support">
+            </div>
+            <div class="summary-num">24/7</div>
+            <div class="summary-label">Hỗ trợ đổi trả qua hotline và chatbot</div>
+        </div>
+    </div>
+
+    <!-- Điều kiện -->
+    <div class="policy-section" id="dieu-kien">
+        <div class="section-title">
+            <div class="section-num">1</div>
+            Điều kiện đổi trả hàng
+        </div>
+        <div class="condition-grid">
+            <div class="condition-card ok">
+                <h4>
+                    <svg viewBox="0 0 20 20" fill="currentColor" style="width:16px;height:16px"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zm3.707-9.293a1 1 0 00-1.414-1.414L9 10.586 7.707 9.293a1 1 0 00-1.414 1.414l2 2a1 1 0 001.414 0l4-4z" clip-rule="evenodd"/></svg>
+                    Được đổi trả
+                </h4>
+                <ul class="condition-list">
+                    <li><span>✅</span> Sản phẩm bị lỗi, hỏng do nhà sản xuất</li>
+                    <li><span>✅</span> Sản phẩm không đúng với mô tả/hình ảnh</li>
+                    <li><span>✅</span> Giao nhầm sản phẩm, nhầm số lượng</li>
+                    <li><span>✅</span> Sản phẩm hết hạn sử dụng khi nhận</li>
+                    <li><span>✅</span> Bao bì bị vỡ, rò rỉ khi vận chuyển</li>
+                    <li><span>✅</span> Sản phẩm thiếu phụ kiện, quà tặng kèm</li>
+                </ul>
+            </div>
+            <div class="condition-card no">
+                <h4>
+                    <svg viewBox="0 0 20 20" fill="currentColor" style="width:16px;height:16px"><path fill-rule="evenodd" d="M10 18a8 8 0 100-16 8 8 0 000 16zM8.707 7.293a1 1 0 00-1.414 1.414L8.586 10l-1.293 1.293a1 1 0 101.414 1.414L10 11.414l1.293 1.293a1 1 0 001.414-1.414L11.414 10l1.293-1.293a1 1 0 00-1.414-1.414L10 8.586 8.707 7.293z" clip-rule="evenodd"/></svg>
+                    Không được đổi trả
+                </h4>
+                <ul class="condition-list">
+                    <li><span>❌</span> Sản phẩm đã được mở nắp, sử dụng</li>
+                    <li><span>❌</span> Quá 7 ngày kể từ ngày nhận hàng</li>
+                    <li><span>❌</span> Sản phẩm hư hỏng do người dùng gây ra</li>
+                    <li><span>❌</span> Không có hóa đơn mua hàng</li>
+                    <li><span>❌</span> Sản phẩm khuyến mãi ghi rõ không đổi trả</li>
+                    <li><span>❌</span> Đổi trả vì lý do cá nhân (không thích)</li>
+                </ul>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quy trình -->
+    <div class="policy-section" id="quy-trinh">
+        <div class="section-title">
+            <div class="section-num">2</div>
+            Quy trình đổi trả 3 bước
+        </div>
+        <div class="steps">
+            <div class="step-item">
+                <div class="step-num">1</div>
+                <div class="step-content">
+                    <h4>Liên hệ MilkStore trong vòng 7 ngày</h4>
+                    <p>Gọi hotline <strong>1800 6789</strong>, nhắn tin qua Chatbot, hoặc email <strong>support@milkstore.vn</strong>. Cung cấp mã đơn hàng và mô tả vấn đề. Chụp ảnh/video sản phẩm lỗi nếu có.</p>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">2</div>
+                <div class="step-content">
+                    <h4>Gửi trả sản phẩm về MilkStore</h4>
+                    <p>Đóng gói sản phẩm cẩn thận. Ghi rõ họ tên, số điện thoại, mã đơn hàng bên ngoài gói hàng. Gửi về: <strong>123 Nguyễn Huệ, Q.1, TP.HCM</strong>. MilkStore hỗ trợ phí vận chuyển nếu lỗi từ phía chúng mình.</p>
+                </div>
+            </div>
+            <div class="step-item">
+                <div class="step-num">3</div>
+                <div class="step-content">
+                    <h4>Nhận hàng đổi hoặc hoàn tiền</h4>
+                    <p>Sau khi nhận và kiểm tra hàng (1–2 ngày làm việc), MilkStore sẽ gửi hàng đổi hoặc hoàn tiền theo phương thức ban đầu. Bạn sẽ nhận được thông báo qua SMS/Email.</p>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Thời gian -->
+    <div class="policy-section" id="thoi-gian">
+        <div class="section-title">
+            <div class="section-num">3</div>
+            Thời gian xử lý
+        </div>
+        <div class="timeline">
+            <div class="tl-item">
+                <div class="tl-dot"></div>
+                <div class="tl-title">Tiếp nhận yêu cầu</div>
+                <div class="tl-desc">MilkStore xác nhận yêu cầu đổi trả qua email/SMS ngay khi nhận được thông tin.</div>
+                <div class="tl-time">Ngay lập tức</div>
+            </div>
+            <div class="tl-item">
+                <div class="tl-dot"></div>
+                <div class="tl-title">Kiểm tra sản phẩm</div>
+                <div class="tl-desc">Sau khi nhận hàng hoàn trả, đội QC kiểm tra tình trạng và xác nhận lý do.</div>
+                <div class="tl-time">1–2 ngày làm việc</div>
+            </div>
+            <div class="tl-item">
+                <div class="tl-dot"></div>
+                <div class="tl-title">Gửi hàng đổi / Xử lý hoàn tiền</div>
+                <div class="tl-desc">Hàng đổi được đóng gói và giao trong ngày. Hoàn tiền được xử lý ngay sau xác nhận.</div>
+                <div class="tl-time">1–3 ngày làm việc</div>
+            </div>
+            <div class="tl-item">
+                <div class="tl-dot"></div>
+                <div class="tl-title">Tiền về tài khoản</div>
+                <div class="tl-desc">Tùy ngân hàng/ví điện tử, tiền sẽ về sau 3–7 ngày làm việc kể từ khi xử lý.</div>
+                <div class="tl-time">3–7 ngày làm việc</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hoàn tiền -->
+    <div class="policy-section" id="hoan-tien">
+        <div class="section-title">
+            <div class="section-num">4</div>
+            Chính sách hoàn tiền
+        </div>
+        <div style="display:flex;flex-direction:column;gap:.75rem">
+            <div class="alert alert-success">
+                <h4>💳 Thanh toán online (MoMo, VNPay, thẻ ngân hàng)</h4>
+                Hoàn tiền 100% vào tài khoản/ví ban đầu trong vòng <strong>3–5 ngày làm việc</strong>.
+            </div>
+            <div class="alert alert-info">
+                <h4>💵 Thanh toán COD (tiền mặt)</h4>
+                Chuyển khoản về tài khoản ngân hàng do khách cung cấp trong vòng <strong>1–3 ngày làm việc</strong>.
+            </div>
+            <div class="alert alert-warn">
+                <h4>🎟️ Hoàn bằng voucher</h4>
+                Nếu khách hàng muốn nhận voucher thay tiền mặt, giá trị voucher được cộng thêm <strong>10% bonus</strong>.
+            </div>
+        </div>
+    </div>
+
+    <!-- Lưu ý -->
+    <div class="policy-section" id="luu-y">
+        <div class="section-title">
+            <div class="section-num">5</div>
+            Lưu ý quan trọng
+        </div>
+        <div class="alert alert-warn">
+            <h4>⚠️ Cần lưu ý khi đổi trả</h4>
+            <ul>
+                <li>Quay video/chụp ảnh ngay khi mở hộp hàng để làm bằng chứng nếu cần.</li>
+                <li>Giữ nguyên bao bì, tem niêm phong, hóa đơn mua hàng.</li>
+                <li>Không tự ý sửa chữa hoặc xử lý sản phẩm lỗi trước khi liên hệ.</li>
+                <li>Sản phẩm tươi/đông lạnh chỉ được đổi trả trong ngày nhận hàng.</li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- CTA -->
+    <div class="cta-box">
+        <h2>Cần hỗ trợ đổi trả? 🤝</h2>
+        <p>Đội ngũ MilkStore luôn sẵn sàng giải quyết mọi vấn đề cho bạn!</p>
+        <div class="cta-btns">
+            <a href="tel:18006789" class="cta-btn-w">📞 Gọi 1800 6789</a>
+            <a asp-controller="Home" asp-action="Contact" class="cta-btn-t">💬 Gửi tin nhắn</a>
+        </div>
+    </div>
+
+</div>
+
+<script>
+function setActive(el) {
+    document.querySelectorAll('.policy-nav a').forEach(a => a.classList.remove('active'));
+    el.classList.add('active');
+}
+window.addEventListener('scroll', () => {
+    const sections = ['dieu-kien','quy-trinh','thoi-gian','hoan-tien','luu-y'];
+    for (const id of sections) {
+        const el = document.getElementById(id);
+        if (!el) continue;
+        const rect = el.getBoundingClientRect();
+        if (rect.top <= 120 && rect.bottom > 120) {
+            document.querySelectorAll('.policy-nav a').forEach(a => {
+                a.classList.toggle('active', a.getAttribute('href') === '#'+id);
+            });
+            break;
+        }
+    }
+});
+</script>

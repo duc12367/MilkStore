@@ -27,4 +27,16 @@ public class HomeController(MilkStore4Context db) : Controller
         ViewBag.Code = code ?? 500;
         return View();
     }
+
+    public IActionResult Contact()
+    {
+        return View();
+    }
+
+    // GET /Home/ReturnPolicy
+    public IActionResult ReturnPolicy()
+    {
+        return View();
+    }
+
 }

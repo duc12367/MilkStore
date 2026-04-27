@@ -1,0 +1,296 @@
+﻿@{
+    ViewData["Title"] = "Liên hệ";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<style>
+.contact-hero{
+    background:linear-gradient(135deg,#0f2018 0%,#1a3a2a 50%,#2d5a40 100%);
+    padding:4rem 2rem 3rem;text-align:center;color:#fff;
+}
+.contact-hero h1{font-size:2.5rem;font-weight:800;margin-bottom:.75rem;letter-spacing:-.5px}
+.contact-hero p{font-size:1rem;opacity:.75;max-width:500px;margin:0 auto}
+
+.contact-wrap{max-width:1100px;margin:0 auto;padding:3rem 1.5rem}
+.contact-grid{display:grid;grid-template-columns:1fr 1.4fr;gap:2.5rem;align-items:start}
+
+/* Info cards */
+.info-cards{display:flex;flex-direction:column;gap:1rem}
+.info-card{
+    background:#fff;border-radius:16px;border:1px solid #e2e8f0;
+    padding:1.25rem 1.5rem;display:flex;align-items:flex-start;gap:1rem;
+    transition:box-shadow .2s;
+}
+.info-card:hover{box-shadow:0 4px 20px rgba(0,0,0,.08)}
+.info-icon{
+    width:44px;height:44px;border-radius:12px;flex-shrink:0;
+    display:flex;align-items:center;justify-content:center;
+}
+.info-icon img{width:22px;height:22px;object-fit:contain}
+.info-card-title{font-size:.82rem;color:#94a3b8;font-weight:600;text-transform:uppercase;letter-spacing:.4px;margin-bottom:.25rem}
+.info-card-val{font-size:.95rem;font-weight:600;color:#0f172a;line-height:1.5}
+.info-card-sub{font-size:.8rem;color:#94a3b8;margin-top:.15rem}
+
+/* Map placeholder */
+.map-box{
+    background:#f0f4f8;border-radius:16px;overflow:hidden;
+    height:220px;margin-top:1rem;border:1px solid #e2e8f0;
+    display:flex;align-items:center;justify-content:center;
+    position:relative;
+}
+.map-box img{width:100%;height:100%;object-fit:cover;opacity:.7}
+.map-overlay{
+    position:absolute;inset:0;display:flex;align-items:center;justify-content:center;
+    background:rgba(15,32,24,.35);
+}
+.map-pin{
+    background:#fff;border-radius:12px;padding:.6rem 1rem;
+    display:flex;align-items:center;gap:.5rem;font-size:.85rem;font-weight:600;color:#0f172a;
+    box-shadow:0 4px 16px rgba(0,0,0,.15);
+}
+
+/* Form */
+.form-card{
+    background:#fff;border-radius:20px;border:1px solid #e2e8f0;
+    padding:2rem;box-shadow:0 4px 24px rgba(0,0,0,.06);
+}
+.form-card h2{font-size:1.3rem;font-weight:700;color:#0f172a;margin-bottom:.4rem}
+.form-card p{font-size:.88rem;color:#94a3b8;margin-bottom:1.5rem}
+.frow{display:grid;grid-template-columns:1fr 1fr;gap:1rem;margin-bottom:1rem}
+.fgroup{margin-bottom:1rem}
+.fgroup label{display:block;font-size:.82rem;font-weight:600;color:#374151;margin-bottom:.35rem}
+.fgroup input,.fgroup textarea,.fgroup select{
+    width:100%;padding:.7rem 1rem;border:1.5px solid #e2e8f0;border-radius:10px;
+    font-size:.9rem;font-family:'Nunito',sans-serif;color:#1a202c;
+    background:#fafbfc;transition:border-color .2s;outline:none;
+}
+.fgroup input:focus,.fgroup textarea:focus,.fgroup select:focus{border-color:#00b894;background:#fff}
+.fgroup textarea{resize:vertical;min-height:120px}
+.topic-chips{display:flex;gap:.5rem;flex-wrap:wrap;margin-bottom:1rem}
+.topic-chip{
+    padding:.4rem .9rem;border-radius:20px;border:1.5px solid #e2e8f0;
+    background:#fff;font-size:.8rem;font-weight:600;color:#64748b;
+    cursor:pointer;transition:all .15s;
+}
+.topic-chip:hover,.topic-chip.active{background:#00b894;color:#fff;border-color:#00b894}
+.submit-btn{
+    width:100%;padding:.85rem;background:linear-gradient(135deg,#1a3a2a,#2d5a40);
+    color:#fff;border:none;border-radius:12px;font-size:1rem;font-weight:700;
+    cursor:pointer;font-family:'Nunito',sans-serif;transition:transform .2s,box-shadow .2s;
+}
+.submit-btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(26,58,42,.3)}
+
+/* FAQ */
+.faq-section{max-width:760px;margin:3rem auto;padding:0 1.5rem 3rem}
+.faq-section h2{font-size:1.4rem;font-weight:700;color:#0f172a;text-align:center;margin-bottom:.5rem}
+.faq-section p{text-align:center;color:#94a3b8;font-size:.88rem;margin-bottom:2rem}
+.faq-item{border:1px solid #e2e8f0;border-radius:12px;margin-bottom:.75rem;overflow:hidden;background:#fff}
+.faq-q{
+    padding:1rem 1.25rem;font-weight:600;font-size:.92rem;color:#0f172a;
+    cursor:pointer;display:flex;justify-content:space-between;align-items:center;
+    transition:background .15s;
+}
+.faq-q:hover{background:#f8fafc}
+.faq-q svg{transition:transform .25s;flex-shrink:0}
+.faq-a{
+    max-height:0;overflow:hidden;transition:max-height .3s ease,padding .3s;
+    padding:0 1.25rem;font-size:.88rem;color:#64748b;line-height:1.7;
+}
+.faq-item.open .faq-q svg{transform:rotate(180deg)}
+.faq-item.open .faq-a{max-height:200px;padding:.75rem 1.25rem 1.25rem}
+
+/* Social */
+.social-row{display:flex;gap:.75rem;justify-content:center;margin-top:2.5rem;padding:0 1.5rem 3rem}
+.social-item{
+    display:flex;align-items:center;gap:.6rem;
+    background:#fff;border:1px solid #e2e8f0;border-radius:12px;
+    padding:.75rem 1.25rem;text-decoration:none;color:#374151;font-weight:600;font-size:.88rem;
+    transition:all .2s;flex:1;max-width:180px;justify-content:center;
+}
+.social-item:hover{transform:translateY(-2px);box-shadow:0 4px 16px rgba(0,0,0,.08);color:#374151}
+.social-item img{width:20px;height:20px;object-fit:contain}
+
+@@media(max-width:768px){
+    .contact-grid{grid-template-columns:1fr}
+    .frow{grid-template-columns:1fr}
+    .contact-hero h1{font-size:1.8rem}
+    .social-row{flex-wrap:wrap}
+}
+</style>
+
+<!-- Hero -->
+<div class="contact-hero">
+    <h1>Liên hệ với chúng mình 👋</h1>
+    <p>Đội ngũ MilkStore luôn sẵn sàng hỗ trợ bạn mọi lúc mọi nơi. Hãy để lại tin nhắn!</p>
+</div>
+
+<div class="contact-wrap">
+    <div class="contact-grid">
+
+        <!-- Left: Info -->
+        <div>
+            <div class="info-cards">
+                <div class="info-card">
+                    <div class="info-icon" style="background:#f0fdf4">
+                        <img src="https://cdn-icons-png.flaticon.com/512/597/597177.png" alt="phone">
+                    </div>
+                    <div>
+                        <div class="info-card-title">Hotline</div>
+                        <div class="info-card-val">1800 6789 (miễn phí)</div>
+                        <div class="info-card-sub">Thứ 2 – Chủ nhật: 7:00 – 22:00</div>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon" style="background:#eff6ff">
+                        <img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="email">
+                    </div>
+                    <div>
+                        <div class="info-card-title">Email</div>
+                        <div class="info-card-val">support@milkstore.vn</div>
+                        <div class="info-card-sub">Phản hồi trong vòng 2 giờ</div>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon" style="background:#faf5ff">
+                        <img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" alt="location">
+                    </div>
+                    <div>
+                        <div class="info-card-title">Địa chỉ</div>
+                        <div class="info-card-val">123 Nguyễn Huệ, Quận 1<br>TP. Hồ Chí Minh</div>
+                        <div class="info-card-sub">T2–T7: 8:00 – 18:00</div>
+                    </div>
+                </div>
+                <div class="info-card">
+                    <div class="info-icon" style="background:#fff7ed">
+                        <img src="https://cdn-icons-png.flaticon.com/512/725/725643.png" alt="chat">
+                    </div>
+                    <div>
+                        <div class="info-card-title">Chat trực tuyến</div>
+                        <div class="info-card-val">Chatbot Mai — 24/7</div>
+                        <div class="info-card-sub">Bấm icon 🥛 góc phải màn hình</div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Map -->
+            <div class="map-box">
+                <img src="https://maps.googleapis.com/maps/api/staticmap?center=10.7769,106.7009&zoom=15&size=600x220&maptype=roadmap&style=feature:all|element:labels.text.fill|color:0x555555&key=no-key"
+                     onerror="this.src='https://placehold.co/600x220/e8f5e9/1a3a2a?text=Bản+đồ+cửa+hàng'" alt="map"/>
+                <div class="map-overlay">
+                    <div class="map-pin">
+                        <img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" alt="" style="width:16px;height:16px">
+                        MilkStore — 123 Nguyễn Huệ, Q.1
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Right: Form -->
+        <div class="form-card">
+            <h2>Gửi tin nhắn cho chúng mình</h2>
+            <p>Điền thông tin bên dưới, chúng mình sẽ phản hồi trong vòng 2 giờ!</p>
+
+            <div class="topic-chips" id="topics">
+                <div class="topic-chip active" onclick="chooseTopic(this)">Tư vấn sản phẩm</div>
+                <div class="topic-chip" onclick="chooseTopic(this)">Đơn hàng</div>
+                <div class="topic-chip" onclick="chooseTopic(this)">Đổi trả hàng</div>
+                <div class="topic-chip" onclick="chooseTopic(this)">Thanh toán</div>
+                <div class="topic-chip" onclick="chooseTopic(this)">Khác</div>
+            </div>
+
+            <div id="success-msg" style="display:none;background:#f0fdf4;border:1px solid #bbf7d0;border-radius:10px;padding:.875rem 1rem;font-size:.88rem;color:#166534;margin-bottom:1rem;display:none;align-items:center;gap:.5rem">
+                ✅ Tin nhắn đã được gửi! Chúng mình sẽ liên hệ lại sớm nhé.
+            </div>
+
+            <div class="frow">
+                <div class="fgroup">
+                    <label>Họ và tên *</label>
+                    <input type="text" id="ct-name" placeholder="Nguyễn Văn A"/>
+                </div>
+                <div class="fgroup">
+                    <label>Số điện thoại *</label>
+                    <input type="tel" id="ct-phone" placeholder="0912 345 678"/>
+                </div>
+            </div>
+            <div class="fgroup">
+                <label>Email</label>
+                <input type="email" id="ct-email" placeholder="email@example.com"/>
+            </div>
+            <div class="fgroup">
+                <label>Nội dung *</label>
+                <textarea id="ct-msg" placeholder="Mô tả chi tiết vấn đề bạn cần hỗ trợ..."></textarea>
+            </div>
+            <button class="submit-btn" onclick="submitForm()">
+                Gửi tin nhắn →
+            </button>
+        </div>
+    </div>
+</div>
+
+<!-- FAQ -->
+<div class="faq-section">
+    <h2>Câu hỏi thường gặp</h2>
+    <p>Những thắc mắc phổ biến nhất từ khách hàng của chúng mình</p>
+
+    @{
+        var faqs = new[] {
+            ("MilkStore có giao hàng toàn quốc không?", "Có! Chúng mình giao hàng toàn quốc. Riêng nội thành TP.HCM và Hà Nội có dịch vụ giao trong ngày (trước 21h). Các tỉnh thành khác từ 1–3 ngày làm việc."),
+            ("Tôi muốn mua số lượng lớn có được giảm giá không?", "Hoàn toàn có! Đơn từ 1 triệu giảm 5%, từ 3 triệu giảm 10%, từ 5 triệu giảm 15%. Liên hệ hotline 1800 6789 để được báo giá tốt nhất."),
+            ("Sản phẩm có đảm bảo chất lượng không?", "100% sản phẩm tại MilkStore đều có nguồn gốc rõ ràng, hóa đơn chứng từ đầy đủ, nhập khẩu trực tiếp từ nhà phân phối chính hãng."),
+            ("Làm sao để kiểm tra đơn hàng của tôi?", "Đăng nhập tài khoản → vào mục 'Đơn hàng của tôi' để theo dõi realtime. Ngoài ra chúng mình cũng gửi SMS thông báo mỗi khi đơn hàng có cập nhật mới."),
+            ("Tôi có thể hủy đơn hàng không?", "Bạn có thể hủy đơn trong vòng 30 phút kể từ khi đặt hàng. Sau khi đơn đã được đóng gói, vui lòng liên hệ hotline để được hỗ trợ.")
+        };
+    }
+
+    @foreach (var (q, a) in faqs)
+    {
+        <div class="faq-item" onclick="toggleFaq(this)">
+            <div class="faq-q">
+                @q
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="2" style="width:18px;height:18px">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M19 9l-7 7-7-7"/>
+                </svg>
+            </div>
+            <div class="faq-a">@a</div>
+        </div>
+    }
+</div>
+
+<!-- Social -->
+<div class="social-row">
+    <a href="https://www.facebook.com/" class="social-item">
+        <img src="https://cdn-icons-png.flaticon.com/512/733/733547.png" alt="Facebook"> Facebook
+    </a>
+    <a href="https://zalo.me/" class="social-item">
+        <img src="https://cdn-icons-png.flaticon.com/512/5968/5968796.png" alt="Zalo"> Zalo OA
+    </a>
+    <a href="https://www.instagram.com/" class="social-item">
+        <img src="https://cdn-icons-png.flaticon.com/512/2111/2111463.png" alt="Instagram"> Instagram
+    </a>
+    <a href="https://www.youtube.com/" class="social-item">
+        <img src="https://cdn-icons-png.flaticon.com/512/1384/1384060.png" alt="YouTube"> YouTube
+    </a>
+</div>
+
+<script>
+function chooseTopic(el) {
+    document.querySelectorAll('.topic-chip').forEach(c => c.classList.remove('active'));
+    el.classList.add('active');
+}
+function toggleFaq(el) {
+    el.classList.toggle('open');
+}
+function submitForm() {
+    const name = document.getElementById('ct-name').value.trim();
+    const phone = document.getElementById('ct-phone').value.trim();
+    const msg = document.getElementById('ct-msg').value.trim();
+    if (!name || !phone || !msg) { alert('Vui lòng điền đầy đủ thông tin bắt buộc!'); return; }
+    const s = document.getElementById('success-msg');
+    s.style.display = 'flex';
+    setTimeout(() => s.style.display = 'none', 5000);
+    document.getElementById('ct-name').value = '';
+    document.getElementById('ct-phone').value = '';
+    document.getElementById('ct-email').value = '';
+    document.getElementById('ct-msg').value = '';
+}
+</script>
