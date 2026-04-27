@@ -84,5 +84,10 @@ using (var scope = app.Services.CreateScope())
         );
         CREATE INDEX IF NOT EXISTS ""IX_ChatMessages_SessionId"" ON ""ChatMessages""(""SessionId"");
     ");
+
+    db.Database.ExecuteSqlRaw(@"
+    ALTER TABLE ""Reviews"" ADD COLUMN IF NOT EXISTS ""IsAdminReply"" BOOLEAN NOT NULL DEFAULT FALSE;
+    ALTER TABLE ""Reviews"" ADD COLUMN IF NOT EXISTS ""ParentReviewId"" INTEGER NULL;
+    ");
 }
 app.Run();
