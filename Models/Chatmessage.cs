@@ -21,7 +21,7 @@ namespace MilkStore.Models;
 
 public class ChatMessage
 {
-    Khóa chính — tự tăng (SERIAL trong PostgreSQL).
+    /// Khóa chính — tự tăng (SERIAL trong PostgreSQL).
     public int Id { get; set; }
 
    
