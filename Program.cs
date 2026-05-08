@@ -27,6 +27,7 @@ builder.Services.AddHttpContextAccessor();
 builder.Services.AddHttpClient();
 builder.Services.AddSignalR();
 
+builder.Services.AddTransient<MilkStore.Services.EmailService>();
 var app = builder.Build();
 
 if (!app.Environment.IsDevelopment())
