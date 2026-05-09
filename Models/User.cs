@@ -51,6 +51,17 @@ public partial class User
     /// <summary>Số điện thoại. Có thể null nếu chưa cập nhật.</summary>
     public string? Phone { get; set; }
 
+    /// <summary>
+    /// Token dùng cho chức năng quên mật khẩu. Lưu chuỗi ngẫu nhiên để
+    /// kiểm tra khi người dùng truy cập link đặt lại mật khẩu.
+    /// </summary>
+    public string? ResetToken { get; set; }
+
+    /// <summary>
+    /// Thời điểm hết hạn của ResetToken (UTC). Có thể null nếu không có token.
+    /// </summary>
+    public DateTime? ResetTokenExpiry { get; set; }
+
     // ── Navigation properties ────────────────────────────────
     // EF Core tự JOIN khi dùng .Include() — không cần query thêm.
 
