@@ -1,4 +1,6 @@
-﻿using System.Net;
+﻿using MailKit.Net.Smtp;
+using MailKit.Security;
+using MimeKit;
 using System.Net.Mail;
 
 namespace MilkStore.Services;
@@ -24,36 +26,38 @@ public class EmailService
             return;
         }
 
-        _logger.LogInformation("[EMAIL] Dang gui email toi {To}, subject: {Subject}", to, subject);
+        _logger.LogInformation("[EMAIL] Dang gui email toi {To}", to);
 
         try
         {
-            using var client = new SmtpClient("smtp.gmail.com", 587)
-            {
-                EnableSsl = true,
-                Credentials = new NetworkCredential(_from, _password),
-                DeliveryMethod = SmtpDeliveryMethod.Network,
-                Timeout = 15000
-            };
+            var message = new MimeMessage();
+            message.From.Add(new MailboxAddress("MilkStore", _from));
+            message.To.Add(MailboxAddress.Parse(to));
+            message.Subject = subject;
+            message.Body = new TextPart("html") { Text = body };
 
-            using var msg = new MailMessage(_from, to, subject, body)
-            {
-                IsBodyHtml = true
-            };
+            using var client = new MailKit.Net.Smtp.SmtpClient();
 
-            await client.SendMailAsync(msg);
+            // Thu port 587 truoc, neu that thi thu 465
+            try
+            {
+                await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+            }
+            catch
+            {
+                _logger.LogWarning("[EMAIL] Port 587 that bai, thu port 465...");
+                await client.ConnectAsync("smtp.gmail.com", 465, SecureSocketOptions.SslOnConnect);
+            }
+
+            await client.AuthenticateAsync(_from, _password);
+            await client.SendAsync(message);
+            await client.DisconnectAsync(true);
+
             _logger.LogInformation("[EMAIL] Gui email thanh cong toi {To}", to);
-        }
-        catch (SmtpException ex)
-        {
-            _logger.LogError("[EMAIL] SmtpException khi gui toi {To}: {Message} | StatusCode: {Code}",
-                to, ex.Message, ex.StatusCode);
-            throw;
         }
         catch (Exception ex)
         {
-            _logger.LogError("[EMAIL] Loi khong xac dinh khi gui email: {Message}", ex.Message);
-            throw;
+            _logger.LogError("[EMAIL] LOI gui email toi {To}: {Message}", to, ex.Message);
         }
     }
 }
