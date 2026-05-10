@@ -43,26 +43,27 @@ public partial class MilkStore4Context : DbContext
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
     {
+        // Connection string được inject qua DI trong Program.cs
+        // Fallback này chỉ dùng khi chạy tool scaffold/migration
         if (!optionsBuilder.IsConfigured)
         {
             optionsBuilder.UseNpgsql("Host=dpg-d8037ehj2pic73eupnpg-a.singapore-postgres.render.com;Database=milkstore_db_2;Username=milkstore_db_2_user;Password=K26ygGs9cbcxqNQkaumg2T4VQlJQOSkx;SSL Mode=Require;Trust Server Certificate=true");
         }
     }
+
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Brand>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Brands__3214EC07603349F1");
-
+            // Bỏ HasName vì tên constraint này chỉ tồn tại trên SQL Server, không phải PostgreSQL
+            entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).HasMaxLength(100);
         });
 
         modelBuilder.Entity<CartItem>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__CartItem__3214EC070CF9453B");
-
+            entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.UserId, "IX_CartItems_UserId");
-
             entity.Property(e => e.Quantity).HasDefaultValue(1);
 
             entity.HasOne(d => d.Product).WithMany(p => p.CartItems)
@@ -76,25 +77,25 @@ public partial class MilkStore4Context : DbContext
 
         modelBuilder.Entity<Category>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Categori__3214EC07AD33E39B");
-
+            entity.HasKey(e => e.Id);
             entity.Property(e => e.Name).HasMaxLength(100);
         });
 
         modelBuilder.Entity<Order>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Orders__3214EC07C6D1DC21");
-
+            entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.OrderDate, "IX_Orders_OrderDate").IsDescending();
-
             entity.HasIndex(e => e.Status, "IX_Orders_Status");
-
             entity.HasIndex(e => e.UserId, "IX_Orders_UserId");
 
             entity.Property(e => e.Note).HasMaxLength(500);
+
+            // FIX 1: "timestamp" → "timestamptz" (PostgreSQL dùng timestamptz, không phải datetime/timestamp naive)
+            // "timestamp" không có timezone có thể gây lỗi khi Npgsql đọc dữ liệu UTC từ PostgreSQL
             entity.Property(e => e.OrderDate)
                 .HasDefaultValueSql("now()")
-		.HasColumnType("timestamp");
+                .HasColumnType("timestamptz");
+
             entity.Property(e => e.PaymentMethod)
                 .HasMaxLength(50)
                 .HasDefaultValue("COD");
@@ -112,10 +113,8 @@ public partial class MilkStore4Context : DbContext
 
         modelBuilder.Entity<OrderItem>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__OrderIte__3214EC078A4EE159");
-
+            entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.OrderId, "IX_OrderItems_OrderId");
-
             entity.HasIndex(e => e.ProductId, "IX_OrderItems_ProductId");
 
             entity.Property(e => e.PriceAtTime).HasColumnType("decimal(18, 2)");
@@ -133,15 +132,13 @@ public partial class MilkStore4Context : DbContext
 
         modelBuilder.Entity<Product>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Products__3214EC075CBCA753");
-
+            entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.BrandId, "IX_Products_BrandId");
-
             entity.HasIndex(e => e.CategoryId, "IX_Products_CategoryId");
-
             entity.HasIndex(e => e.Price, "IX_Products_Price");
 
-            entity.Property(e => e.ExpiryDate).HasDefaultValueSql("(getdate())");
+            // FIX 2: "getdate()" là hàm SQL Server, PostgreSQL dùng "CURRENT_DATE"
+            entity.Property(e => e.ExpiryDate).HasDefaultValueSql("CURRENT_DATE");
             entity.Property(e => e.ImageUrl).HasMaxLength(500);
             entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.ProductName).HasMaxLength(200);
@@ -159,13 +156,13 @@ public partial class MilkStore4Context : DbContext
 
         modelBuilder.Entity<Review>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Reviews__3214EC07113F3B7B");
-
+            entity.HasKey(e => e.Id);
             entity.HasIndex(e => e.ProductId, "IX_Reviews_ProductId");
 
+            // FIX 3: "getdate()" → "NOW()" và "datetime" → "timestamptz"
             entity.Property(e => e.CreatedAt)
-                .HasDefaultValueSql("(getdate())")
-                .HasColumnType("datetime");
+                .HasDefaultValueSql("NOW()")
+                .HasColumnType("timestamptz");
             entity.Property(e => e.Rating).HasDefaultValue(5);
 
             entity.HasOne(d => d.Product).WithMany(p => p.Reviews)
@@ -181,25 +178,21 @@ public partial class MilkStore4Context : DbContext
 
         modelBuilder.Entity<Role>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Roles__3214EC070293603E");
-
+            entity.HasKey(e => e.Id);
             entity.Property(e => e.RoleName).HasMaxLength(50);
         });
 
         modelBuilder.Entity<Test>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Test__3214EC07AB226D7C");
-
+            entity.HasKey(e => e.Id);
             entity.ToTable("Test");
-
             entity.Property(e => e.Name).HasMaxLength(100);
         });
 
         modelBuilder.Entity<User>(entity =>
         {
-            entity.HasKey(e => e.Id).HasName("PK__Users__3214EC073B20CB67");
-
-            entity.HasIndex(e => e.Email, "UQ__Users__A9D1053401C25A8B").IsUnique();
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.Email).IsUnique();
 
             entity.Property(e => e.Address).HasMaxLength(255);
             entity.Property(e => e.Email).HasMaxLength(150);
@@ -221,7 +214,9 @@ public partial class MilkStore4Context : DbContext
 
             entity.Property(e => e.Email).HasMaxLength(150);
             entity.Property(e => e.FullName).HasMaxLength(150);
-            entity.Property(e => e.LastOrderDate).HasColumnType("datetime");
+
+            // FIX 4: "datetime" → "timestamptz" cho PostgreSQL
+            entity.Property(e => e.LastOrderDate).HasColumnType("timestamptz");
             entity.Property(e => e.Phone).HasMaxLength(20);
             entity.Property(e => e.TotalSpent).HasColumnType("decimal(38, 2)");
         });
@@ -238,7 +233,9 @@ public partial class MilkStore4Context : DbContext
             entity.Property(e => e.CustomerName).HasMaxLength(150);
             entity.Property(e => e.CustomerPhone).HasMaxLength(20);
             entity.Property(e => e.LineTotal).HasColumnType("decimal(29, 2)");
-            entity.Property(e => e.OrderDate).HasColumnType("datetime");
+
+            // FIX 5: "datetime" → "timestamptz"
+            entity.Property(e => e.OrderDate).HasColumnType("timestamptz");
             entity.Property(e => e.PaymentMethod).HasMaxLength(50);
             entity.Property(e => e.PriceAtTime).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.ProductName).HasMaxLength(200);

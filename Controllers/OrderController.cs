@@ -1,4 +1,3 @@
-
 // FILE: Controllers/OrderController.cs
 // MỤC ĐÍCH: Xử lý toàn bộ luồng đặt hàng của khách hàng.
 //           Bao gồm: xem trang checkout, đặt hàng (PlaceOrder),
@@ -112,7 +111,7 @@ public class OrderController(MilkStore4Context db) : Controller
         var order = new Order
         {
             UserId = UserId,
-            OrderDate = DateTime.Now,
+            OrderDate = DateTime.UtcNow,
             TotalAmount = total,
             Status = "Pending",          // Trạng thái ban đầu luôn là Pending
             PaymentMethod = paymentMethod,

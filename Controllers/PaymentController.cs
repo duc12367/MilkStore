@@ -1,4 +1,3 @@
-
 // FILE: Controllers/PaymentController.cs
 // MỤC ĐÍCH: Xử lý thanh toán online qua cổng MoMo.
 //           Tích hợp MoMo Payment Gateway v2 (sandbox/test).
@@ -35,23 +34,23 @@ namespace MilkStore.Controllers
         // ── CẤU HÌNH MOMO (môi trường Sandbox/Test) ─────────────────
         // PartnerCode và AccessKey: định danh merchant trên hệ thống MoMo
         private const string PartnerCode = "MOMO";
-        private const string AccessKey   = "F8BBA842ECF85";
+        private const string AccessKey = "F8BBA842ECF85";
 
         // SecretKey: khóa bí mật để ký HMAC-SHA256 — KHÔNG để lộ ra ngoài
         // Thực tế production: nên lưu trong biến môi trường hoặc secret manager
-        private const string SecretKey   = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
+        private const string SecretKey = "K951B6PE1waDMi640xX08PD3vg6EkVlz";
 
         // Endpoint sandbox của MoMo để tạo giao dịch
         private const string MomoEndpoint = "https://test-payment.momo.vn/v2/gateway/api/create";
 
         // URL base của server (phải là HTTPS public để MoMo gọi được)
-        private const string BaseUrl    = "https://milkstore-2.onrender.com";
+        private const string BaseUrl = "https://milkstore-2.onrender.com";
 
         // MoMo redirect trình duyệt về đây sau khi khách thanh toán xong
-        private const string ReturnUrl  = BaseUrl + "/Payment/MomoReturn";
+        private const string ReturnUrl = BaseUrl + "/Payment/MomoReturn";
 
         // MoMo gọi server-to-server (IPN/webhook) để xác nhận giao dịch
-        private const string NotifyUrl  = BaseUrl + "/Payment/MomoNotify";
+        private const string NotifyUrl = BaseUrl + "/Payment/MomoNotify";
         // ─────────────────────────────────────────────────────────────
 
         public PaymentController(MilkStore4Context db)
@@ -84,28 +83,28 @@ namespace MilkStore.Controllers
             if (order == null) return NotFound();
 
             // requestId: định danh yêu cầu này (unique mỗi lần gọi API)
-            string requestId = $"{PartnerCode}{DateTime.Now.Ticks}";
+            string requestId = $"{PartnerCode}{DateTime.UtcNow.Ticks}";
 
             // orderId gửi lên MoMo: thêm timestamp để đảm bảo unique
             // kể cả khi khách thanh toán lại cùng một đơn hàng
-            string orderId_str = $"{order.Id}_{DateTime.Now.Ticks}";
+            string orderId_str = $"{order.Id}_{DateTime.UtcNow.Ticks}";
 
-            string amount    = ((long)order.TotalAmount).ToString(); // MoMo nhận số nguyên (VNĐ)
+            string amount = ((long)order.TotalAmount).ToString(); // MoMo nhận số nguyên (VNĐ)
             string orderInfo = $"Thanh toan don hang #{order.Id} - MilkStore";
             string extraData = "";         // Dữ liệu tùy ý (để trống)
             string requestType = "payWithATM"; // Loại thanh toán: ATM/thẻ nội địa
 
             // Xây dựng chuỗi rawHash theo đúng thứ tự MoMo quy định
             // (sai thứ tự = sai chữ ký = MoMo từ chối)
-            string rawHash = $"accessKey={AccessKey}"      +
-                             $"&amount={amount}"           +
-                             $"&extraData={extraData}"     +
-                             $"&ipnUrl={NotifyUrl}"        +
-                             $"&orderId={orderId_str}"     +
-                             $"&orderInfo={orderInfo}"     +
+            string rawHash = $"accessKey={AccessKey}" +
+                             $"&amount={amount}" +
+                             $"&extraData={extraData}" +
+                             $"&ipnUrl={NotifyUrl}" +
+                             $"&orderId={orderId_str}" +
+                             $"&orderInfo={orderInfo}" +
                              $"&partnerCode={PartnerCode}" +
-                             $"&redirectUrl={ReturnUrl}"   +
-                             $"&requestId={requestId}"     +
+                             $"&redirectUrl={ReturnUrl}" +
+                             $"&requestId={requestId}" +
                              $"&requestType={requestType}";
 
             // Tạo chữ ký HMAC-SHA256 từ rawHash và SecretKey
@@ -114,18 +113,18 @@ namespace MilkStore.Controllers
             // Body JSON gửi lên MoMo API
             var requestBody = new
             {
-                partnerCode  = PartnerCode,
-                accessKey    = AccessKey,
+                partnerCode = PartnerCode,
+                accessKey = AccessKey,
                 requestId,
                 amount,
-                orderId      = orderId_str,
+                orderId = orderId_str,
                 orderInfo,
-                redirectUrl  = ReturnUrl,
-                ipnUrl       = NotifyUrl,
+                redirectUrl = ReturnUrl,
+                ipnUrl = NotifyUrl,
                 extraData,
                 requestType,
                 signature,
-                lang         = "vi"        // Ngôn ngữ giao diện MoMo: tiếng Việt
+                lang = "vi"        // Ngôn ngữ giao diện MoMo: tiếng Việt
             };
 
             using var httpClient = new HttpClient();
@@ -190,11 +189,11 @@ namespace MilkStore.Controllers
         public IActionResult MomoReturn()
         {
             var resultCode = Request.Query["resultCode"].ToString();
-            var orderId    = Request.Query["orderId"].ToString();  // Dạng "5_638123456789"
+            var orderId = Request.Query["orderId"].ToString();  // Dạng "5_638123456789"
 
             // Tách phần số trước "_" để lấy ID đơn hàng thực trong DB
             var realId = orderId.Split('_')[0];
-            var order  = db.Orders.FirstOrDefault(o => o.Id.ToString() == realId);
+            var order = db.Orders.FirstOrDefault(o => o.Id.ToString() == realId);
             if (order == null) return NotFound();
 
             // Cập nhật trạng thái: "0" = thành công, khác = thất bại
