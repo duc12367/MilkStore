@@ -42,9 +42,12 @@ public partial class MilkStore4Context : DbContext
     public virtual DbSet<VwProductStat> VwProductStats { get; set; }
 
     protected override void OnConfiguring(DbContextOptionsBuilder optionsBuilder)
-#warning To protect potentially sensitive information in your connection string, you should move it out of source code. You can avoid scaffolding the connection string by using the Name= syntax to read it from configuration - see https://go.microsoft.com/fwlink/?linkid=2131148. For more guidance on storing connection strings, see https://go.microsoft.com/fwlink/?LinkId=723263.
-        => optionsBuilder.UseNpgsql("Host=dpg-d7blich17lss73als6hg-a;Database=milkstore;Username=milkstore_user;Password=qp4yuDPwfYGuNQnOxfrgr10fzmsFh3C7");
-
+    {
+        if (!optionsBuilder.IsConfigured)
+        {
+            optionsBuilder.UseNpgsql("Host=dpg-d8037ehj2pic73eupnpg-a.singapore-postgres.render.com;Database=milkstore_db_2;Username=milkstore_db_2_user;Password=K26ygGs9cbcxqNQkaumg2T4VQlJQOSkx;SSL Mode=Require;Trust Server Certificate=true");
+        }
+    }
     protected override void OnModelCreating(ModelBuilder modelBuilder)
     {
         modelBuilder.Entity<Brand>(entity =>
