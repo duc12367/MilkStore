@@ -154,10 +154,95 @@ using (var scope = app.Services.CreateScope())
     // ALTER TABLE ... ADD COLUMN IF NOT EXISTS: an toàn khi chạy nhiều lần
     // IsAdminReply: phân biệt review thường vs reply của admin
     // ParentReviewId: cấu trúc reply lồng nhau (review → admin reply)
+    // Tạo toàn bộ bảng nếu chưa có
     db.Database.ExecuteSqlRaw(@"
-    ALTER TABLE ""Reviews"" ADD COLUMN IF NOT EXISTS ""IsAdminReply"" BOOLEAN NOT NULL DEFAULT FALSE;
-    ALTER TABLE ""Reviews"" ADD COLUMN IF NOT EXISTS ""ParentReviewId"" INTEGER NULL;
-    ");
+    CREATE TABLE IF NOT EXISTS ""Roles"" (
+        ""Id"" SERIAL PRIMARY KEY,
+        ""RoleName"" VARCHAR(50) NOT NULL
+    );
+    INSERT INTO ""Roles"" (""Id"",""RoleName"") VALUES (1,'Admin'),(2,'Customer') ON CONFLICT DO NOTHING;
+
+    CREATE TABLE IF NOT EXISTS ""Users"" (
+        ""Id""       SERIAL PRIMARY KEY,
+        ""RoleId""   INT NOT NULL DEFAULT 2,
+        ""FullName"" VARCHAR(150) NOT NULL,
+        ""Email""    VARCHAR(150) NOT NULL UNIQUE,
+        ""Password"" VARCHAR(255) NOT NULL,
+        ""Phone""    VARCHAR(20),
+        ""Address""  VARCHAR(255),
+        ""ResetToken"" VARCHAR(100),
+        ""ResetTokenExpiry"" TIMESTAMPTZ,
+        CONSTRAINT ""FK_Users_Roles"" FOREIGN KEY(""RoleId"") REFERENCES ""Roles""(""Id"")
+    );
+
+    CREATE TABLE IF NOT EXISTS ""Brands"" (
+        ""Id"" SERIAL PRIMARY KEY,
+        ""Name"" VARCHAR(100) NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS ""Categories"" (
+        ""Id"" SERIAL PRIMARY KEY,
+        ""Name"" VARCHAR(100) NOT NULL
+    );
+
+    CREATE TABLE IF NOT EXISTS ""Products"" (
+        ""Id""            SERIAL PRIMARY KEY,
+        ""ProductName""   VARCHAR(200) NOT NULL,
+        ""Description""   TEXT,
+        ""Price""         DECIMAL(18,2) NOT NULL,
+        ""StockQuantity"" INT NOT NULL DEFAULT 0,
+        ""ImageUrl""      VARCHAR(500),
+        ""ExpiryDate""    DATE NOT NULL DEFAULT CURRENT_DATE,
+        ""CategoryId""    INT NOT NULL,
+        ""BrandId""       INT NOT NULL,
+        CONSTRAINT ""FK_Products_Categories"" FOREIGN KEY(""CategoryId"") REFERENCES ""Categories""(""Id""),
+        CONSTRAINT ""FK_Products_Brands"" FOREIGN KEY(""BrandId"") REFERENCES ""Brands""(""Id"")
+    );
+
+    CREATE TABLE IF NOT EXISTS ""Orders"" (
+        ""Id""              SERIAL PRIMARY KEY,
+        ""UserId""          INT NOT NULL,
+        ""OrderDate""       TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        ""TotalAmount""     DECIMAL(18,2) NOT NULL,
+        ""Status""          VARCHAR(50) NOT NULL DEFAULT 'Pending',
+        ""PaymentMethod""   VARCHAR(50) NOT NULL DEFAULT 'COD',
+        ""ShippingAddress"" VARCHAR(500),
+        ""Note""            VARCHAR(500),
+        CONSTRAINT ""FK_Orders_Users"" FOREIGN KEY(""UserId"") REFERENCES ""Users""(""Id"")
+    );
+
+    CREATE TABLE IF NOT EXISTS ""OrderItems"" (
+        ""Id""          SERIAL PRIMARY KEY,
+        ""OrderId""     INT NOT NULL,
+        ""ProductId""   INT NOT NULL,
+        ""Quantity""    INT NOT NULL DEFAULT 1,
+        ""PriceAtTime"" DECIMAL(18,2) NOT NULL,
+        CONSTRAINT ""FK_OrderItems_Orders"" FOREIGN KEY(""OrderId"") REFERENCES ""Orders""(""Id""),
+        CONSTRAINT ""FK_OrderItems_Products"" FOREIGN KEY(""ProductId"") REFERENCES ""Products""(""Id"")
+    );
+
+    CREATE TABLE IF NOT EXISTS ""CartItems"" (
+        ""Id""        SERIAL PRIMARY KEY,
+        ""UserId""    INT NOT NULL,
+        ""ProductId"" INT NOT NULL,
+        ""Quantity""  INT NOT NULL DEFAULT 1,
+        CONSTRAINT ""FK_CartItems_Users"" FOREIGN KEY(""UserId"") REFERENCES ""Users""(""Id""),
+        CONSTRAINT ""FK_CartItems_Products"" FOREIGN KEY(""ProductId"") REFERENCES ""Products""(""Id"")
+    );
+
+    CREATE TABLE IF NOT EXISTS ""Reviews"" (
+        ""Id""            SERIAL PRIMARY KEY,
+        ""ProductId""     INT NOT NULL,
+        ""UserId""        INT NOT NULL,
+        ""Rating""        INT NOT NULL DEFAULT 5,
+        ""Comment""       TEXT,
+        ""CreatedAt""     TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+        ""IsAdminReply""  BOOLEAN NOT NULL DEFAULT FALSE,
+        ""ParentReviewId"" INT,
+        CONSTRAINT ""FK_Reviews_Products"" FOREIGN KEY(""ProductId"") REFERENCES ""Products""(""Id""),
+        CONSTRAINT ""FK_Reviews_Users"" FOREIGN KEY(""UserId"") REFERENCES ""Users""(""Id"")
+    );
+");
 }
 
 app.Run();
