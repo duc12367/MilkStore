@@ -183,31 +183,15 @@
 }
 else
 {
-    <!-- placeholder grid when no featured products -->
+    <!-- Hiển thị khi chưa có sản phẩm nào trong DB -->
     <div class="container section-block">
         <div class="section-header">
             <h2 class="sec-title">Sản phẩm nổi bật</h2>
         </div>
-        <div class="prd-grid">
-            @foreach (var p in Model){
-            <div class="prd-card">
-                <div class="prd-img-link">
-                    <img src="@p.ImageUrl" alt="@p.Name" class="prd-img" />
-                </div>
-                <div class="prd-body">
-                <div class="prd-brand">@p.Brand</div>
-                <div class="prd-name">@p.Name</div>
-                    <div class="prd-footer">
-                        <span class="prd-price">@p.Price.ToString("N0") đ</span>
-                        <button class="btn-cart-sm">
-                        <img src="https://cdn-icons-png.flaticon.com/512/3144/3144456.png"
-                         style="width:14px;height:14px;filter:brightness(10)">
-                            Thêm
-                        </button>
-                    </div>
-                </div>
-            </div>
-}
+        <div style="text-align:center;padding:3rem 1rem;color:#888;">
+            <img src="https://cdn-icons-png.flaticon.com/512/3514/3514491.png" alt="" style="width:60px;opacity:0.3;margin-bottom:1rem;display:block;margin-left:auto;margin-right:auto">
+            <p style="font-size:1.1rem">Chưa có sản phẩm nào. Vui lòng quay lại sau!</p>
+            <a asp-area="" asp-controller="Product" asp-action="Index" class="btn btn-outline-success mt-3">Xem tất cả sản phẩm</a>
         </div>
     </div>
 }
