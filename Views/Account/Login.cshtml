@@ -215,9 +215,27 @@ async function sendForgot(){
     const email = document.getElementById('forgot-email').value.trim();
     if (!email) return;
     const msg = document.getElementById('forgot-msg');
+    const btn = document.querySelector('[onclick="sendForgot()"]');
+    btn.disabled = true;
+    btn.textContent = 'Đang gửi...';
     msg.style.display = 'block';
-    msg.style.color = '#1a6b3c';
-    msg.textContent = ' Nếu email tồn tại, chúng mình sẽ gửi link đặt lại mật khẩu trong vài phút!';
+    msg.style.color = '#888';
+    msg.textContent = 'Đang xử lý...';
+    try {
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value ?? '';
+        const res = await fetch('/Account/ForgotPassword', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+            body: `email=${encodeURIComponent(email)}&__RequestVerificationToken=${encodeURIComponent(token)}`
+        });
+        msg.style.color = '#1a6b3c';
+        msg.textContent = '✅ Nếu email tồn tại, chúng mình sẽ gửi link đặt lại mật khẩu trong vài phút!';
+    } catch(e) {
+        msg.style.color = '#c0392b';
+        msg.textContent = '❌ Có lỗi xảy ra, vui lòng thử lại!';
+    }
+    btn.disabled = false;
+    btn.textContent = 'Gửi email';
 }
 </script>
 </body>
