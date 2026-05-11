@@ -35,7 +35,7 @@ public class EmailService
 
             // Neu chua co domain rieng, dung onboarding@resend.dev
             // (chi gui duoc toi chinh chu tai khoan Resend)
-            var fromAddr = string.IsNullOrEmpty(_from) ? "MilkStore <onboarding@resend.dev>" : $"MilkStore <{_from}>";
+            var fromAddr = "MilkStore <onboarding@resend.dev>";
 
             var payload = JsonSerializer.Serialize(new
             {
