@@ -1,28 +1,28 @@
-﻿using MailKit.Net.Smtp;
-using MailKit.Security;
-using MimeKit;
-using System.Net.Mail;
+﻿using System.Text;
+using System.Text.Json;
 
 namespace MilkStore.Services;
 
 public class EmailService
 {
+    private readonly string _apiKey;
     private readonly string _from;
-    private readonly string _password;
     private readonly ILogger<EmailService> _logger;
+    private readonly IHttpClientFactory _httpFactory;
 
-    public EmailService(ILogger<EmailService> logger)
+    public EmailService(ILogger<EmailService> logger, IHttpClientFactory httpFactory)
     {
-        _from = Environment.GetEnvironmentVariable("SMTP_EMAIL") ?? "";
-        _password = Environment.GetEnvironmentVariable("SMTP_PASSWORD") ?? "";
+        _apiKey = Environment.GetEnvironmentVariable("RESEND_API_KEY") ?? "";
+        _from = Environment.GetEnvironmentVariable("SMTP_EMAIL") ?? "onboarding@resend.dev";
         _logger = logger;
+        _httpFactory = httpFactory;
     }
 
     public async Task SendAsync(string to, string subject, string body)
     {
-        if (string.IsNullOrEmpty(_from) || string.IsNullOrEmpty(_password))
+        if (string.IsNullOrEmpty(_apiKey))
         {
-            _logger.LogError("[EMAIL] SMTP_EMAIL hoac SMTP_PASSWORD chua duoc cau hinh!");
+            _logger.LogError("[EMAIL] RESEND_API_KEY chua duoc cau hinh!");
             return;
         }
 
@@ -30,34 +30,36 @@ public class EmailService
 
         try
         {
-            var message = new MimeMessage();
-            message.From.Add(new MailboxAddress("MilkStore", _from));
-            message.To.Add(MailboxAddress.Parse(to));
-            message.Subject = subject;
-            message.Body = new TextPart("html") { Text = body };
+            var client = _httpFactory.CreateClient();
+            client.DefaultRequestHeaders.Add("Authorization", $"Bearer {_apiKey}");
 
-            using var client = new MailKit.Net.Smtp.SmtpClient();
+            // Neu chua co domain rieng, dung onboarding@resend.dev
+            // (chi gui duoc toi chinh chu tai khoan Resend)
+            var fromAddr = string.IsNullOrEmpty(_from) ? "MilkStore <onboarding@resend.dev>" : $"MilkStore <{_from}>";
 
-            // Thu port 587 truoc, neu that thi thu 465
-            try
+            var payload = JsonSerializer.Serialize(new
             {
-                await client.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
-            }
-            catch
-            {
-                _logger.LogWarning("[EMAIL] Port 587 that bai, thu port 465...");
-                await client.ConnectAsync("smtp.gmail.com", 465, SecureSocketOptions.SslOnConnect);
-            }
+                from = fromAddr,
+                to = new[] { to },
+                subject = subject,
+                html = body
+            });
 
-            await client.AuthenticateAsync(_from, _password);
-            await client.SendAsync(message);
-            await client.DisconnectAsync(true);
+            var response = await client.PostAsync(
+                "https://api.resend.com/emails",
+                new StringContent(payload, Encoding.UTF8, "application/json")
+            );
 
-            _logger.LogInformation("[EMAIL] Gui email thanh cong toi {To}", to);
+            var result = await response.Content.ReadAsStringAsync();
+
+            if (response.IsSuccessStatusCode)
+                _logger.LogInformation("[EMAIL] Gui thanh cong toi {To}: {Result}", to, result);
+            else
+                _logger.LogError("[EMAIL] Resend tra loi loi {Code}: {Result}", (int)response.StatusCode, result);
         }
         catch (Exception ex)
         {
-            _logger.LogError("[EMAIL] LOI gui email toi {To}: {Message}", to, ex.Message);
+            _logger.LogError("[EMAIL] Loi gui email: {Message}", ex.Message);
         }
     }
 }
