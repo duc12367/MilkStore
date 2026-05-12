@@ -104,6 +104,19 @@ public class OrderController(MilkStore4Context db) : Controller
         if (!items.Any())
             return RedirectToAction("Index", "Cart");
 
+        // *** KIỂM TRA TỒN KHO TRƯỚC KHI ĐẶT HÀNG ***
+        // Nếu bất kỳ sản phẩm nào SL mua > SL tồn kho → báo lỗi, không tạo đơn
+        var outOfStockItems = items
+            .Where(c => c.Product != null && c.Quantity > c.Product.StockQuantity)
+            .Select(c => c.Product!.ProductName)
+            .ToList();
+
+        if (outOfStockItems.Any())
+        {
+            TempData["Error"] = $"Sản phẩm sau không đủ số lượng tồn kho: {string.Join(", ", outOfStockItems)}. Vui lòng kiểm tra lại giỏ hàng.";
+            return RedirectToAction("Index", "Cart");
+        }
+
         // Bước 1: Tính tổng tiền (snapshot tại thời điểm đặt)
         decimal total = items.Sum(c => (c.Product?.Price ?? 0m) * c.Quantity);
 
