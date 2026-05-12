@@ -1,3 +1,4 @@
+using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MilkStore.Models;
@@ -182,5 +183,50 @@ public class AccountController : Controller
         await db.SaveChangesAsync();
         TempData["Success"] = "Đổi mật khẩu thành công! Hãy đăng nhập lại.";
         return RedirectToAction("Login");
+    }
+
+    // ============================================================
+    // GOOGLE OAUTH
+    // ============================================================
+    public IActionResult GoogleLogin(string? returnUrl = "/")
+    {
+        var props = new Microsoft.AspNetCore.Authentication.AuthenticationProperties
+        {
+            RedirectUri = Url.Action("GoogleCallback", "Account", new { returnUrl })
+        };
+        return Challenge(props, "Google");
+    }
+
+    public async Task<IActionResult> GoogleCallback(string? returnUrl = "/")
+    {
+        var result = await HttpContext.AuthenticateAsync("Cookies");
+        if (!result.Succeeded) return RedirectToAction("Login");
+
+        var claims = result.Principal?.Claims;
+        var email = claims?.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value ?? "";
+        var fullName = claims?.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Name)?.Value ?? "Google User";
+
+        if (string.IsNullOrEmpty(email)) return RedirectToAction("Login");
+
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Email == email);
+        if (user == null)
+        {
+            user = new User
+            {
+                Email = email,
+                FullName = fullName,
+                Password = Guid.NewGuid().ToString(),
+                RoleId = 2
+            };
+            db.Users.Add(user);
+            await db.SaveChangesAsync();
+        }
+
+        HttpContext.Session.SetInt32("UserId", user.Id);
+        HttpContext.Session.SetString("FullName", user.FullName ?? "");
+        HttpContext.Session.SetString("Role", user.RoleId == 1 ? "Admin" : "Customer");
+
+        await HttpContext.SignOutAsync("Cookies");
+        return Redirect(returnUrl ?? "/");
     }
 }
