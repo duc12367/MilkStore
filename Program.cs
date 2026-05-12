@@ -62,6 +62,12 @@ builder.Services.AddAuthentication(options =>
 var app = builder.Build();
 
 app.UseForwardedHeaders();
+// THÊM ĐOẠN NÀY
+app.Use(async (context, next) =>
+{
+    context.Request.Scheme = "https";
+    await next();
+});
 
 if (!app.Environment.IsDevelopment())
 {
