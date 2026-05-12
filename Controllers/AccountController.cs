@@ -82,9 +82,10 @@ public class AccountController : Controller
     }
 
     [HttpPost, ValidateAntiForgeryToken]
-    public IActionResult Logout()
+    public async Task<IActionResult> Logout()  // ← đổi thành async
     {
         HttpContext.Session.Clear();
+        await HttpContext.SignOutAsync("Cookies");  // ← THÊM: xóa Google cookie, tránh tự đăng nhập lại
         return RedirectToAction("Login");
     }
 
@@ -190,10 +191,11 @@ public class AccountController : Controller
     // ============================================================
     public IActionResult GoogleLogin(string? returnUrl = "/")
     {
-        var props = new Microsoft.AspNetCore.Authentication.AuthenticationProperties
+        var props = new AuthenticationProperties
         {
             RedirectUri = Url.Action("GoogleCallback", "Account", new { returnUrl })
         };
+        props.Parameters.Add("prompt", "select_account");  // ← THÊM: luôn hiện màn hình chọn tài khoản Google
         return Challenge(props, "Google");
     }
 
@@ -222,11 +224,14 @@ public class AccountController : Controller
             await db.SaveChangesAsync();
         }
 
+        // ← SỬA: thêm đủ RoleId và Email vào session (giống login thường)
         HttpContext.Session.SetInt32("UserId", user.Id);
+        HttpContext.Session.SetInt32("RoleId", user.RoleId);
         HttpContext.Session.SetString("FullName", user.FullName ?? "");
+        HttpContext.Session.SetString("Email", user.Email ?? "");
         HttpContext.Session.SetString("Role", user.RoleId == 1 ? "Admin" : "Customer");
 
-        await HttpContext.SignOutAsync("Cookies");
+        await HttpContext.SignOutAsync("Cookies");  // xóa cookie Google sau khi lấy thông tin xong
         return Redirect(returnUrl ?? "/");
     }
 }
