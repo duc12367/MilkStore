@@ -5,6 +5,7 @@
 
 
 using Microsoft.EntityFrameworkCore;
+using Microsoft.AspNetCore.HttpOverrides;   // ← THÊM MỚI: để nhận HTTPS từ reverse proxy Render
 using MilkStore.Hubs;
 using MilkStore.Models;
 
@@ -27,6 +28,16 @@ builder.WebHost.ConfigureKestrel(options =>
 
 // ĐĂNG KÝ SERVICES VÀO DI CONTAINER
 
+// ← THÊM MỚI: Cấu hình ForwardedHeaders để app nhận biết đang chạy sau HTTPS proxy của Render
+// Render chạy reverse proxy: client → HTTPS → Render proxy → HTTP nội bộ → app
+// Nếu không có cấu hình này, app thấy scheme là "http://" thay vì "https://"
+// → Google OAuth sẽ gửi redirect_uri=http://... thay vì https://... → bị lỗi mismatch
+builder.Services.Configure<ForwardedHeadersOptions>(options =>
+{
+    options.ForwardedHeaders = ForwardedHeaders.XForwardedProto;
+    options.KnownNetworks.Clear();   // Tin tưởng tất cả proxy (an toàn vì Render quản lý hạ tầng)
+    options.KnownProxies.Clear();
+});
 
 // Hỗ trợ MVC Controllers + Razor Views
 builder.Services.AddControllersWithViews();
@@ -72,6 +83,10 @@ builder.Services.AddAuthentication(options =>
 
 var app = builder.Build();
 
+// ← THÊM MỚI: Phải đứng ĐẦU TIÊN trong pipeline, trước tất cả middleware khác
+// Đọc header X-Forwarded-Proto từ Render proxy và cập nhật Request.Scheme thành "https"
+// Nhờ đó Google OAuth sẽ tạo redirect_uri=https://... thay vì http://...
+app.UseForwardedHeaders();
 
 // CẤU HÌNH MIDDLEWARE PIPELINE
 // Thứ tự middleware RẤT QUAN TRỌNG — request đi qua theo thứ tự này
