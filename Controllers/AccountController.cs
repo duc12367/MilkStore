@@ -82,10 +82,10 @@ public class AccountController : Controller
     }
 
     [HttpPost, ValidateAntiForgeryToken]
-    public async Task<IActionResult> Logout()  // ← đổi thành async
+    public async Task<IActionResult> Logout()
     {
         HttpContext.Session.Clear();
-        await HttpContext.SignOutAsync("Cookies");  // ← THÊM: xóa Google cookie, tránh tự đăng nhập lại
+        await HttpContext.SignOutAsync("Cookies");
         return RedirectToAction("Login");
     }
 
@@ -145,13 +145,11 @@ public class AccountController : Controller
             <a href='{resetLink}' style='display:inline-block;padding:12px 28px;background:#1a3a2a;color:#fff;border-radius:8px;text-decoration:none;font-weight:700;margin:16px 0'>
                 Đặt lại mật khẩu
             </a>
-            <p style='color:#888;font-size:13px'>Link có hiệu lực trong <b>1 giờ</b>. Nếu bạn không yêu cầu, hãy bỏ qua email này.</p>
-            <hr style='border:none;border-top:1px solid #eee;margin:20px 0'>
-            <p style='color:#aaa;font-size:12px'>MilkStore — Sữa sạch cho cả gia đình 🥛</p>
+            <p style='color:#888;font-size:13px'>Link có hiệu lực trong <b>1 giờ</b>.</p>
         </div>";
 
         await _email.SendAsync(email, "Đặt lại mật khẩu MilkStore", body);
-        ViewBag.Msg = " Đã gửi! Kiểm tra hộp thư của bạn (kể cả thư mục Spam).";
+        ViewBag.Msg = "Đã gửi! Kiểm tra hộp thư của bạn (kể cả thư mục Spam).";
         return View();
     }
 
@@ -195,7 +193,7 @@ public class AccountController : Controller
         {
             RedirectUri = Url.Action("GoogleCallback", "Account", new { returnUrl })
         };
-        props.Parameters.Add("prompt", "select_account");  // ← THÊM: luôn hiện màn hình chọn tài khoản Google
+        props.Parameters.Add("prompt", "select_account");
         return Challenge(props, "Google");
     }
 
@@ -213,25 +211,64 @@ public class AccountController : Controller
         var user = await db.Users.FirstOrDefaultAsync(u => u.Email == email);
         if (user == null)
         {
-            user = new User
-            {
-                Email = email,
-                FullName = fullName,
-                Password = Guid.NewGuid().ToString(),
-                RoleId = 2
-            };
+            user = new User { Email = email, FullName = fullName, Password = Guid.NewGuid().ToString(), RoleId = 2 };
             db.Users.Add(user);
             await db.SaveChangesAsync();
         }
 
-        // ← SỬA: thêm đủ RoleId và Email vào session (giống login thường)
         HttpContext.Session.SetInt32("UserId", user.Id);
         HttpContext.Session.SetInt32("RoleId", user.RoleId);
         HttpContext.Session.SetString("FullName", user.FullName ?? "");
         HttpContext.Session.SetString("Email", user.Email ?? "");
         HttpContext.Session.SetString("Role", user.RoleId == 1 ? "Admin" : "Customer");
 
-        await HttpContext.SignOutAsync("Cookies");  // xóa cookie Google sau khi lấy thông tin xong
+        await HttpContext.SignOutAsync("Cookies");
+        return Redirect(returnUrl ?? "/");
+    }
+
+    // ============================================================
+    // FACEBOOK OAUTH
+    // ============================================================
+    public IActionResult FacebookLogin(string? returnUrl = "/")
+    {
+        var props = new AuthenticationProperties
+        {
+            RedirectUri = Url.Action("FacebookCallback", "Account", new { returnUrl })
+        };
+        return Challenge(props, "Facebook");
+    }
+
+    public async Task<IActionResult> FacebookCallback(string? returnUrl = "/")
+    {
+        var result = await HttpContext.AuthenticateAsync("Cookies");
+        if (!result.Succeeded) return RedirectToAction("Login");
+
+        var claims = result.Principal?.Claims;
+        var email = claims?.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value ?? "";
+        var fullName = claims?.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Name)?.Value ?? "Facebook User";
+
+        // Facebook đôi khi không trả email — dùng ID thay thế
+        if (string.IsNullOrEmpty(email))
+        {
+            var fbId = claims?.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "";
+            email = $"fb_{fbId}@facebook.com";
+        }
+
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Email == email);
+        if (user == null)
+        {
+            user = new User { Email = email, FullName = fullName, Password = Guid.NewGuid().ToString(), RoleId = 2 };
+            db.Users.Add(user);
+            await db.SaveChangesAsync();
+        }
+
+        HttpContext.Session.SetInt32("UserId", user.Id);
+        HttpContext.Session.SetInt32("RoleId", user.RoleId);
+        HttpContext.Session.SetString("FullName", user.FullName ?? "");
+        HttpContext.Session.SetString("Email", user.Email ?? "");
+        HttpContext.Session.SetString("Role", user.RoleId == 1 ? "Admin" : "Customer");
+
+        await HttpContext.SignOutAsync("Cookies");
         return Redirect(returnUrl ?? "/");
     }
 }
