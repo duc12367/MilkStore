@@ -1,4 +1,3 @@
-
 // FILE: Program.cs
 // MỤC ĐÍCH: Điểm khởi động ứng dụng ASP.NET Core MilkStore.
 //           Cấu hình toàn bộ service container (DI), middleware pipeline,
@@ -57,6 +56,20 @@ builder.Services.AddHttpClient();
 builder.Services.AddSignalR();
 
 builder.Services.AddTransient<MilkStore.Services.EmailService>();
+
+// Google OAuth
+builder.Services.AddAuthentication(options =>
+{
+    options.DefaultScheme = "Cookies";
+})
+.AddCookie("Cookies")
+.AddGoogle("Google", options =>
+{
+    options.ClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID") ?? "";
+    options.ClientSecret = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_SECRET") ?? "";
+    options.CallbackPath = "/signin-google";
+});
+
 var app = builder.Build();
 
 
@@ -94,7 +107,8 @@ app.UseStatusCodePages(async context =>
 
 app.UseStaticFiles();   // Phục vụ file tĩnh trong wwwroot (CSS, JS, ảnh)
 app.UseRouting();       // Kích hoạt hệ thống routing
-app.UseSession();       // Bật Session (phải đặt TRƯỚC UseAuthorization)
+app.UseSession();
+app.UseAuthentication();
 app.UseAuthorization(); // Kiểm tra quyền truy cập (dùng với [Authorize])
 app.MapStaticAssets();  // .NET 10: tối ưu serving static assets với fingerprinting
 
