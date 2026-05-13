@@ -52,6 +52,9 @@ public partial class Order
     /// <summary>Địa chỉ giao hàng do khách nhập, có thể khác địa chỉ tài khoản.</summary>
     public string? ShippingAddress { get; set; }
 
+    /// <summary>Số điện thoại liên hệ giao hàng do khách nhập lúc checkout.</summary>
+    public string? Phone { get; set; }
+
     /// <summary>Ghi chú thêm của khách (ví dụ: "giao buổi sáng", "gọi trước khi giao").</summary>
     public string? Note { get; set; }
 
