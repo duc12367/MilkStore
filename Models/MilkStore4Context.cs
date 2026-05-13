@@ -18,6 +18,7 @@ public partial class MilkStore4Context : DbContext
     public virtual DbSet<Brand> Brands { get; set; }
 
     public virtual DbSet<CartItem> CartItems { get; set; }
+    public virtual DbSet<Coupon> Coupons { get; set; }
 
     public virtual DbSet<Category> Categories { get; set; }
 

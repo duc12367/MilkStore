@@ -54,7 +54,9 @@ public class OrderController(MilkStore4Context db) : Controller
 
         ViewBag.Items = items;
         ViewBag.Total = items.Sum(c => (c.Product?.Price ?? 0m) * c.Quantity);
-        ViewBag.DefaultAddress = user?.Address ?? "";  // Điền sẵn địa chỉ tài khoản
+        ViewBag.DefaultAddress = user?.Address ?? "";
+        ViewBag.DefaultPhone = user?.Phone ?? "";
+        ViewBag.DefaultEmail = user?.Email ?? "";
 
         return View();
     }
@@ -91,10 +93,30 @@ public class OrderController(MilkStore4Context db) : Controller
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> PlaceOrder(string shippingAddress,
-        string paymentMethod, string? note)
+        string paymentMethod, string? note, string? phone, string? email, string? couponCode)
     {
         if (UserIdNullable == null)
             return RedirectToAction("Login", "Account");
+
+        // Validate số điện thoại bắt buộc + định dạng (TT13)
+        if (string.IsNullOrWhiteSpace(phone))
+        {
+            TempData["Error"] = "Vui lòng nhập số điện thoại.";
+            return RedirectToAction("Checkout");
+        }
+        if (!System.Text.RegularExpressions.Regex.IsMatch(phone.Trim(), @"^[0-9]{10,11}$"))
+        {
+            TempData["Error"] = "Số điện thoại không hợp lệ. Vui lòng nhập 10-11 chữ số.";
+            return RedirectToAction("Checkout");
+        }
+
+        // Validate email nếu nhập (TT12)
+        if (!string.IsNullOrWhiteSpace(email) &&
+            !System.Text.RegularExpressions.Regex.IsMatch(email.Trim(), @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
+        {
+            TempData["Error"] = "Email không đúng định dạng. Ví dụ: abc@gmail.com";
+            return RedirectToAction("Checkout");
+        }
 
         var items = await db.CartItems
             .Include(c => c.Product)
@@ -120,15 +142,35 @@ public class OrderController(MilkStore4Context db) : Controller
         // Bước 1: Tính tổng tiền (snapshot tại thời điểm đặt)
         decimal total = items.Sum(c => (c.Product?.Price ?? 0m) * c.Quantity);
 
-        // Bước 2: Tạo Order và lưu lần 1 để lấy Order.Id tự tăng
+        // Bước 1b: Áp dụng mã giảm giá nếu có (TT10, TT11)
+        decimal discountAmount = 0;
+        if (!string.IsNullOrWhiteSpace(couponCode))
+        {
+            var coupon = await db.Coupons.FirstOrDefaultAsync(c => c.Code == couponCode.Trim().ToUpper());
+            if (coupon == null)
+            {
+                TempData["Error"] = "Mã giảm giá không tồn tại.";
+                return RedirectToAction("Checkout");
+            }
+            if (coupon.ExpiryDate < DateTime.UtcNow)
+            {
+                TempData["Error"] = "Mã giảm giá đã hết hạn.";
+                return RedirectToAction("Checkout");
+            }
+            discountAmount = coupon.DiscountType == "Percent"
+                ? total * coupon.DiscountValue / 100
+                : coupon.DiscountValue;
+            total = Math.Max(0, total - discountAmount);
+        }
         var order = new Order
         {
             UserId = UserId,
             OrderDate = DateTime.UtcNow,
             TotalAmount = total,
-            Status = "Pending",          // Trạng thái ban đầu luôn là Pending
+            Status = "Pending",
             PaymentMethod = paymentMethod,
             ShippingAddress = shippingAddress,
+            Phone = phone,
             Note = note
         };
 
