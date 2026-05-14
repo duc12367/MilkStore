@@ -29,8 +29,8 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromHours(2);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
-    options.Cookie.SameSite = SameSiteMode.None;        // ← đổi Lax thành None
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // ← thêm
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 });
 
 builder.Services.AddHttpContextAccessor();
@@ -45,8 +45,8 @@ builder.Services.AddAuthentication(options =>
 })
 .AddCookie("Cookies", options =>
 {
-    options.Cookie.SameSite = SameSiteMode.None;        // ← thêm
-    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // ← thêm
+    options.Cookie.SameSite = SameSiteMode.None;
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always;
 })
 .AddGoogle("Google", options =>
 {
@@ -113,6 +113,7 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<MilkStore4Context>();
 
+    // ── BƯỚC 1: Tạo bảng ChatMessages ──────────────────────────────────────
     db.Database.ExecuteSqlRaw(@"
         CREATE TABLE IF NOT EXISTS ""ChatMessages"" (
             ""Id""        SERIAL PRIMARY KEY,
@@ -126,6 +127,7 @@ using (var scope = app.Services.CreateScope())
         CREATE INDEX IF NOT EXISTS ""IX_ChatMessages_SessionId"" ON ""ChatMessages""(""SessionId"");
     ");
 
+    // ── BƯỚC 2: Tạo các bảng core ──────────────────────────────────────────
     db.Database.ExecuteSqlRaw(@"
     CREATE TABLE IF NOT EXISTS ""Roles"" (
         ""Id"" SERIAL PRIMARY KEY,
@@ -186,6 +188,36 @@ using (var scope = app.Services.CreateScope())
         CONSTRAINT ""FK_Reviews_Users"" FOREIGN KEY(""UserId"") REFERENCES ""Users""(""Id"")
     );
 ");
+
+    // ── BƯỚC 3: Thêm các cột mới (ADD COLUMN IF NOT EXISTS = an toàn) ──────
+    db.Database.ExecuteSqlRaw(@"
+        ALTER TABLE ""Orders""
+            ADD COLUMN IF NOT EXISTS ""Phone"" VARCHAR(20)  DEFAULT NULL,
+            ADD COLUMN IF NOT EXISTS ""Email"" VARCHAR(150) DEFAULT NULL;
+
+        ALTER TABLE ""Users""
+            ADD COLUMN IF NOT EXISTS ""BankAccountNumber"" VARCHAR(30)  DEFAULT NULL,
+            ADD COLUMN IF NOT EXISTS ""BankName""          VARCHAR(100) DEFAULT NULL,
+            ADD COLUMN IF NOT EXISTS ""OtpCode""           VARCHAR(10)  DEFAULT NULL,
+            ADD COLUMN IF NOT EXISTS ""OtpIssuedAt""       TIMESTAMPTZ  DEFAULT NULL;
+    ");
+
+    // ── BƯỚC 4: Tạo bảng Coupons + seed dữ liệu test ───────────────────────
+    db.Database.ExecuteSqlRaw(@"
+        CREATE TABLE IF NOT EXISTS ""Coupons"" (
+            ""Id""            SERIAL PRIMARY KEY,
+            ""Code""          VARCHAR(50)   NOT NULL UNIQUE,
+            ""DiscountType""  VARCHAR(20)   NOT NULL DEFAULT 'Percent',
+            ""DiscountValue"" DECIMAL(18,2) NOT NULL,
+            ""ExpiryDate""    TIMESTAMPTZ   NOT NULL
+        );
+        INSERT INTO ""Coupons"" (""Code"",""DiscountType"",""DiscountValue"",""ExpiryDate"") VALUES
+            ('SALE10',   'Percent', 10,    '2027-12-31'),
+            ('OLD2024',  'Percent', 15,    '2024-01-01'),
+            ('SUMMER20', 'Percent', 20,    '2027-12-31'),
+            ('FIXED50K', 'Fixed',   50000, '2027-12-31')
+        ON CONFLICT DO NOTHING;
+    ");
 }
 
 app.Run();
