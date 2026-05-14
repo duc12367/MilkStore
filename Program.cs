@@ -29,7 +29,8 @@ builder.Services.AddSession(options =>
     options.IdleTimeout = TimeSpan.FromHours(2);
     options.Cookie.HttpOnly = true;
     options.Cookie.IsEssential = true;
-    options.Cookie.SameSite = SameSiteMode.Lax;
+    options.Cookie.SameSite = SameSiteMode.None;        // ← đổi Lax thành None
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // ← thêm
 });
 
 builder.Services.AddHttpContextAccessor();
@@ -42,7 +43,11 @@ builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = "Cookies";
 })
-.AddCookie("Cookies")
+.AddCookie("Cookies", options =>
+{
+    options.Cookie.SameSite = SameSiteMode.None;        // ← thêm
+    options.Cookie.SecurePolicy = CookieSecurePolicy.Always; // ← thêm
+})
 .AddGoogle("Google", options =>
 {
     options.ClientId = Environment.GetEnvironmentVariable("GOOGLE_CLIENT_ID") ?? "";
@@ -62,7 +67,8 @@ builder.Services.AddAuthentication(options =>
 var app = builder.Build();
 
 app.UseForwardedHeaders();
-// THÊM ĐOẠN NÀY
+
+// Ép scheme thành https (Render chạy sau proxy)
 app.Use(async (context, next) =>
 {
     context.Request.Scheme = "https";
