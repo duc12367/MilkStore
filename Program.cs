@@ -1,6 +1,7 @@
 // FILE: Program.cs
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.HttpOverrides;
+using Microsoft.AspNetCore.DataProtection;
 using MilkStore.Hubs;
 using MilkStore.Models;
 
@@ -24,6 +25,17 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<MilkStore4Context>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("MilkStore")));
 
+// ── FIX lỗi "key not found in key ring" ─────────────────────────────────────
+// Render xóa filesystem sau mỗi deploy → Data Protection keys bị mất
+// → session cookie cũ không giải mã được → người dùng bị đăng xuất.
+// Giải pháp: lưu keys vào /tmp/dp-keys (tồn tại trong suốt phiên chạy)
+// + SetApplicationName cố định để key không bị đổi tên giữa các deploy.
+Directory.CreateDirectory("/tmp/dp-keys");
+builder.Services.AddDataProtection()
+    .SetApplicationName("MilkStore")
+    .PersistKeysToFileSystem(new DirectoryInfo("/tmp/dp-keys"));
+// ─────────────────────────────────────────────────────────────────────────────
+
 builder.Services.AddSession(options =>
 {
     options.IdleTimeout = TimeSpan.FromHours(2);
@@ -38,7 +50,6 @@ builder.Services.AddHttpClient();
 builder.Services.AddSignalR();
 builder.Services.AddTransient<MilkStore.Services.EmailService>();
 
-// Google + Facebook OAuth
 builder.Services.AddAuthentication(options =>
 {
     options.DefaultScheme = "Cookies";
@@ -68,7 +79,6 @@ var app = builder.Build();
 
 app.UseForwardedHeaders();
 
-// Ép scheme thành https (Render chạy sau proxy)
 app.Use(async (context, next) =>
 {
     context.Request.Scheme = "https";
@@ -113,7 +123,6 @@ using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<MilkStore4Context>();
 
-    // ── BƯỚC 1: Tạo bảng ChatMessages ──────────────────────────────────────
     db.Database.ExecuteSqlRaw(@"
         CREATE TABLE IF NOT EXISTS ""ChatMessages"" (
             ""Id""        SERIAL PRIMARY KEY,
@@ -127,7 +136,6 @@ using (var scope = app.Services.CreateScope())
         CREATE INDEX IF NOT EXISTS ""IX_ChatMessages_SessionId"" ON ""ChatMessages""(""SessionId"");
     ");
 
-    // ── BƯỚC 2: Tạo các bảng core ──────────────────────────────────────────
     db.Database.ExecuteSqlRaw(@"
     CREATE TABLE IF NOT EXISTS ""Roles"" (
         ""Id"" SERIAL PRIMARY KEY,
@@ -189,7 +197,6 @@ using (var scope = app.Services.CreateScope())
     );
 ");
 
-    // ── BƯỚC 3: Thêm các cột mới (ADD COLUMN IF NOT EXISTS = an toàn) ──────
     db.Database.ExecuteSqlRaw(@"
         ALTER TABLE ""Orders""
             ADD COLUMN IF NOT EXISTS ""Phone"" VARCHAR(20)  DEFAULT NULL,
@@ -202,7 +209,6 @@ using (var scope = app.Services.CreateScope())
             ADD COLUMN IF NOT EXISTS ""OtpIssuedAt""       TIMESTAMPTZ  DEFAULT NULL;
     ");
 
-    // ── BƯỚC 4: Tạo bảng Coupons + seed dữ liệu test ───────────────────────
     db.Database.ExecuteSqlRaw(@"
         CREATE TABLE IF NOT EXISTS ""Coupons"" (
             ""Id""            SERIAL PRIMARY KEY,
