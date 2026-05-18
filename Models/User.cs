@@ -51,6 +51,18 @@ public partial class User
     /// <summary>Số điện thoại. Có thể null nếu chưa cập nhật.</summary>
     public string? Phone { get; set; }
 
+    /// <summary>Số tài khoản ngân hàng (STK) dùng cho chuyển khoản.</summary>
+    public string? BankAccountNumber { get; set; }
+
+    /// <summary>Tên ngân hàng (VD: Vietcombank, Techcombank...).</summary>
+    public string? BankName { get; set; }
+
+    /// <summary>Mã OTP gần nhất được cấp (6 chữ số). Dùng để xác thực thanh toán chuyển khoản.</summary>
+    public string? OtpCode { get; set; }
+
+    /// <summary>Thời điểm cấp OTP (UTC). OTP hết hạn sau 5 phút.</summary>
+    public DateTime? OtpIssuedAt { get; set; }
+
     /// <summary>
     /// Token dùng cho chức năng quên mật khẩu. Lưu chuỗi ngẫu nhiên để
     /// kiểm tra khi người dùng truy cập link đặt lại mật khẩu.
