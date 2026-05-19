@@ -25,16 +25,15 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<MilkStore4Context>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("MilkStore")));
 
-// ── FIX lỗi "key not found in key ring" ─────────────────────────────────────
-// Render xóa filesystem sau mỗi deploy → Data Protection keys bị mất
-// → session cookie cũ không giải mã được → người dùng bị đăng xuất.
-// Giải pháp: lưu keys vào /tmp/dp-keys (tồn tại trong suốt phiên chạy)
-// + SetApplicationName cố định để key không bị đổi tên giữa các deploy.
-Directory.CreateDirectory("/tmp/dp-keys");
+// ── FIX TRIỆT ĐỂ lỗi "key not found in key ring" ───────────────────────────
+// PersistKeysToFileSystem("/tmp") bị mất sau redeploy vì Render xóa filesystem.
+// Giải pháp đúng: lưu key vào PostgreSQL → tồn tại vĩnh viễn qua mọi lần deploy.
+// Yêu cầu: cài package Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
+//          và MilkStore4Context implement IDataProtectionKeyContext
 builder.Services.AddDataProtection()
     .SetApplicationName("MilkStore")
-    .PersistKeysToFileSystem(new DirectoryInfo("/tmp/dp-keys"));
-// ─────────────────────────────────────────────────────────────────────────────
+    .PersistKeysToDbContext<MilkStore4Context>();
+// ────────────────────────────────────────────────────────────────────────────
 
 builder.Services.AddSession(options =>
 {
@@ -122,6 +121,15 @@ app.Urls.Add("http://0.0.0.0:8080");
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<MilkStore4Context>();
+
+    // Tạo bảng DataProtectionKeys nếu chưa có (cần cho PersistKeysToDbContext)
+    db.Database.ExecuteSqlRaw(@"
+        CREATE TABLE IF NOT EXISTS ""DataProtectionKeys"" (
+            ""Id""           SERIAL PRIMARY KEY,
+            ""FriendlyName"" TEXT,
+            ""Xml""          TEXT
+        );
+    ");
 
     db.Database.ExecuteSqlRaw(@"
         CREATE TABLE IF NOT EXISTS ""ChatMessages"" (
