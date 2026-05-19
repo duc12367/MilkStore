@@ -185,6 +185,18 @@ public class AccountController : Controller
     }
 
     // ============================================================
+    // FACEBOOK - XÓA DỮ LIỆU (bắt buộc theo chính sách Facebook)
+    // ============================================================
+    [HttpGet]
+    public IActionResult DeleteData()
+    {
+        return Content(
+            "Để yêu cầu xóa dữ liệu cá nhân, vui lòng liên hệ: vanduczai1@gmail.com",
+            "text/plain"
+        );
+    }
+
+    // ============================================================
     // GOOGLE OAUTH
     // ============================================================
     public IActionResult GoogleLogin(string? returnUrl = "/")
@@ -247,7 +259,6 @@ public class AccountController : Controller
         var email = claims?.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Email)?.Value ?? "";
         var fullName = claims?.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.Name)?.Value ?? "Facebook User";
 
-        // Facebook đôi khi không trả email — dùng ID thay thế
         if (string.IsNullOrEmpty(email))
         {
             var fbId = claims?.FirstOrDefault(c => c.Type == System.Security.Claims.ClaimTypes.NameIdentifier)?.Value ?? "";
