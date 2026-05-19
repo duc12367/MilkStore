@@ -25,15 +25,10 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<MilkStore4Context>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("MilkStore")));
 
-// ── FIX TRIỆT ĐỂ lỗi "key not found in key ring" ───────────────────────────
-// PersistKeysToFileSystem("/tmp") bị mất sau redeploy vì Render xóa filesystem.
-// Giải pháp đúng: lưu key vào PostgreSQL → tồn tại vĩnh viễn qua mọi lần deploy.
-// Yêu cầu: cài package Microsoft.AspNetCore.DataProtection.EntityFrameworkCore
-//          và MilkStore4Context implement IDataProtectionKeyContext
+Directory.CreateDirectory("/tmp/dp-keys");
 builder.Services.AddDataProtection()
     .SetApplicationName("MilkStore")
-    .PersistKeysToDbContext<MilkStore4Context>();
-// ────────────────────────────────────────────────────────────────────────────
+    .PersistKeysToFileSystem(new DirectoryInfo("/tmp/dp-keys"));
 
 builder.Services.AddSession(options =>
 {
@@ -69,7 +64,7 @@ builder.Services.AddAuthentication(options =>
     options.AppId = Environment.GetEnvironmentVariable("FACEBOOK_APP_ID") ?? "";
     options.AppSecret = Environment.GetEnvironmentVariable("FACEBOOK_APP_SECRET") ?? "";
     options.CallbackPath = "/signin-facebook";
-    options.Scope.Add("email");
+    // ← BỎ options.Scope.Add("email") vì Facebook app chưa approve scope này
     options.Fields.Add("email");
     options.Fields.Add("name");
 });
@@ -121,15 +116,6 @@ app.Urls.Add("http://0.0.0.0:8080");
 using (var scope = app.Services.CreateScope())
 {
     var db = scope.ServiceProvider.GetRequiredService<MilkStore4Context>();
-
-    // Tạo bảng DataProtectionKeys nếu chưa có (cần cho PersistKeysToDbContext)
-    db.Database.ExecuteSqlRaw(@"
-        CREATE TABLE IF NOT EXISTS ""DataProtectionKeys"" (
-            ""Id""           SERIAL PRIMARY KEY,
-            ""FriendlyName"" TEXT,
-            ""Xml""          TEXT
-        );
-    ");
 
     db.Database.ExecuteSqlRaw(@"
         CREATE TABLE IF NOT EXISTS ""ChatMessages"" (
