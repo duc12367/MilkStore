@@ -150,6 +150,19 @@
                             </button>
                         </form>
                     }
+                    @* [TC12/TC13] Nút xóa: chỉ hiện với đơn Cancelled hoặc Failed *@
+                    @if (o.Status == "Cancelled" || o.Status == "Failed")
+                    {
+                        <form asp-area="Admin" asp-controller="Order" asp-action="Delete" method="post" style="display:inline"
+                              onsubmit="return confirm('Xác nhận xóa vĩnh viễn đơn hàng #@(o.Id)?\nHành động này không thể hoàn tác.')">
+                            @Html.AntiForgeryToken()
+                            <input type="hidden" name="orderId" value="@(o.Id)" />
+                            <button type="submit" class="btn btn-danger btn-sm">
+                                <svg viewBox="0 0 20 20" fill="currentColor" style="width:14px;height:14px"><path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" /></svg>
+                                Xóa
+                            </button>
+                        </form>
+                    }
                 </div>
             </div>
         </div>
@@ -170,8 +183,17 @@
 
 @if (TempData["Success"] != null)
 {
-    <div style="position:fixed;bottom:1.5rem;right:1.5rem;background:#16a34a;color:#fff;padding:.85rem 1.5rem;border-radius:12px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.15)">
+    <div id="toast-success" style="position:fixed;bottom:1.5rem;right:1.5rem;background:#16a34a;color:#fff;padding:.85rem 1.5rem;border-radius:12px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.15)">
         ✓ @TempData["Success"]
     </div>
-    <script>setTimeout(()=>document.querySelector('[style*="position:fixed"]')?.remove(),3000)</script>
+    <script>setTimeout(()=>document.getElementById('toast-success')?.remove(),3000)</script>
+}
+
+@* [TC09/TC13/TC19] Toast lỗi — hiện khi có thao tác không hợp lệ hoặc DB lỗi *@
+@if (TempData["Error"] != null)
+{
+    <div id="toast-error" style="position:fixed;bottom:1.5rem;right:1.5rem;background:#dc2626;color:#fff;padding:.85rem 1.5rem;border-radius:12px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.15);max-width:360px">
+        ✕ @TempData["Error"]
+    </div>
+    <script>setTimeout(()=>document.getElementById('toast-error')?.remove(),5000)</script>
 }

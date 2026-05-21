@@ -98,6 +98,20 @@ public class OrderController(MilkStore4Context db) : Controller
         if (UserIdNullable == null)
             return RedirectToAction("Login", "Account");
 
+        // [TC06] FIX: Validate địa chỉ giao hàng bắt buộc.
+        //            Trước đây không có check này → tạo đơn với địa chỉ null,
+        //            shipper không biết giao đâu.
+        if (string.IsNullOrWhiteSpace(shippingAddress))
+        {
+            TempData["Error"] = "Vui lòng nhập địa chỉ giao hàng.";
+            return RedirectToAction("Checkout");
+        }
+        if (shippingAddress.Trim().Length < 10)
+        {
+            TempData["Error"] = "Địa chỉ giao hàng quá ngắn. Vui lòng nhập đầy đủ (tối thiểu 10 ký tự).";
+            return RedirectToAction("Checkout");
+        }
+
         // Validate số điện thoại bắt buộc + định dạng (TT13)
         if (string.IsNullOrWhiteSpace(phone))
         {
