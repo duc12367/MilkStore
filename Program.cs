@@ -200,7 +200,8 @@ using (var scope = app.Services.CreateScope())
             ADD COLUMN IF NOT EXISTS ""BankAccountNumber"" VARCHAR(30)  DEFAULT NULL,
             ADD COLUMN IF NOT EXISTS ""BankName""          VARCHAR(100) DEFAULT NULL,
             ADD COLUMN IF NOT EXISTS ""OtpCode""           VARCHAR(10)  DEFAULT NULL,
-            ADD COLUMN IF NOT EXISTS ""OtpIssuedAt""       TIMESTAMPTZ  DEFAULT NULL;
+            ADD COLUMN IF NOT EXISTS ""OtpIssuedAt""       TIMESTAMPTZ  DEFAULT NULL,
+            ADD COLUMN IF NOT EXISTS ""IsBlocked""         BOOLEAN      NOT NULL DEFAULT FALSE;
     ");
 
     db.Database.ExecuteSqlRaw(@"
