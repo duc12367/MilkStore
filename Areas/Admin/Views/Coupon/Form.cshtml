@@ -1,0 +1,268 @@
+﻿@model MilkStore.Models.Coupon
+@{
+    bool isEdit = Model.Id != 0;
+    ViewData["Title"] = isEdit ? "Sửa mã giảm giá" : "Thêm mã giảm giá";
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
+}
+
+<style>
+    .form-card {
+        background: #fff;
+        border-radius: 14px;
+        border: 1px solid #e2e8f0;
+        padding: 1.5rem;
+        max-width: 600px;
+    }
+
+    .form-group {
+        margin-bottom: 1.1rem;
+    }
+
+        .form-group label {
+            display: block;
+            font-size: .85rem;
+            font-weight: 600;
+            color: #374151;
+            margin-bottom: .35rem;
+        }
+
+    .form-control {
+        width: 100%;
+        padding: .5rem .85rem;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: .9rem;
+        outline: none;
+        transition: border-color .15s;
+        box-sizing: border-box;
+    }
+
+        .form-control:focus {
+            border-color: #0ea5e9;
+        }
+
+        .form-control.is-invalid {
+            border-color: #dc2626;
+        }
+
+    .invalid-feedback {
+        font-size: .8rem;
+        color: #dc2626;
+        margin-top: .25rem;
+        display: block;
+    }
+
+    .code-wrap {
+        position: relative;
+    }
+
+        .code-wrap input {
+            text-transform: uppercase;
+        }
+
+    .code-status {
+        font-size: .78rem;
+        margin-top: .25rem;
+    }
+
+    .code-ok {
+        color: #059669;
+    }
+
+    .code-dup {
+        color: #dc2626;
+    }
+
+    .radio-group {
+        display: flex;
+        gap: 1rem;
+    }
+
+    .radio-opt {
+        display: flex;
+        align-items: center;
+        gap: .4rem;
+        font-size: .9rem;
+        cursor: pointer;
+    }
+
+    .btn-row {
+        display: flex;
+        gap: .75rem;
+        margin-top: 1.5rem;
+    }
+
+    .btn-primary {
+        padding: .55rem 1.25rem;
+        background: #0ea5e9;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-size: .9rem;
+        font-weight: 600;
+        cursor: pointer;
+    }
+
+        .btn-primary:hover {
+            background: #0284c7;
+        }
+
+    .btn-secondary {
+        padding: .55rem 1.25rem;
+        background: #fff;
+        color: #374151;
+        border: 1px solid #e2e8f0;
+        border-radius: 8px;
+        font-size: .9rem;
+        cursor: pointer;
+        text-decoration: none;
+    }
+
+        .btn-secondary:hover {
+            background: #f8fafc;
+        }
+
+    .hint {
+        font-size: .78rem;
+        color: #94a3b8;
+        margin-top: .25rem;
+    }
+</style>
+
+<div class="page-wrap">
+    <div class="page-title">@(isEdit ? "Sửa mã giảm giá" : "Thêm mã giảm giá mới")</div>
+    <div class="page-sub">@(isEdit ? $"Chỉnh sửa mã {Model.Code}" : "Tạo mã khuyến mãi cho khách hàng")</div>
+
+    <div class="form-card">
+        <form asp-action="@(isEdit ? "Edit" : "Create")" asp-route-id="@Model.Id" method="post">
+            @Html.AntiForgeryToken()
+
+            @* ── Mã giảm giá ────────────────────────────────── *@
+            <div class="form-group">
+                <label asp-for="Code">Mã giảm giá <span style="color:red">*</span></label>
+                <div class="code-wrap">
+                    <input asp-for="Code" class="form-control @(ViewData.ModelState["Code"]?.Errors.Any() == true ? "is-invalid" : "")"
+                           placeholder="VD: SALE10, SUMMER20"
+                           style="text-transform:uppercase"
+                           id="codeInput"
+                           data-exclude-id="@Model.Id"
+                           autocomplete="off" />
+                    <span class="code-status" id="codeStatus"></span>
+                </div>
+                <span asp-validation-for="Code" class="invalid-feedback"></span>
+                <div class="hint">Chỉ dùng chữ cái và số, không có ký tự đặc biệt.</div>
+            </div>
+
+            @* ── Loại giảm ──────────────────────────────────── *@
+            <div class="form-group">
+                <label>Loại giảm giá <span style="color:red">*</span></label>
+                <div class="radio-group">
+                    <label class="radio-opt">
+                        <input type="radio" name="DiscountType" value="Percent"
+                        @(Model.DiscountType == "Percent" || string.IsNullOrEmpty(Model.DiscountType) ? "checked" : "") />
+                        Giảm theo % (tối đa 100%)
+                    </label>
+                    <label class="radio-opt">
+                        <input type="radio" name="DiscountType" value="Fixed"
+                        @(Model.DiscountType == "Fixed" ? "checked" : "") />
+                        Giảm số tiền cố định (VNĐ)
+                    </label>
+                </div>
+            </div>
+
+            @* ── Giá trị giảm ───────────────────────────────── *@
+            <div class="form-group">
+                <label asp-for="DiscountValue">Giá trị giảm <span style="color:red">*</span></label>
+                <input asp-for="DiscountValue" type="number" step="0.01" min="0.01"
+                       class="form-control @(ViewData.ModelState["DiscountValue"]?.Errors.Any() == true ? "is-invalid" : "")"
+                       placeholder="VD: 10 (cho 10%) hoặc 50000 (cho 50.000đ)" />
+                <span asp-validation-for="DiscountValue" class="invalid-feedback"></span>
+            </div>
+
+            @* ── Ngày bắt đầu ────────────────────────────────── *@
+            <div class="form-group">
+                <label asp-for="StartDate">Ngày bắt đầu hiệu lực <span style="color:red">*</span></label>
+                <input asp-for="StartDate" type="date"
+                       value="@Model.StartDate.ToString("yyyy-MM-dd")"
+                       class="form-control" />
+                <span asp-validation-for="StartDate" class="invalid-feedback"></span>
+            </div>
+
+            @* ── Ngày hết hạn ────────────────────────────────── *@
+            <div class="form-group">
+                <label asp-for="ExpiryDate">Ngày hết hạn <span style="color:red">*</span></label>
+                <input asp-for="ExpiryDate" type="date"
+                       value="@Model.ExpiryDate.ToString("yyyy-MM-dd")"
+                       class="form-control @(ViewData.ModelState["ExpiryDate"]?.Errors.Any() == true ? "is-invalid" : "")" />
+                <span asp-validation-for="ExpiryDate" class="invalid-feedback"></span>
+            </div>
+
+            @* ── Giới hạn lượt dùng ──────────────────────────── *@
+            <div class="form-group">
+                <label asp-for="MaxUsage">Số lượt dùng tối đa</label>
+                <input asp-for="MaxUsage" type="number" min="1"
+                       class="form-control"
+                       placeholder="Để trống = không giới hạn" />
+                <span asp-validation-for="MaxUsage" class="invalid-feedback"></span>
+                <div class="hint">Để trống nếu không muốn giới hạn số lần sử dụng.</div>
+            </div>
+
+            @if (isEdit)
+            {
+                <div class="form-group">
+                    <label>Số lượt đã dùng</label>
+                    <input type="number" value="@Model.UsageCount" class="form-control" readonly
+                           style="background:#f8fafc;color:#64748b;" />
+                    <input type="hidden" asp-for="UsageCount" />
+                </div>
+            }
+
+            <div class="btn-row">
+                <button type="submit" class="btn-primary">
+                    @(isEdit ? "Lưu thay đổi" : "Tạo mã giảm giá")
+                </button>
+                <a asp-action="Index" class="btn-secondary">Hủy</a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    // [FIX KM02, KM19] Real-time validate: kiểm tra trùng và ký tự đặc biệt
+    const codeInput  = document.getElementById('codeInput');
+    const codeStatus = document.getElementById('codeStatus');
+    const excludeId  = codeInput.dataset.excludeId || 0;
+    let debounce;
+
+    codeInput.addEventListener('input', () => {
+        const raw = codeInput.value.toUpperCase();
+        codeInput.value = raw;
+
+        clearTimeout(debounce);
+        codeStatus.textContent = '';
+        codeStatus.className   = 'code-status';
+
+        if (!raw) return;
+
+        // [FIX KM19] Kiểm tra ký tự đặc biệt ngay phía client
+        if (!/^[A-Z0-9]+$/.test(raw)) {
+            codeStatus.textContent = '✗ Mã chỉ được chứa chữ cái và số.';
+            codeStatus.className   = 'code-status code-dup';
+            return;
+        }
+
+        debounce = setTimeout(async () => {
+            try {
+                const res  = await fetch(`/Admin/Coupon/ValidateCode?code=${encodeURIComponent(raw)}&excludeId=${excludeId}`);
+                const data = await res.json();
+                if (data.exists) {
+                    codeStatus.textContent = '✗ Mã này đã tồn tại.';
+                    codeStatus.className   = 'code-status code-dup';
+                } else {
+                    codeStatus.textContent = '✓ Mã hợp lệ, có thể dùng.';
+                    codeStatus.className   = 'code-status code-ok';
+                }
+            } catch { }
+        }, 400);
+    });
+</script>

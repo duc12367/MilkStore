@@ -58,6 +58,10 @@ public partial class Order
     /// <summary>Ghi chú thêm của khách (ví dụ: "giao buổi sáng", "gọi trước khi giao").</summary>
     public string? Note { get; set; }
 
+    // [FIX KM22] Lưu mã coupon và số tiền đã giảm để audit/báo cáo
+    public string? CouponCode { get; set; }
+    public decimal DiscountAmount { get; set; } = 0;
+
     // Navigation properties
     /// <summary>
     /// Danh sách các dòng sản phẩm trong đơn hàng này.

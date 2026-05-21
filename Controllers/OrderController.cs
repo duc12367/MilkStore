@@ -142,25 +142,45 @@ public class OrderController(MilkStore4Context db) : Controller
         // Bước 1: Tính tổng tiền (snapshot tại thời điểm đặt)
         decimal total = items.Sum(c => (c.Product?.Price ?? 0m) * c.Quantity);
 
-        // Bước 1b: Áp dụng mã giảm giá nếu có (TT10, TT11)
+        // Bước 1b: Áp dụng mã giảm giá nếu có
+        // [FIX KM12,13,14,15,22] Kiểm tra đầy đủ: tồn tại, StartDate, ExpiryDate, MaxUsage; lưu vào Order
         decimal discountAmount = 0;
+        string? appliedCouponCode = null;
         if (!string.IsNullOrWhiteSpace(couponCode))
         {
-            var coupon = await db.Coupons.FirstOrDefaultAsync(c => c.Code == couponCode.Trim().ToUpper());
+            var code = couponCode.Trim().ToUpper();
+            var coupon = await db.Coupons.FirstOrDefaultAsync(c => c.Code == code);
+            var now = DateTime.UtcNow;
+
             if (coupon == null)
             {
                 TempData["Error"] = "Mã giảm giá không tồn tại.";
                 return RedirectToAction("Checkout");
             }
-            if (coupon.ExpiryDate < DateTime.UtcNow)
+            if (now < coupon.StartDate)
+            {
+                TempData["Error"] = $"Mã giảm giá chưa có hiệu lực. Mã sẽ bắt đầu từ {coupon.StartDate:dd/MM/yyyy}.";
+                return RedirectToAction("Checkout");
+            }
+            if (now > coupon.ExpiryDate)
             {
                 TempData["Error"] = "Mã giảm giá đã hết hạn.";
                 return RedirectToAction("Checkout");
             }
+            if (coupon.MaxUsage.HasValue && coupon.UsageCount >= coupon.MaxUsage.Value)
+            {
+                TempData["Error"] = "Mã giảm giá đã hết lượt sử dụng.";
+                return RedirectToAction("Checkout");
+            }
+
             discountAmount = coupon.DiscountType == "Percent"
                 ? total * coupon.DiscountValue / 100
                 : coupon.DiscountValue;
             total = Math.Max(0, total - discountAmount);
+            appliedCouponCode = code;
+
+            // Tăng UsageCount ngay (sẽ SaveChanges cùng lần 1)
+            coupon.UsageCount += 1;
         }
         var order = new Order
         {
@@ -171,7 +191,10 @@ public class OrderController(MilkStore4Context db) : Controller
             PaymentMethod = paymentMethod,
             ShippingAddress = shippingAddress,
             Phone = phone,
-            Note = note
+            Note = note,
+            // [FIX KM22] Lưu coupon đã dùng để audit và báo cáo
+            CouponCode = appliedCouponCode,
+            DiscountAmount = discountAmount
         };
 
         db.Orders.Add(order);
@@ -318,4 +341,43 @@ public class OrderController(MilkStore4Context db) : Controller
         TempData["Success"] = "Đã hủy đơn hàng thành công.";
         return RedirectToAction("MyOrders");
     }
+
+    // ── GET /Order/PreviewCoupon?code=SALE10&total=500000 (AJAX) ──
+    // [FIX KM25] Trả về JSON để Checkout preview giảm giá real-time trước khi đặt hàng
+    [HttpGet]
+    public async Task<IActionResult> PreviewCoupon(string code, decimal total)
+    {
+        if (string.IsNullOrWhiteSpace(code))
+            return Json(new { error = "Vui lòng nhập mã giảm giá." });
+
+        code = code.Trim().ToUpper();
+        var coupon = await db.Coupons.FirstOrDefaultAsync(c => c.Code == code);
+        var now = DateTime.UtcNow;
+
+        if (coupon == null)
+            return Json(new { error = "Mã giảm giá không tồn tại." });
+        if (now < coupon.StartDate)
+            return Json(new { error = $"Mã chưa có hiệu lực, bắt đầu từ {coupon.StartDate:dd/MM/yyyy}." });
+        if (now > coupon.ExpiryDate)
+            return Json(new { error = "Mã giảm giá đã hết hạn." });
+        if (coupon.MaxUsage.HasValue && coupon.UsageCount >= coupon.MaxUsage.Value)
+            return Json(new { error = "Mã đã hết lượt sử dụng." });
+
+        decimal discount = coupon.DiscountType == "Percent"
+            ? total * coupon.DiscountValue / 100
+            : coupon.DiscountValue;
+        discount = Math.Min(discount, total);
+        string label = coupon.DiscountType == "Percent"
+            ? $"{coupon.DiscountValue}%"
+            : $"{coupon.DiscountValue:N0}đ";
+
+        return Json(new
+        {
+            message = $"Áp dụng thành công mã {code}!",
+            label,
+            discountAmount = discount,
+            finalTotal = total - discount
+        });
+    }
+
 }
