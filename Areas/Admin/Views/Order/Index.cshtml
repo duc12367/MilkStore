@@ -4,11 +4,35 @@
     <link rel="icon" type="image/png" href="~/images/logo-transparent.png" />
 }
 
-<div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem">
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem">
     <div>
         <div class="page-title">Quản lý hóa đơn</div>
         <div class="page-sub">Duyệt và quản lý đơn hàng từ khách hàng</div>
     </div>
+    <form method="get" style="display:flex;gap:.5rem;align-items:center;">
+        <input type="hidden" name="status" value="@ViewBag.Status" />
+        <div style="position:relative;">
+            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"
+                 style="width:16px;height:16px;position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#94a3b8;pointer-events:none">
+                <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 111 11a6 6 0 0116 0z" />
+            </svg>
+            <input type="text" name="search" value="@ViewBag.Search"
+                   placeholder="Tên khách, SĐT, mã đơn..."
+                   style="padding:.5rem .85rem .5rem 2.2rem;border:1px solid #e2e8f0;border-radius:8px;font-size:.85rem;width:260px;outline:none;"
+                   onfocus="this.style.borderColor='#0ea5e9'" onblur="this.style.borderColor='#e2e8f0'" />
+        </div>
+        <button type="submit"
+                style="padding:.5rem 1rem;background:#0ea5e9;color:#fff;border:none;border-radius:8px;font-size:.85rem;font-weight:600;cursor:pointer;">
+            Tìm
+        </button>
+        @if (!string.IsNullOrWhiteSpace(ViewBag.Search as string))
+        {
+            <a asp-area="Admin" asp-controller="Order" asp-action="Index" asp-route-status="@ViewBag.Status"
+               style="padding:.5rem .85rem;border:1px solid #e2e8f0;border-radius:8px;font-size:.85rem;color:#64748b;text-decoration:none;background:#fff;">
+                ✕ Xóa
+            </a>
+        }
+    </form>
 </div>
 
 <!-- Filter tabs -->
@@ -29,8 +53,8 @@
     @foreach (var (val, label) in statuses)
     {
         var isActive = (ViewBag.Status == val || (val == "" && ViewBag.Status == null));
-        <a asp-area="Admin" asp-controller="Order" asp-action="Index" asp-route-status="@val"
-               class="filter-tab @(isActive ? "active" : "")">
+        <a asp-area="Admin" asp-controller="Order" asp-action="Index" asp-route-status="@val" asp-route-search="@ViewBag.Search"
+           class="filter-tab @(isActive ? "active" : "")">
             @label
             <span style="background:@(isActive ? "rgba(255,255,255,.25)" : "#e2e8f0");color:@(isActive ? "#fff" : "#64748b");border-radius:10px;padding:.1rem .5rem;font-size:.72rem;font-weight:700;margin-left:.3rem">
                 @counts[si]
@@ -86,7 +110,7 @@
                 </div>
                 <div style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
                     <a asp-area="Admin" asp-controller="Order" asp-action="Detail" asp-route-id="@(o.Id)"
-                           class="btn btn-ghost btn-sm">
+                       class="btn btn-ghost btn-sm">
                         <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><path stroke-linecap="round" stroke-linejoin="round" d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" /><path stroke-linecap="round" stroke-linejoin="round" d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" /></svg>
                         Chi tiết
                     </a>
@@ -138,7 +162,7 @@
         @for (int i = 1; i <= ViewBag.TotalPages; i++)
         {
             <a asp-area="Admin" asp-controller="Order" asp-action="Index"
-               asp-route-page="@i" asp-route-status="@ViewBag.Status"
+               asp-route-page="@i" asp-route-status="@ViewBag.Status" asp-route-search="@ViewBag.Search"
                class="btn btn-sm @(ViewBag.Page == i ? "btn-primary" : "btn-ghost")">@i</a>
         }
     </div>

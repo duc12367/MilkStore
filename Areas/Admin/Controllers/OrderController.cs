@@ -1,4 +1,3 @@
-
 // FILE: Areas/Admin/Controllers/OrderController.cs
 // MỤC ĐÍCH: Quản lý đơn hàng từ phía admin.
 //           Gồm: xem danh sách (lọc + phân trang), cập nhật trạng thái,
@@ -40,30 +39,43 @@ public class OrderController(MilkStore4Context db) : Controller
     /// <summary>
     /// Danh sách đơn hàng. Hỗ trợ lọc theo trạng thái và phân trang 10 đơn/trang.
     /// </summary>
-    public async Task<IActionResult> Index(string? status, int page = 1)
+    public async Task<IActionResult> Index(string? status, string? search, int page = 1)
     {
         int pageSize = 10;
 
         var query = db.Orders
-            .Include(o => o.User)        // Lấy tên khách hàng
-            .Include(o => o.OrderItems)  // Lấy số lượng sản phẩm để hiển thị trong danh sách
-            .AsQueryable();              // Giữ dạng IQueryable để chắp thêm điều kiện
+            .Include(o => o.User)
+            .Include(o => o.OrderItems)
+            .AsQueryable();
 
-        // Lọc theo trạng thái nếu admin chọn tab cụ thể
         if (!string.IsNullOrEmpty(status))
             query = query.Where(o => o.Status == status);
 
-        // Đếm tổng để tính số trang (thực hiện COUNT trước khi Skip/Take)
+        // Tìm kiếm theo tên khách, số điện thoại, mã đơn hàng
+        if (!string.IsNullOrWhiteSpace(search))
+        {
+            var s = search.Trim().ToLower();
+            // Tìm theo ID nếu nhập số
+            if (int.TryParse(s, out int orderId))
+                query = query.Where(o => o.Id == orderId);
+            else
+                query = query.Where(o =>
+                    o.User!.FullName.ToLower().Contains(s) ||
+                    (o.Phone != null && o.Phone.Contains(s)) ||
+                    (o.ShippingAddress != null && o.ShippingAddress.ToLower().Contains(s)));
+        }
+
         int total = await query.CountAsync();
 
         var orders = await query
-            .OrderByDescending(o => o.OrderDate) // Đơn mới nhất lên đầu
-            .Skip((page - 1) * pageSize)          // Bỏ qua các trang trước
-            .Take(pageSize)                       // Lấy đúng 10 đơn
+            .OrderByDescending(o => o.OrderDate)
+            .Skip((page - 1) * pageSize)
+            .Take(pageSize)
             .ToListAsync();
 
-        ViewBag.Status     = status;
-        ViewBag.Page       = page;
+        ViewBag.Status = status;
+        ViewBag.Search = search;
+        ViewBag.Page = page;
         ViewBag.TotalPages = (int)Math.Ceiling(total / (double)pageSize);
 
         return View(orders);
@@ -145,13 +157,13 @@ public class OrderController(MilkStore4Context db) : Controller
 
         db.Reviews.Add(new Review
         {
-            UserId        = adminUserId,
-            ProductId     = productId,
-            Rating        = 5,              // Admin không cần chấm sao
-            Comment       = comment,
-            CreatedAt     = DateTime.UtcNow,
+            UserId = adminUserId,
+            ProductId = productId,
+            Rating = 5,              // Admin không cần chấm sao
+            Comment = comment,
+            CreatedAt = DateTime.UtcNow,
             ParentReviewId = reviewId,      // Lồng dưới bình luận gốc
-            IsAdminReply  = true            // Đánh dấu để View hiển thị khác (badge Admin)
+            IsAdminReply = true            // Đánh dấu để View hiển thị khác (badge Admin)
         });
 
         await db.SaveChangesAsync();
