@@ -25,10 +25,11 @@ builder.Services.AddControllersWithViews();
 builder.Services.AddDbContext<MilkStore4Context>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("MilkStore")));
 
-Directory.CreateDirectory("/tmp/dp-keys");
+// FIX: Lưu DataProtection keys vào PostgreSQL thay vì /tmp
+// /tmp bị xóa mỗi lần Render redeploy → key mất → session/antiforgery lỗi 400
 builder.Services.AddDataProtection()
     .SetApplicationName("MilkStore")
-    .PersistKeysToFileSystem(new DirectoryInfo("/tmp/dp-keys"));
+    .PersistKeysToDbContext<MilkStore.Models.MilkStore4Context>();
 
 builder.Services.AddSession(options =>
 {
