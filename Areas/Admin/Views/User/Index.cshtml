@@ -1,7 +1,7 @@
 @model List<MilkStore.Models.User>
 @{
     ViewData["Title"] = "Quản lý người dùng";
-    <link rel="icon" type="image/png" href="~/images/logo-transparent.png" />
+    string q = ViewBag.Q ?? "";
 }
 
 <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:1.25rem">
@@ -9,67 +9,315 @@
         <div class="page-title">Quản lý người dùng</div>
         <div class="page-sub">Phân quyền và quản lý tài khoản người dùng</div>
     </div>
+    <button class="btn btn-primary" onclick="openAddModal()">
+        + Thêm khách hàng
+    </button>
 </div>
 
-<!-- Search + filter -->
+<!-- FIX TC02, TC03: Thanh tìm kiếm hoạt động (form GET) -->
 <div class="card" style="margin-bottom:1.25rem">
     <div class="card-body" style="padding:.875rem 1.25rem;display:flex;gap:.75rem;align-items:center;flex-wrap:wrap">
-        <div class="search-wrap" style="flex:1;min-width:220px">
-            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"><path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
-            <input type="text" placeholder="Tìm kiếm theo tên, email..." />
+        <form method="get" action="" style="flex:1;min-width:220px;display:flex;gap:.5rem">
+            <div class="search-wrap" style="flex:1">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                </svg>
+                <input type="text" name="q" value="@q"
+                       placeholder="Tìm theo tên, email, SĐT hoặc mã (VD: U001)..." />
+            </div>
+            <button type="submit" class="btn btn-primary btn-sm">Tìm</button>
+            @if (!string.IsNullOrEmpty(q))
+            {
+                <a href="/Admin/User" class="btn btn-ghost btn-sm">Xóa lọc</a>
+            }
+        </form>
+    </div>
+</div>
+
+<!-- FIX TC03: Hiển thị thông báo không tìm thấy -->
+@if (!Model.Any())
+{
+    <div class="card" style="padding:2rem;text-align:center;color:#64748b">
+        @if (!string.IsNullOrEmpty(q))
+        {
+            <p>Không tìm thấy khách hàng nào khớp với <strong>"@q"</strong>.</p>
+            <a href="/Admin/User" class="btn btn-ghost btn-sm">Xem tất cả</a>
+        }
+        else
+        {
+            <p>Chưa có khách hàng nào trong hệ thống.</p>
+        }
+    </div>
+}
+else
+{
+    <!-- User cards -->
+    <div style="display:flex;flex-direction:column;gap:.75rem">
+        @foreach (var u in Model)
+        {
+            var roleLabel = u.RoleId == 1 ? "Quản trị viên" : u.RoleId == 2 ? "Khách hàng" : "Nhân viên kho";
+            var roleStyle = u.RoleId == 1 ? "background:#dcfce7;color:#166534" :
+                            u.RoleId == 2 ? "background:#f0f9ff;color:#0369a1" : "background:#faf5ff;color:#5b21b6";
+            var initials = u.FullName?.Length > 0 ? u.FullName.Substring(0, 1).ToUpper() : "?";
+            // FIX mã khách: dùng Id trực tiếp, không bao giờ trùng
+            var customerCode = "U" + u.Id.ToString("D3");
+            var statusText = u.IsBlocked ? "Đã khóa" : "Hoạt động";
+            var statusColor = u.IsBlocked ? "#ef4444" : "#10b981";
+
+            <div class="card" id="user-row-@u.Id">
+                <div style="padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem">
+                    <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#8b5cf6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;flex-shrink:0;@(u.IsBlocked ? "filter:grayscale(1);opacity:.5" : "")">
+                        @initials
+                    </div>
+                    <div style="flex:1;min-width:0">
+                        <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.3rem">
+                            <span style="font-weight:600;font-size:.95rem;color:#0f172a">@u.FullName</span>
+                            <span class="badge" style="@roleStyle">@roleLabel</span>
+                            @if (u.IsBlocked)
+                            {
+                                <span class="badge" style="background:#fee2e2;color:#991b1b">Đã khóa</span>
+                            }
+                        </div>
+                        <div style="font-size:.82rem;color:#94a3b8">@u.Email</div>
+                        <div style="display:grid;grid-template-columns:repeat(3,auto);gap:1.5rem;margin-top:.6rem">
+                            <div>
+                                <span style="font-size:.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px">Mã khách hàng</span>
+                                <div style="font-size:.85rem;font-weight:600;color:#374151">@customerCode</div>
+                            </div>
+                            <div>
+                                <span style="font-size:.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px">Điện thoại</span>
+                                <div style="font-size:.85rem;color:#374151">@(u.Phone ?? "—")</div>
+                            </div>
+                            <div>
+                                <span style="font-size:.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px">Trạng thái</span>
+                                <div style="font-size:.85rem;color:@statusColor;font-weight:600">@statusText</div>
+                            </div>
+                        </div>
+                    </div>
+                    <div style="display:flex;gap:.4rem;flex-shrink:0">
+                        <!-- FIX TC07: Nút sửa có chức năng -->
+                        <button class="btn btn-ghost btn-sm" title="Sửa thông tin"
+                                onclick="openEditModal(@u.Id)">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" />
+                            </svg>
+                        </button>
+
+                        <!-- FIX TC10/TC11: Nút Block/Unblock -->
+                        @if (u.IsBlocked)
+                        {
+                            <button class="btn btn-ghost btn-sm" title="Mở khóa tài khoản"
+                                    onclick="blockUser(@u.Id, false, '@u.FullName')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M8 11V7a4 4 0 118 0m-4 8v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2z" />
+                                </svg>
+                            </button>
+                        }
+                        else
+                        {
+                            <button class="btn btn-ghost btn-sm" title="Khóa tài khoản"
+                                    onclick="blockUser(@u.Id, true, '@u.FullName')">
+                                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                            </button>
+                        }
+
+                        <!-- FIX TC08/TC09: Nút xóa kèm kiểm tra đơn hàng -->
+                        <button class="btn btn-danger btn-sm" title="Xóa người dùng"
+                                onclick="deleteUser(@u.Id, '@u.FullName')">
+                            <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px">
+                                <path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                            </svg>
+                        </button>
+                    </div>
+                </div>
+            </div>
+        }
+    </div>
+}
+
+<!-- ========== MODAL THÊM KHÁCH HÀNG ========== -->
+<div id="modal-add" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;align-items:center;justify-content:center">
+    <div class="card" style="width:480px;max-width:95vw;padding:1.5rem">
+        <h3 style="margin:0 0 1rem;font-size:1rem">Thêm khách hàng mới</h3>
+        <div id="add-error" style="display:none;background:#fee2e2;color:#991b1b;padding:.5rem .75rem;border-radius:6px;margin-bottom:.75rem;font-size:.85rem"></div>
+        <div style="display:flex;flex-direction:column;gap:.75rem">
+            <div>
+                <label style="font-size:.82rem;color:#64748b;display:block;margin-bottom:.25rem">Họ tên *</label>
+                <input id="add-name" type="text" class="form-control" placeholder="Nguyễn Văn A" />
+            </div>
+            <div>
+                <label style="font-size:.82rem;color:#64748b;display:block;margin-bottom:.25rem">Email *</label>
+                <input id="add-email" type="email" class="form-control" placeholder="email@example.com" />
+            </div>
+            <div>
+                <label style="font-size:.82rem;color:#64748b;display:block;margin-bottom:.25rem">Số điện thoại</label>
+                <input id="add-phone" type="text" class="form-control" placeholder="0901234567" />
+            </div>
+            <div>
+                <label style="font-size:.82rem;color:#64748b;display:block;margin-bottom:.25rem">Địa chỉ</label>
+                <input id="add-address" type="text" class="form-control" placeholder="123 Đường ABC, TP HCM" />
+            </div>
         </div>
-        <div class="filter-tabs">
-            <button class="filter-tab active">Tất cả</button>
-            <button class="filter-tab">Khách hàng</button>
-            <button class="filter-tab">Nhân viên</button>
-            <button class="filter-tab">Admin</button>
+        <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:1.25rem">
+            <button class="btn btn-ghost" onclick="closeModal('modal-add')">Hủy</button>
+            <button class="btn btn-primary" onclick="submitAdd()">Thêm</button>
         </div>
     </div>
 </div>
 
-<!-- User cards -->
-<div style="display:flex;flex-direction:column;gap:.75rem">
-    @foreach (var u in Model)
-    {
-        var roleLabel = u.RoleId == 1 ? "Quản trị viên" : u.RoleId == 2 ? "Khách hàng" : "Nhân viên kho";
-        var roleStyle = u.RoleId == 1 ? "background:#dcfce7;color:#166534" :
-                        u.RoleId == 2 ? "background:#f0f9ff;color:#0369a1" : "background:#faf5ff;color:#5b21b6";
-        var initials = u.FullName?.Length > 0 ? u.FullName.Substring(0, 1).ToUpper() : "?";
-        <div class="card">
-            <div style="padding:1rem 1.25rem;display:flex;align-items:center;gap:1rem">
-                <div style="width:42px;height:42px;border-radius:50%;background:linear-gradient(135deg,#0ea5e9,#8b5cf6);color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700;font-size:1rem;flex-shrink:0">
-                    @initials
-                </div>
-                <div style="flex:1;min-width:0">
-                    <div style="display:flex;align-items:center;gap:.75rem;margin-bottom:.3rem">
-                        <span style="font-weight:600;font-size:.95rem;color:#0f172a">@u.FullName</span>
-                        <span class="badge" style="@roleStyle">@roleLabel</span>
-                    </div>
-                    <div style="font-size:.82rem;color:#94a3b8">@u.Email</div>
-                    <div style="display:grid;grid-template-columns:repeat(3,auto);gap:1.5rem;margin-top:.6rem">
-                        <div>
-                            <span style="font-size:.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px">Mã người dùng</span>
-                            <div style="font-size:.85rem;font-weight:600;color:#374151">U@u.Id.ToString("D3")</div>
-                        </div>
-                        <div>
-                            <span style="font-size:.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px">Điện thoại</span>
-                            <div style="font-size:.85rem;color:#374151">@(u.Phone ?? "—")</div>
-                        </div>
-                        <div>
-                            <span style="font-size:.72rem;color:#94a3b8;text-transform:uppercase;letter-spacing:.4px">Trạng thái</span>
-                            <div style="font-size:.85rem;color:#10b981;font-weight:600">Đang hoạt động</div>
-                        </div>
-                    </div>
-                </div>
-                <div style="display:flex;gap:.4rem;flex-shrink:0">
-                    <button class="btn btn-ghost btn-sm">
-                        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><path stroke-linecap="round" stroke-linejoin="round" d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z" /></svg>
-                    </button>
-                    <button class="btn btn-danger btn-sm" onclick="return confirm('Xóa người dùng này?')">
-                        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px"><path stroke-linecap="round" stroke-linejoin="round" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" /></svg>
-                    </button>
-                </div>
+<!-- ========== MODAL SỬA KHÁCH HÀNG ========== -->
+<div id="modal-edit" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.4);z-index:1000;align-items:center;justify-content:center">
+    <div class="card" style="width:480px;max-width:95vw;padding:1.5rem">
+        <h3 style="margin:0 0 1rem;font-size:1rem">Sửa thông tin khách hàng</h3>
+        <div id="edit-error" style="display:none;background:#fee2e2;color:#991b1b;padding:.5rem .75rem;border-radius:6px;margin-bottom:.75rem;font-size:.85rem"></div>
+        <input type="hidden" id="edit-id" />
+        <div style="display:flex;flex-direction:column;gap:.75rem">
+            <div>
+                <label style="font-size:.82rem;color:#64748b;display:block;margin-bottom:.25rem">Họ tên *</label>
+                <input id="edit-name" type="text" class="form-control" />
+            </div>
+            <div>
+                <label style="font-size:.82rem;color:#64748b;display:block;margin-bottom:.25rem">Email *</label>
+                <input id="edit-email" type="email" class="form-control" />
+            </div>
+            <div>
+                <label style="font-size:.82rem;color:#64748b;display:block;margin-bottom:.25rem">Số điện thoại</label>
+                <input id="edit-phone" type="text" class="form-control" />
+            </div>
+            <div>
+                <label style="font-size:.82rem;color:#64748b;display:block;margin-bottom:.25rem">Địa chỉ</label>
+                <input id="edit-address" type="text" class="form-control" />
             </div>
         </div>
-    }
+        <div style="display:flex;gap:.5rem;justify-content:flex-end;margin-top:1.25rem">
+            <button class="btn btn-ghost" onclick="closeModal('modal-edit')">Hủy</button>
+            <button class="btn btn-primary" onclick="submitEdit()">Lưu thay đổi</button>
+        </div>
+    </div>
 </div>
+
+<!-- Toast thông báo -->
+<div id="toast" style="display:none;position:fixed;bottom:1.5rem;right:1.5rem;background:#1e293b;color:#fff;padding:.75rem 1.25rem;border-radius:8px;font-size:.875rem;z-index:9999;max-width:360px"></div>
+
+@section Scripts {
+    <script>
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value
+            || '@Html.AntiForgeryToken()'.match(/value="([^"]+)"/)?.[1];
+
+        // ── Toast ─────────────────────────────────────────────────
+        function showToast(msg, ok = true) {
+            const t = document.getElementById('toast');
+            t.textContent = msg;
+            t.style.background = ok ? '#1e293b' : '#dc2626';
+            t.style.display = 'block';
+            setTimeout(() => t.style.display = 'none', 3500);
+        }
+
+        // ── Modal helpers ─────────────────────────────────────────
+        function openModal(id) { document.getElementById(id).style.display = 'flex'; }
+        function closeModal(id) { document.getElementById(id).style.display = 'none'; }
+
+        // ── Thêm ─────────────────────────────────────────────────
+        function openAddModal() {
+            document.getElementById('add-name').value = '';
+            document.getElementById('add-email').value = '';
+            document.getElementById('add-phone').value = '';
+            document.getElementById('add-address').value = '';
+            document.getElementById('add-error').style.display = 'none';
+            openModal('modal-add');
+        }
+
+        async function submitAdd() {
+            const errEl = document.getElementById('add-error');
+            errEl.style.display = 'none';
+            const body = new URLSearchParams({
+                __RequestVerificationToken: getToken(),
+                fullName: document.getElementById('add-name').value,
+                email: document.getElementById('add-email').value,
+                phone: document.getElementById('add-phone').value,
+                address: document.getElementById('add-address').value,
+            });
+            const res = await fetch('/Admin/User/Add', { method: 'POST', body });
+            const data = await res.json();
+            if (data.success) {
+                closeModal('modal-add');
+                showToast(data.message);
+                setTimeout(() => location.reload(), 800);
+            } else {
+                errEl.textContent = data.message;
+                errEl.style.display = 'block';
+            }
+        }
+
+        // ── Sửa ─────────────────────────────────────────────────
+        async function openEditModal(id) {
+            const res = await fetch('/Admin/User/GetUser/' + id);
+            if (!res.ok) { showToast('Không thể tải thông tin.', false); return; }
+            const u = await res.json();
+            document.getElementById('edit-id').value = u.id;
+            document.getElementById('edit-name').value = u.fullName;
+            document.getElementById('edit-email').value = u.email;
+            document.getElementById('edit-phone').value = u.phone || '';
+            document.getElementById('edit-address').value = u.address || '';
+            document.getElementById('edit-error').style.display = 'none';
+            openModal('modal-edit');
+        }
+
+        async function submitEdit() {
+            const errEl = document.getElementById('edit-error');
+            errEl.style.display = 'none';
+            const id = document.getElementById('edit-id').value;
+            const body = new URLSearchParams({
+                __RequestVerificationToken: getToken(),
+                fullName: document.getElementById('edit-name').value,
+                email: document.getElementById('edit-email').value,
+                phone: document.getElementById('edit-phone').value,
+                address: document.getElementById('edit-address').value,
+            });
+            const res = await fetch('/Admin/User/Edit/' + id, { method: 'POST', body });
+            const data = await res.json();
+            if (data.success) {
+                closeModal('modal-edit');
+                showToast(data.message);
+                setTimeout(() => location.reload(), 800);
+            } else {
+                errEl.textContent = data.message;
+                errEl.style.display = 'block';
+            }
+        }
+
+        // ── Xóa (FIX TC08, TC09) ────────────────────────────────
+        async function deleteUser(id, name) {
+            if (!confirm(`Bạn có chắc muốn xóa "${name}"?`)) return;
+            const body = new URLSearchParams({ __RequestVerificationToken: getToken() });
+            const res = await fetch('/Admin/User/Delete/' + id, { method: 'POST', body });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('user-row-' + id)?.remove();
+                showToast(data.message);
+            } else {
+                // TC09: Hiện thông báo không thể xóa
+                showToast(data.message, false);
+            }
+        }
+
+        // ── Block / Unblock (FIX TC10, TC11) ───────────────────
+        async function blockUser(id, block, name) {
+            const action = block ? 'khóa' : 'mở khóa';
+            if (!confirm(`Bạn có chắc muốn ${action} tài khoản "${name}"?`)) return;
+            const endpoint = block ? '/Admin/User/Block/' : '/Admin/User/Unblock/';
+            const body = new URLSearchParams({ __RequestVerificationToken: getToken() });
+            const res = await fetch(endpoint + id, { method: 'POST', body });
+            const data = await res.json();
+            showToast(data.message, data.success);
+            if (data.success) setTimeout(() => location.reload(), 800);
+        }
+
+        // ── CSRF token helper ─────────────────────────────────
+        function getToken() {
+            return document.querySelector('input[name="__RequestVerificationToken"]')?.value || '';
+        }
+    </script>
+}

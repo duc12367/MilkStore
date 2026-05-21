@@ -59,6 +59,14 @@ public class AccountController : Controller
             return View();
         }
 
+        // FIX TC10: Kiểm tra tài khoản bị khóa — không cho đăng nhập
+        if (user.IsBlocked)
+        {
+            ViewBag.Error = "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.";
+            ViewBag.ReturnUrl = returnUrl;
+            return View();
+        }
+
         HttpContext.Session.SetInt32("UserId", user.Id);
         HttpContext.Session.SetInt32("RoleId", user.RoleId);
         HttpContext.Session.SetString("FullName", user.FullName);
@@ -99,7 +107,8 @@ public class AccountController : Controller
             Email = email,
             Password = BCrypt.Net.BCrypt.HashPassword(password), // ← HASH mật khẩu
             Address = address,
-            Phone = phone
+            Phone = phone,
+            IsBlocked = false
         });
         await db.SaveChangesAsync();
         TempData["Success"] = "Đăng ký thành công! Vui lòng đăng nhập.";
@@ -262,10 +271,18 @@ public class AccountController : Controller
                 Email = email,
                 FullName = fullName,
                 Password = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString()),
-                RoleId = 2
+                RoleId = 2,
+                IsBlocked = false
             };
             db.Users.Add(user);
             await db.SaveChangesAsync();
+        }
+
+        // FIX TC10: Chặn Google login nếu tài khoản bị khóa
+        if (user.IsBlocked)
+        {
+            ViewBag.Error = "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.";
+            return View("Login");
         }
 
         HttpContext.Session.SetInt32("UserId", user.Id);
@@ -313,10 +330,18 @@ public class AccountController : Controller
                 Email = email,
                 FullName = fullName,
                 Password = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString()),
-                RoleId = 2
+                RoleId = 2,
+                IsBlocked = false
             };
             db.Users.Add(user);
             await db.SaveChangesAsync();
+        }
+
+        // FIX TC10: Chặn Facebook login nếu tài khoản bị khóa
+        if (user.IsBlocked)
+        {
+            ViewBag.Error = "Tài khoản của bạn đã bị khóa. Vui lòng liên hệ quản trị viên.";
+            return View("Login");
         }
 
         HttpContext.Session.SetInt32("UserId", user.Id);
