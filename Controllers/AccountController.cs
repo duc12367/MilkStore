@@ -1,7 +1,9 @@
+using BCrypt.Net;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MilkStore.Models;
+using Org.BouncyCastle.Crypto.Generators;
 
 namespace MilkStore.Controllers;
 
@@ -27,10 +29,30 @@ public class AccountController : Controller
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(string email, string password, string? returnUrl)
     {
-        var user = await db.Users
-            .FirstOrDefaultAsync(u => u.Email == email && u.Password == password);
+        var user = await db.Users.FirstOrDefaultAsync(u => u.Email == email);
 
-        if (user == null)
+        // ← BCRYPT: verify mật khẩu, hỗ trợ cả plain text cũ lẫn hash mới
+        bool valid = false;
+        if (user != null)
+        {
+            if (user.Password.StartsWith("$2"))
+            {
+                // Mật khẩu đã được hash BCrypt
+                valid = BCrypt.Net.BCrypt.Verify(password, user.Password);
+            }
+            else
+            {
+                // Mật khẩu cũ plain text → đăng nhập được, tự động hash lại
+                valid = user.Password == password;
+                if (valid)
+                {
+                    user.Password = BCrypt.Net.BCrypt.HashPassword(password);
+                    await db.SaveChangesAsync();
+                }
+            }
+        }
+
+        if (!valid || user == null)
         {
             ViewBag.Error = "Email hoặc mật khẩu không đúng.";
             ViewBag.ReturnUrl = returnUrl;
@@ -64,6 +86,9 @@ public class AccountController : Controller
         if (password != confirmPassword)
         { ViewBag.Error = "Mật khẩu xác nhận không khớp."; return View(); }
 
+        if (password.Length < 8)
+        { ViewBag.Error = "Mật khẩu phải có ít nhất 8 ký tự."; return View(); }
+
         if (await db.Users.AnyAsync(u => u.Email == email))
         { ViewBag.Error = "Email này đã được đăng ký."; return View(); }
 
@@ -72,7 +97,7 @@ public class AccountController : Controller
             RoleId = 2,
             FullName = fullName,
             Email = email,
-            Password = password,
+            Password = BCrypt.Net.BCrypt.HashPassword(password), // ← HASH mật khẩu
             Address = address,
             Phone = phone
         });
@@ -169,6 +194,13 @@ public class AccountController : Controller
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> ResetPassword(string token, string newPassword)
     {
+        if (newPassword.Length < 8)
+        {
+            ViewBag.Error = "Mật khẩu phải có ít nhất 8 ký tự.";
+            ViewBag.Token = token;
+            return View();
+        }
+
         var user = await db.Users.FirstOrDefaultAsync(u =>
             u.ResetToken == token && u.ResetTokenExpiry > DateTime.UtcNow);
         if (user == null)
@@ -176,7 +208,8 @@ public class AccountController : Controller
             ViewBag.Error = "Link đã hết hạn!";
             return View();
         }
-        user.Password = newPassword;
+
+        user.Password = BCrypt.Net.BCrypt.HashPassword(newPassword); // ← HASH mật khẩu mới
         user.ResetToken = null;
         user.ResetTokenExpiry = null;
         await db.SaveChangesAsync();
@@ -185,7 +218,7 @@ public class AccountController : Controller
     }
 
     // ============================================================
-    // FACEBOOK - XÓA DỮ LIỆU (bắt buộc theo chính sách Facebook)
+    // FACEBOOK - XÓA DỮ LIỆU
     // ============================================================
     [HttpGet]
     public IActionResult DeleteData()
@@ -223,7 +256,14 @@ public class AccountController : Controller
         var user = await db.Users.FirstOrDefaultAsync(u => u.Email == email);
         if (user == null)
         {
-            user = new User { Email = email, FullName = fullName, Password = Guid.NewGuid().ToString(), RoleId = 2 };
+            // Google/Facebook user không cần password thật → lưu hash của GUID random
+            user = new User
+            {
+                Email = email,
+                FullName = fullName,
+                Password = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString()),
+                RoleId = 2
+            };
             db.Users.Add(user);
             await db.SaveChangesAsync();
         }
@@ -268,7 +308,13 @@ public class AccountController : Controller
         var user = await db.Users.FirstOrDefaultAsync(u => u.Email == email);
         if (user == null)
         {
-            user = new User { Email = email, FullName = fullName, Password = Guid.NewGuid().ToString(), RoleId = 2 };
+            user = new User
+            {
+                Email = email,
+                FullName = fullName,
+                Password = BCrypt.Net.BCrypt.HashPassword(Guid.NewGuid().ToString()),
+                RoleId = 2
+            };
             db.Users.Add(user);
             await db.SaveChangesAsync();
         }
