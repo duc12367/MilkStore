@@ -1,0 +1,266 @@
+﻿@model List<MilkStore.Models.Category>
+@{
+    ViewData["Title"] = "Quản lý danh mục";
+    <link rel="icon" type="image/png" href="~/images/logo-transparent.png" />
+}
+
+@* ── Header ─────────────────────────────────────────────── *@
+<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;flex-wrap:wrap;gap:.75rem">
+    <div>
+        <div class="page-title">Quản lý danh mục</div>
+        <div class="page-sub">
+            Tổng cộng @(ViewBag.Total ?? 0) danh mục
+        </div>
+    </div>
+    @* [TC02] Nút mở modal Thêm danh mục *@
+    <button class="btn btn-primary" onclick="openAddModal()">
+        <svg viewBox="0 0 20 20" fill="currentColor" style="width:16px;height:16px">
+            <path fill-rule="evenodd" d="M10 3a1 1 0 011 1v5h5a1 1 0 110 2h-5v5a1 1 0 11-2 0v-5H4a1 1 0 110-2h5V4a1 1 0 011-1z" clip-rule="evenodd" />
+        </svg>
+        Thêm danh mục
+    </button>
+</div>
+
+@* ── Search + Sort ────────────────────────────────────────── *@
+<div class="card" style="margin-bottom:1.25rem">
+    <div class="card-body" style="padding:.875rem 1.25rem">
+        <form method="get" style="display:flex;gap:.5rem;align-items:center;flex-wrap:wrap">
+            <div style="position:relative;flex:1;min-width:200px">
+                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5"
+                     style="width:16px;height:16px;position:absolute;left:10px;top:50%;transform:translateY(-50%);color:#94a3b8;pointer-events:none">
+                    <path stroke-linecap="round" stroke-linejoin="round" d="M21 21l-4.35-4.35M17 11A6 6 0 111 11a6 6 0 0116 0z" />
+                </svg>
+                @* [TC10] Search box *@
+                <input type="text" name="search" value="@ViewBag.Search"
+                       placeholder="Tìm tên danh mục..."
+                       style="width:100%;padding:.5rem .85rem .5rem 2.2rem;border:1px solid #e2e8f0;border-radius:8px;font-size:.85rem;outline:none"
+                       onfocus="this.style.borderColor='#0ea5e9'" onblur="this.style.borderColor='#e2e8f0'" />
+            </div>
+            @* [TC13] Sort dropdown *@
+            <select name="sort" style="padding:.5rem .85rem;border:1px solid #e2e8f0;border-radius:8px;font-size:.85rem;outline:none;background:#fff">
+                <option value="" selected="@(ViewBag.Sort == null)">Mặc định</option>
+                <option value="az" selected="@(ViewBag.Sort == "az")">Tên A → Z</option>
+                <option value="za" selected="@(ViewBag.Sort == "za")">Tên Z → A</option>
+            </select>
+            <button type="submit" class="btn btn-primary btn-sm">Tìm</button>
+            @if (!string.IsNullOrWhiteSpace(ViewBag.Search as string))
+            {
+                <a asp-area="Admin" asp-controller="Category" asp-action="Index"
+                   style="padding:.5rem .85rem;border:1px solid #e2e8f0;border-radius:8px;font-size:.85rem;color:#64748b;text-decoration:none;background:#fff">
+                    ✕ Xóa lọc
+                </a>
+            }
+        </form>
+    </div>
+</div>
+
+@* [TC11] Hiển thị thông báo không tìm thấy *@
+@if (ViewBag.NotFound != null)
+{
+    <div style="text-align:center;padding:3rem;color:#94a3b8">
+        <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1"
+             style="width:48px;height:48px;opacity:.25;margin-bottom:.75rem">
+            <path stroke-linecap="round" stroke-linejoin="round" d="M9.172 16.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+        </svg>
+        <div style="font-weight:600;color:#374151;margin-bottom:.25rem">@ViewBag.NotFound</div>
+        <div style="font-size:.85rem">Thử từ khoá khác hoặc <a asp-area="Admin" asp-controller="Category" asp-action="Index" style="color:#0ea5e9">xem tất cả</a></div>
+    </div>
+}
+else if (!Model.Any())
+{
+    <div style="text-align:center;padding:3rem;color:#94a3b8">
+        <div style="font-weight:600;color:#374151">Chưa có danh mục nào.</div>
+    </div>
+}
+else
+{
+    @* ── Table danh mục ──────────────────────────────────── *@
+    <div class="card">
+        <table style="width:100%;border-collapse:collapse;font-size:.875rem">
+            <thead>
+                <tr style="background:#f8fafc;border-bottom:1px solid #e2e8f0">
+                    <th style="padding:.75rem 1rem;text-align:left;font-weight:600;color:#64748b;width:60px">#</th>
+                    <th style="padding:.75rem 1rem;text-align:left;font-weight:600;color:#64748b">Tên danh mục</th>
+                    <th style="padding:.75rem 1rem;text-align:center;font-weight:600;color:#64748b;width:120px">Số sản phẩm</th>
+                    <th style="padding:.75rem 1rem;text-align:right;font-weight:600;color:#64748b;width:160px">Thao tác</th>
+                </tr>
+            </thead>
+            <tbody>
+                @{ int stt = ((ViewBag.Page - 1) * 10) + 1; }
+                @foreach (var cat in Model)
+                {
+                    <tr style="border-bottom:1px solid #f1f5f9" class="cat-row" id="row-@cat.Id">
+                        <td style="padding:.75rem 1rem;color:#94a3b8">@stt</td>
+                        @* View mode *@
+                        <td style="padding:.75rem 1rem;font-weight:600;color:#0f172a" id="name-@cat.Id">
+                            @cat.Name
+                        </td>
+                        @* Edit mode (ẩn mặc định) *@
+                        <td style="padding:.5rem 1rem;display:none" id="edit-@cat.Id">
+                            <input type="text" id="edit-input-@cat.Id" value="@cat.Name"
+                                   style="width:100%;padding:.4rem .75rem;border:1px solid #0ea5e9;border-radius:6px;font-size:.875rem;outline:none"
+                                   onkeydown="if(event.key==='Enter')saveEdit(@cat.Id);if(event.key==='Escape')cancelEdit(@cat.Id)" />
+                        </td>
+                        <td style="padding:.75rem 1rem;text-align:center">
+                            @if (cat.Products.Count > 0)
+                            {
+                                <span style="background:#dbeafe;color:#1e40af;border-radius:10px;padding:.15rem .6rem;font-size:.78rem;font-weight:700">
+                                    @cat.Products.Count sp
+                                </span>
+                            }
+                            else
+                            {
+                                <span style="color:#cbd5e1;font-size:.82rem">—</span>
+                            }
+                        </td>
+                        <td style="padding:.75rem 1rem;text-align:right">
+                            @* Nút Edit (view mode) *@
+                            <button class="btn btn-ghost btn-sm" id="btn-edit-@cat.Id"
+                                    onclick="startEdit(@cat.Id)" title="Chỉnh sửa">
+                                <svg viewBox="0 0 20 20" fill="none" stroke="currentColor" stroke-width="1.5" style="width:14px;height:14px">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M15.232 5.232l3.536 3.536M9 13l6.586-6.586a2 2 0 112.828 2.828L11.828 15.828A2 2 0 0110 16H7v-3a2 2 0 01.586-1.414L9 13z" />
+                                </svg>
+                                Sửa
+                            </button>
+                            @* Nút Save/Cancel (edit mode, ẩn mặc định) *@
+                            <span id="btn-save-@cat.Id" style="display:none;gap:.25rem">
+                                <button class="btn btn-success btn-sm" onclick="saveEdit(@cat.Id)">Lưu</button>
+                                <button class="btn btn-ghost btn-sm" onclick="cancelEdit(@cat.Id)">Huỷ</button>
+                            </span>
+                            @* [TC08/TC09] Nút Xóa *@
+                            <form asp-area="Admin" asp-controller="Category" asp-action="Delete"
+                                  method="post" style="display:inline"
+                                  id="del-form-@cat.Id"
+                                  onsubmit="return confirmDelete('@cat.Name', @cat.Products.Count)">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@cat.Id" />
+                                <button type="submit" class="btn btn-danger btn-sm" title="Xóa">
+                                    <svg viewBox="0 0 20 20" fill="currentColor" style="width:14px;height:14px">
+                                        <path fill-rule="evenodd" d="M9 2a1 1 0 00-.894.553L7.382 4H4a1 1 0 000 2v10a2 2 0 002 2h8a2 2 0 002-2V6a1 1 0 100-2h-3.382l-.724-1.447A1 1 0 0011 2H9zM7 8a1 1 0 012 0v6a1 1 0 11-2 0V8zm5-1a1 1 0 00-1 1v6a1 1 0 102 0V8a1 1 0 00-1-1z" clip-rule="evenodd" />
+                                    </svg>
+                                    Xóa
+                                </button>
+                            </form>
+                            @* Hidden form cho Edit submit *@
+                            <form asp-area="Admin" asp-controller="Category" asp-action="Edit"
+                                  method="post" style="display:none" id="edit-form-@cat.Id">
+                                @Html.AntiForgeryToken()
+                                <input type="hidden" name="id" value="@cat.Id" />
+                                <input type="hidden" name="name" id="edit-form-name-@cat.Id" />
+                            </form>
+                        </td>
+                    </tr>
+                    stt++;
+                }
+            </tbody>
+        </table>
+    </div>
+
+    @* ── Phân trang [TC12] ─────────────────────────────── *@
+    @if (ViewBag.TotalPages > 1)
+    {
+        <div style="display:flex;justify-content:center;gap:.4rem;padding:1.5rem 0">
+            @for (int i = 1; i <= ViewBag.TotalPages; i++)
+            {
+                <a asp-area="Admin" asp-controller="Category" asp-action="Index"
+                   asp-route-page="@i" asp-route-search="@ViewBag.Search" asp-route-sort="@ViewBag.Sort"
+                   class="btn btn-sm @(ViewBag.Page == i ? "btn-primary" : "btn-ghost")">@i</a>
+            }
+        </div>
+    }
+}
+
+@* ── Modal Thêm danh mục [TC02/TC03/TC04/TC05] ─────────── *@
+<div id="add-modal" style="display:none;position:fixed;inset:0;background:rgba(0,0,0,.45);z-index:1000;align-items:center;justify-content:center">
+    <div style="background:#fff;border-radius:16px;padding:2rem;width:400px;max-width:90%;box-shadow:0 20px 60px rgba(0,0,0,.2)">
+        <div style="font-weight:700;font-size:1.1rem;margin-bottom:1.25rem;color:#0f172a">Thêm danh mục mới</div>
+        <form asp-area="Admin" asp-controller="Category" asp-action="Create" method="post" id="add-form">
+            @Html.AntiForgeryToken()
+            <div style="margin-bottom:1rem">
+                <label style="font-size:.85rem;font-weight:600;color:#374151;display:block;margin-bottom:.4rem">
+                    Tên danh mục <span style="color:#ef4444">*</span>
+                </label>
+                <input type="text" name="name" id="add-name" required maxlength="100"
+                       placeholder="VD: Sữa tươi, Sữa bột, Sữa hữu cơ..."
+                       style="width:100%;padding:.6rem .85rem;border:1px solid #e2e8f0;border-radius:8px;font-size:.875rem;outline:none;box-sizing:border-box"
+                       onfocus="this.style.borderColor='#0ea5e9'" onblur="this.style.borderColor='#e2e8f0'" />
+                <div style="font-size:.78rem;color:#94a3b8;margin-top:.3rem">
+                    Chỉ dùng chữ cái, số và dấu cơ bản. Tối đa 100 ký tự.
+                </div>
+            </div>
+            <div style="display:flex;gap:.5rem;justify-content:flex-end">
+                <button type="button" class="btn btn-ghost" onclick="closeAddModal()">Huỷ</button>
+                <button type="submit" class="btn btn-primary">Thêm danh mục</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+@* ── Toast thông báo ─────────────────────────────────────── *@
+@if (TempData["Success"] != null)
+{
+    <div id="toast-ok" style="position:fixed;bottom:1.5rem;right:1.5rem;background:#16a34a;color:#fff;padding:.85rem 1.5rem;border-radius:12px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.15)">
+        ✓ @TempData["Success"]
+    </div>
+    <script>setTimeout(()=>document.getElementById('toast-ok')?.remove(),3000)</script>
+}
+@if (TempData["Error"] != null)
+{
+    <div id="toast-err" style="position:fixed;bottom:1.5rem;right:1.5rem;background:#dc2626;color:#fff;padding:.85rem 1.5rem;border-radius:12px;font-weight:600;z-index:9999;box-shadow:0 4px 16px rgba(0,0,0,.15);max-width:380px">
+        ✕ @TempData["Error"]
+    </div>
+    <script>setTimeout(()=>document.getElementById('toast-err')?.remove(),5000)</script>
+}
+
+<script>
+    // ── Modal Add ────────────────────────────────────────────
+    function openAddModal() {
+        document.getElementById('add-modal').style.display = 'flex';
+        setTimeout(() => document.getElementById('add-name').focus(), 50);
+    }
+    function closeAddModal() {
+        document.getElementById('add-modal').style.display = 'none';
+        document.getElementById('add-name').value = '';
+    }
+    // Đóng modal khi click nền mờ
+    document.getElementById('add-modal').addEventListener('click', function (e) {
+        if (e.target === this) closeAddModal();
+    });
+
+    // ── Inline Edit ─────────────────────────────────────────
+    function startEdit(id) {
+        document.getElementById('name-' + id).style.display = 'none';
+        document.getElementById('edit-' + id).style.display = '';
+        document.getElementById('btn-edit-' + id).style.display = 'none';
+        document.getElementById('btn-save-' + id).style.display = 'inline-flex';
+        document.getElementById('del-form-' + id).style.display = 'none';
+        document.getElementById('edit-input-' + id).focus();
+        document.getElementById('edit-input-' + id).select();
+    }
+    function cancelEdit(id) {
+        document.getElementById('name-' + id).style.display = '';
+        document.getElementById('edit-' + id).style.display = 'none';
+        document.getElementById('btn-edit-' + id).style.display = '';
+        document.getElementById('btn-save-' + id).style.display = 'none';
+        document.getElementById('del-form-' + id).style.display = 'inline';
+    }
+    function saveEdit(id) {
+        const val = document.getElementById('edit-input-' + id).value.trim();
+        if (!val) { alert('Tên danh mục không được để trống.'); return; }
+        document.getElementById('edit-form-name-' + id).value = val;
+        document.getElementById('edit-form-' + id).submit();
+    }
+
+    // ── Confirm Delete [TC09] ───────────────────────────────
+    function confirmDelete(name, productCount) {
+        if (productCount > 0) {
+            alert(`Không thể xóa danh mục "${name}" vì đang có ${productCount} sản phẩm thuộc danh mục này.\n\nVui lòng chuyển hoặc xóa các sản phẩm trước.`);
+            return false;  // Chặn ngay từ client, không cần gửi request
+        }
+        return confirm(`Xác nhận xóa danh mục "${name}"?\nHành động này không thể hoàn tác.`);
+    }
+</script>
+
+<style>
+    .cat-row:hover { background: #f8fafc; }
+</style>
