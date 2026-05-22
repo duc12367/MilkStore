@@ -86,7 +86,9 @@ else
                 </tr>
             </thead>
             <tbody>
-                @{ int stt = ((ViewBag.Page - 1) * 10) + 1; }
+                @{
+                    int stt = ((ViewBag.Page - 1) * 10) + 1;
+                }
                 @foreach (var cat in Model)
                 {
                     <tr style="border-bottom:1px solid #f1f5f9" class="cat-row" id="row-@cat.Id">
@@ -215,49 +217,49 @@ else
 <script>
     // ── Modal Add ────────────────────────────────────────────
     function openAddModal() {
-        document.getElementById('add-modal').style.display = 'flex';
-        setTimeout(() => document.getElementById('add-name').focus(), 50);
+    document.getElementById('add-modal').style.display = 'flex';
+    setTimeout(() => document.getElementById('add-name').focus(), 50);
     }
     function closeAddModal() {
-        document.getElementById('add-modal').style.display = 'none';
-        document.getElementById('add-name').value = '';
+    document.getElementById('add-modal').style.display = 'none';
+    document.getElementById('add-name').value = '';
     }
     // Đóng modal khi click nền mờ
     document.getElementById('add-modal').addEventListener('click', function (e) {
-        if (e.target === this) closeAddModal();
+    if (e.target === this) closeAddModal();
     });
 
     // ── Inline Edit ─────────────────────────────────────────
     function startEdit(id) {
-        document.getElementById('name-' + id).style.display = 'none';
-        document.getElementById('edit-' + id).style.display = '';
-        document.getElementById('btn-edit-' + id).style.display = 'none';
-        document.getElementById('btn-save-' + id).style.display = 'inline-flex';
-        document.getElementById('del-form-' + id).style.display = 'none';
-        document.getElementById('edit-input-' + id).focus();
-        document.getElementById('edit-input-' + id).select();
+    document.getElementById('name-' + id).style.display = 'none';
+    document.getElementById('edit-' + id).style.display = '';
+    document.getElementById('btn-edit-' + id).style.display = 'none';
+    document.getElementById('btn-save-' + id).style.display = 'inline-flex';
+    document.getElementById('del-form-' + id).style.display = 'none';
+    document.getElementById('edit-input-' + id).focus();
+    document.getElementById('edit-input-' + id).select();
     }
     function cancelEdit(id) {
-        document.getElementById('name-' + id).style.display = '';
-        document.getElementById('edit-' + id).style.display = 'none';
-        document.getElementById('btn-edit-' + id).style.display = '';
-        document.getElementById('btn-save-' + id).style.display = 'none';
-        document.getElementById('del-form-' + id).style.display = 'inline';
+    document.getElementById('name-' + id).style.display = '';
+    document.getElementById('edit-' + id).style.display = 'none';
+    document.getElementById('btn-edit-' + id).style.display = '';
+    document.getElementById('btn-save-' + id).style.display = 'none';
+    document.getElementById('del-form-' + id).style.display = 'inline';
     }
     function saveEdit(id) {
-        const val = document.getElementById('edit-input-' + id).value.trim();
-        if (!val) { alert('Tên danh mục không được để trống.'); return; }
-        document.getElementById('edit-form-name-' + id).value = val;
-        document.getElementById('edit-form-' + id).submit();
+    const val = document.getElementById('edit-input-' + id).value.trim();
+    if (!val) { alert('Tên danh mục không được để trống.'); return; }
+    document.getElementById('edit-form-name-' + id).value = val;
+    document.getElementById('edit-form-' + id).submit();
     }
 
     // ── Confirm Delete [TC09] ───────────────────────────────
     function confirmDelete(name, productCount) {
-        if (productCount > 0) {
-            alert(`Không thể xóa danh mục "${name}" vì đang có ${productCount} sản phẩm thuộc danh mục này.\n\nVui lòng chuyển hoặc xóa các sản phẩm trước.`);
-            return false;  // Chặn ngay từ client, không cần gửi request
-        }
-        return confirm(`Xác nhận xóa danh mục "${name}"?\nHành động này không thể hoàn tác.`);
+    if (productCount > 0) {
+    alert(`Không thể xóa danh mục "${name}" vì đang có ${productCount} sản phẩm thuộc danh mục này.\n\nVui lòng chuyển hoặc xóa các sản phẩm trước.`);
+    return false;  // Chặn ngay từ client, không cần gửi request
+    }
+    return confirm(`Xác nhận xóa danh mục "${name}"?\nHành động này không thể hoàn tác.`);
     }
 </script>
 

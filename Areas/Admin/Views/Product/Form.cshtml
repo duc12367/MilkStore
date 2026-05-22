@@ -2,79 +2,97 @@
 @{
     bool isEdit = Model.Id != 0;
     ViewData["Title"] = isEdit ? "Sửa sản phẩm" : "Thêm sản phẩm";
-    <link rel="icon" type="image/png" href="~/images/logo-transparent.png" />
+    Layout = "~/Areas/Admin/Views/Shared/_AdminLayout.cshtml";
 }
+
+<style>
+.form-err { font-size:.78rem; color:#dc2626; margin-top:.25rem; display:block; }
+.form-ctrl.is-invalid { border-color:#dc2626 !important; }
+.name-ok  { font-size:.78rem; color:#059669; margin-top:.25rem; }
+.name-dup { font-size:.78rem; color:#dc2626; margin-top:.25rem; }
+</style>
 
 <div style="max-width:720px">
     <div class="admin-card">
         <div class="admin-card-header">
-            <h5>@(isEdit ? " Sửa sản phẩm" : "+ Thêm sản phẩm mới")</h5>
+            <h5>@(isEdit ? "✏ Sửa sản phẩm" : "+ Thêm sản phẩm mới")</h5>
             <a asp-area="Admin" asp-controller="Product" asp-action="Index"
                class="btn-admin" style="background:#f3e5f5;color:#6a1b9a">← Quay lại</a>
         </div>
 
         <div style="padding:1.5rem">
             <form asp-area="Admin" asp-controller="Product" asp-action="Save"
-                  method="post" enctype="multipart/form-data">
+                  method="post" enctype="multipart/form-data" id="productForm">
                 @Html.AntiForgeryToken()
                 <input type="hidden" name="Id" value="@Model.Id" />
 
                 <div style="display:grid;grid-template-columns:1fr 1fr;gap:1rem">
+
+                    <!-- Tên sản phẩm -->
                     <div style="grid-column:1/-1">
-                        <label class="form-label">Tên sản phẩm *</label>
-                        <input type="text" name="ProductName" value="@Model.ProductName"
-                               class="form-ctrl" required />
+                        <label class="form-label">Tên sản phẩm <span style="color:red">*</span></label>
+                        <input type="text" name="ProductName" id="productName"
+                               value="@Model.ProductName"
+                               class="form-ctrl @(ViewData.ModelState["ProductName"]?.Errors.Any()==true ? "is-invalid" : "")"
+                               required autocomplete="off"
+                               placeholder="VD: Sữa tươi Vinamilk 1L" />
+                        <span id="nameStatus"></span>
+                        @if (ViewData.ModelState["ProductName"]?.Errors.Any() == true)
+                        { <span class="form-err">@ViewData.ModelState["ProductName"]!.Errors[0].ErrorMessage</span> }
+                        <div style="font-size:.75rem;color:#94a3b8;margin-top:.2rem">Chỉ dùng chữ, số, khoảng trắng — không dùng ký tự đặc biệt</div>
                     </div>
 
+                    <!-- Danh mục -->
                     <div>
-                        <label class="form-label">Danh mục *</label>
+                        <label class="form-label">Danh mục <span style="color:red">*</span></label>
                         <select name="CategoryId" class="form-ctrl" required>
                             <option value="">-- Chọn danh mục --</option>
                             @foreach (var cat in (List<MilkStore.Models.Category>)ViewBag.Categories)
                             {
                                 if (Model.CategoryId == cat.Id)
-                                {
-                                    <option value="@cat.Id" selected>@cat.Name</option>
-                                }
+                                { <option value="@cat.Id" selected>@cat.Name</option> }
                                 else
-                                {
-                                    <option value="@cat.Id">@cat.Name</option>
-                                }
+                                { <option value="@cat.Id">@cat.Name</option> }
                             }
                         </select>
                     </div>
 
+                    <!-- Thương hiệu -->
                     <div>
-                        <label class="form-label">Thương hiệu *</label>
+                        <label class="form-label">Thương hiệu <span style="color:red">*</span></label>
                         <select name="BrandId" class="form-ctrl" required>
                             <option value="">-- Chọn thương hiệu --</option>
                             @foreach (var brand in (List<MilkStore.Models.Brand>)ViewBag.Brands)
                             {
                                 if (Model.BrandId == brand.Id)
-                                {
-                                    <option value="@brand.Id" selected>@brand.Name</option>
-                                }
+                                { <option value="@brand.Id" selected>@brand.Name</option> }
                                 else
-                                {
-                                    <option value="@brand.Id">@brand.Name</option>
-                                }
+                                { <option value="@brand.Id">@brand.Name</option> }
                             }
                         </select>
                     </div>
 
+                    <!-- Giá -->
                     <div>
-                        <label class="form-label">Giá (đ) *</label>
+                        <label class="form-label">Giá (đ) <span style="color:red">*</span></label>
                         <input type="number" name="Price" value="@Model.Price"
-                               class="form-ctrl" required min="0" step="1000" />
+                               class="form-ctrl @(ViewData.ModelState["Price"]?.Errors.Any()==true ? "is-invalid" : "")"
+                               required min="1" step="1000" placeholder="VD: 50000" />
+                        @if (ViewData.ModelState["Price"]?.Errors.Any() == true)
+                        { <span class="form-err">@ViewData.ModelState["Price"]!.Errors[0].ErrorMessage</span> }
                     </div>
 
+                    <!-- Tồn kho -->
                     <div>
                         <label class="form-label">Tồn kho</label>
-                        <input type="number" name="StockQuantity"
-                               value="@Model.StockQuantity"
-                               class="form-ctrl" min="0" />
+                        <input type="number" name="StockQuantity" value="@Model.StockQuantity"
+                               class="form-ctrl @(ViewData.ModelState["StockQuantity"]?.Errors.Any()==true ? "is-invalid" : "")"
+                               min="0" placeholder="0" />
+                        @if (ViewData.ModelState["StockQuantity"]?.Errors.Any() == true)
+                        { <span class="form-err">@ViewData.ModelState["StockQuantity"]!.Errors[0].ErrorMessage</span> }
                     </div>
 
+                    <!-- Hạn sử dụng -->
                     <div>
                         <label class="form-label">Hạn sử dụng</label>
                         <input type="date" name="ExpiryDate"
@@ -82,22 +100,30 @@
                                class="form-ctrl" />
                     </div>
 
+                    <!-- Upload ảnh -->
                     <div>
-                        <label class="form-label">Upload ảnh mới</label>
-                        <input type="file" name="imageFile" class="form-ctrl"
-                               accept="image/*" onchange="previewImg(this)" />
+                        <label class="form-label">Upload ảnh</label>
+                        <!-- [FIX TC08] Chỉ cho phép file ảnh, chặn .exe và các file nguy hiểm -->
+                        <input type="file" name="imageFile" id="imageFile"
+                               class="form-ctrl @(ViewData.ModelState["imageFile"]?.Errors.Any()==true ? "is-invalid" : "")"
+                               accept=".jpg,.jpeg,.png,.gif,.webp"
+                               onchange="validateAndPreview(this)" />
+                        @if (ViewData.ModelState["imageFile"]?.Errors.Any() == true)
+                        { <span class="form-err">@ViewData.ModelState["imageFile"]!.Errors[0].ErrorMessage</span> }
+                        <span id="fileErr" class="form-err" style="display:none"></span>
+                        <div style="font-size:.75rem;color:#94a3b8;margin-top:.2rem">Chỉ chấp nhận .jpg .png .gif .webp, tối đa 5MB</div>
                     </div>
 
+                    <!-- Preview ảnh -->
                     <div style="display:flex;align-items:center">
                         <img id="imgPreview"
                              src="@(string.IsNullOrEmpty(Model.ImageUrl) ? "https://placehold.co/80x80?text=Preview" : Model.ImageUrl)"
-                             style="width:80px;height:80px;object-fit:cover;border-radius:8px" />
+                             style="width:80px;height:80px;object-fit:cover;border-radius:8px;border:1px solid #e2e8f0" />
                         @if (!string.IsNullOrEmpty(Model.ImageUrl))
-                        {
-                            <input type="hidden" name="ImageUrl" value="@Model.ImageUrl" />
-                        }
+                        { <input type="hidden" name="ImageUrl" value="@Model.ImageUrl" /> }
                     </div>
 
+                    <!-- Mô tả -->
                     <div style="grid-column:1/-1">
                         <label class="form-label">Mô tả</label>
                         <textarea name="Description" class="form-ctrl" rows="3"
@@ -106,14 +132,12 @@
                 </div>
 
                 <div style="margin-top:1.5rem;display:flex;gap:.75rem">
-                    <button type="submit" class="btn-admin btn-primary-admin"
+                    <button type="submit" id="submitBtn" class="btn-admin btn-primary-admin"
                             style="padding:.65rem 1.75rem;font-size:.95rem">
-                        @(isEdit ? " Lưu thay đổi" : " Thêm sản phẩm")
+                        @(isEdit ? "✓ Lưu thay đổi" : "+ Thêm sản phẩm")
                     </button>
                     <a asp-area="Admin" asp-controller="Product" asp-action="Index"
-                           class="btn-admin" style="background:#f3e5f5;color:#6a1b9a;padding:.65rem 1.25rem">
-                        Hủy
-                    </a>
+                       class="btn-admin" style="background:#f3e5f5;color:#6a1b9a;padding:.65rem 1.25rem">Hủy</a>
                 </div>
             </form>
         </div>
@@ -121,13 +145,73 @@
 </div>
 
 @section Scripts {
-    <script>
-        function previewImg(input) {
-            if (input.files && input.files[0]) {
-                const reader = new FileReader();
-                reader.onload = e => document.getElementById('imgPreview').src = e.target.result;
-                reader.readAsDataURL(input.files[0]);
+<script>
+const excludeId  = @Model.Id;
+const nameInput  = document.getElementById('productName');
+const nameStatus = document.getElementById('nameStatus');
+let nameTimer;
+
+// Kiểm tra ký tự đặc biệt: dùng mảng char thay vì regex có # $ ^ để tránh Razor parse nhầm
+function hasSpecialChar(str) {
+    var bad = ['<','>','{','}','[',']','\\','|','*','?','!','@',
+               String.fromCharCode(35),  // #
+               String.fromCharCode(36),  // $
+               String.fromCharCode(94),  // ^
+               '&','+','=','~','`'];
+    return bad.some(function(c){ return str.indexOf(c) !== -1; });
+}
+
+nameInput.addEventListener('input', function() {
+    clearTimeout(nameTimer);
+    var val = nameInput.value.trim();
+    nameStatus.textContent = '';
+    nameStatus.className   = '';
+    if (!val) return;
+
+    if (hasSpecialChar(val)) {
+        nameStatus.textContent = '\u2717 Tên không được chứa ký tự đặc biệt.';
+        nameStatus.className   = 'name-dup';
+        return;
+    }
+
+    nameTimer = setTimeout(async function() {
+        try {
+            var res  = await fetch('/Admin/Product/CheckName?name=' + encodeURIComponent(val) + '&excludeId=' + excludeId);
+            var data = await res.json();
+            if (data.exists) {
+                nameStatus.textContent = '\u2717 Tên sản phẩm này đã tồn tại.';
+                nameStatus.className   = 'name-dup';
+            } else {
+                nameStatus.textContent = '\u2713 Tên hợp lệ.';
+                nameStatus.className   = 'name-ok';
             }
-        }
-    </script>
+        } catch(e) {}
+    }, 400);
+});
+
+function validateAndPreview(input) {
+    var fileErr = document.getElementById('fileErr');
+    fileErr.style.display = 'none';
+    if (!input.files || !input.files[0]) return;
+    var file    = input.files[0];
+    var allowed = ['.jpg','.jpeg','.png','.gif','.webp'];
+    var ext     = '.' + file.name.split('.').pop().toLowerCase();
+
+    if (allowed.indexOf(ext) === -1) {
+        fileErr.textContent   = '\u2717 File "' + file.name + '" không được phép. Chỉ chấp nhận ảnh.';
+        fileErr.style.display = 'block';
+        input.value = '';
+        return;
+    }
+    if (file.size > 5 * 1024 * 1024) {
+        fileErr.textContent   = '\u2717 File vượt quá 5MB.';
+        fileErr.style.display = 'block';
+        input.value = '';
+        return;
+    }
+    var reader = new FileReader();
+    reader.onload = function(e) { document.getElementById('imgPreview').src = e.target.result; };
+    reader.readAsDataURL(file);
+}
+</script>
 }
