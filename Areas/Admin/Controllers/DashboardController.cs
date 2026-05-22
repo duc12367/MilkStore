@@ -46,14 +46,9 @@ public class DashboardController(MilkStore4Context db) : Controller
             ViewBag.RevenueChange = revenueLastMonth == 0 ? 100 :
                 Math.Round((double)((revenueThisMonth - revenueLastMonth) / revenueLastMonth * 100), 1);
 
-            var usersThisMonth = await db.Users
-                .CountAsync(u => u.RoleId == 2 && u.CreatedAt >= thisMonthStart);
-            var usersLastMonth = await db.Users
-                .CountAsync(u => u.RoleId == 2 && u.CreatedAt >= lastMonthStart && u.CreatedAt < thisMonthStart);
-
+            // User model không có CreatedAt → chỉ hiển thị tổng, không tính % thay đổi
             ViewBag.TotalUsers = await db.Users.CountAsync(u => u.RoleId == 2);
-            ViewBag.UserChange = usersLastMonth == 0 ? 100 :
-                Math.Round((double)(usersThisMonth - usersLastMonth) / usersLastMonth * 100, 1);
+            ViewBag.UserChange = 0.0;
 
             ViewBag.ProductChange = 0; // sản phẩm không cần % thay đổi
 
@@ -127,7 +122,7 @@ public class DashboardController(MilkStore4Context db) : Controller
             ViewBag.IsEmpty = ViewBag.TotalOrders == 0 && ViewBag.TotalProducts == 0;
             ViewBag.DbError = false;
         }
-        catch (Exception ex)
+        catch (Exception)
         {
             // [FIX TC16] Mất kết nối DB → hiển thị trang lỗi thay vì crash 500
             ViewBag.DbError = true;
