@@ -240,18 +240,21 @@ public class OrderController(MilkStore4Context db, MilkStore.Services.EmailServi
         db.CartItems.RemoveRange(items);
         await db.SaveChangesAsync();    // Lần 2: lưu OrderItems + trừ kho + xóa giỏ
 
-        // Bước 6: Gửi email thông báo (không block nếu lỗi email)
+        // Bước 6: Gửi email thông báo
         try
         {
-            // Lấy thông tin khách hàng để gửi mail
+            var logger = HttpContext.RequestServices.GetRequiredService<ILogger<OrderController>>();
+            logger.LogInformation("[EMAIL] Bắt đầu gửi email cho đơn #{OrderId}", order.Id);
+
             var user = await db.Users.FindAsync(UserId);
+            logger.LogInformation("[EMAIL] User email: {Email}", user?.Email ?? "NULL");
+
             var itemDetails = items.Select(i => (
                 i.Product?.ProductName ?? "Sản phẩm",
                 i.Quantity,
                 i.Product?.Price ?? 0m
             )).ToList();
 
-            // Gửi song song 2 email: xác nhận cho khách + thông báo cho admin
             var emailTasks = new List<Task>();
 
             if (!string.IsNullOrWhiteSpace(user?.Email))
@@ -272,10 +275,12 @@ public class OrderController(MilkStore4Context db, MilkStore.Services.EmailServi
                 phone ?? ""));
 
             await Task.WhenAll(emailTasks);
+            logger.LogInformation("[EMAIL] Gửi email hoàn tất cho đơn #{OrderId}", order.Id);
         }
-        catch
+        catch (Exception ex)
         {
-            // Email lỗi không cancel đơn hàng — chỉ ghi log (EmailService tự log)
+            var logger = HttpContext.RequestServices.GetRequiredService<ILogger<OrderController>>();
+            logger.LogError(ex, "[EMAIL] Lỗi gửi email cho đơn #{OrderId}", order.Id);
         }
 
         // Phân luồng theo phương thức thanh toán
