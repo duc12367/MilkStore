@@ -1,3 +1,4 @@
+using MilkStore.Services;
 // FILE: Controllers/OrderController.cs
 // MỤC ĐÍCH: Xử lý toàn bộ luồng đặt hàng của khách hàng.
 //           Bao gồm: xem trang checkout, đặt hàng (PlaceOrder),
@@ -23,7 +24,7 @@ namespace MilkStore.Controllers;
 /// Tất cả action yêu cầu đăng nhập (bảo vệ bởi [LoginRequired]).
 
 [LoginRequired]
-public class OrderController(MilkStore4Context db) : Controller
+public class OrderController(MilkStore4Context db, MilkStore.Services.EmailService emailSvc) : Controller
 {
     // Hai cách lấy UserId — dùng Nullable khi cần kiểm tra null trước redirect
     private int? UserIdNullable => HttpContext.Session.GetInt32("UserId");
@@ -239,12 +240,48 @@ public class OrderController(MilkStore4Context db) : Controller
         db.CartItems.RemoveRange(items);
         await db.SaveChangesAsync();    // Lần 2: lưu OrderItems + trừ kho + xóa giỏ
 
+        // Bước 6: Gửi email thông báo (không block nếu lỗi email)
+        try
+        {
+            // Lấy thông tin khách hàng để gửi mail
+            var user = await db.Users.FindAsync(UserId);
+            var itemDetails = items.Select(i => (
+                i.Product?.ProductName ?? "Sản phẩm",
+                i.Quantity,
+                i.Product?.Price ?? 0m
+            )).ToList();
+
+            // Gửi song song 2 email: xác nhận cho khách + thông báo cho admin
+            var emailTasks = new List<Task>();
+
+            if (!string.IsNullOrWhiteSpace(user?.Email))
+                emailTasks.Add(emailSvc.SendOrderConfirmationAsync(
+                    user.Email,
+                    user.FullName ?? "Khách hàng",
+                    order.Id,
+                    order.TotalAmount,
+                    shippingAddress,
+                    itemDetails));
+
+            emailTasks.Add(emailSvc.SendNewOrderNotifyAdminAsync(
+                order.Id,
+                user?.FullName ?? "Khách hàng",
+                user?.Email ?? "(không có email)",
+                order.TotalAmount,
+                shippingAddress,
+                phone ?? ""));
+
+            await Task.WhenAll(emailTasks);
+        }
+        catch
+        {
+            // Email lỗi không cancel đơn hàng — chỉ ghi log (EmailService tự log)
+        }
+
         // Phân luồng theo phương thức thanh toán
         if (paymentMethod == "VNPay" || paymentMethod == "MoMo")
-            // Thanh toán online → chuyển sang PaymentController
             return RedirectToAction("CreatePayment", "Payment", new { orderId = order.Id });
 
-        // Thanh toán COD → thành công ngay
         return RedirectToAction("Success", new { id = order.Id });
     }
 
