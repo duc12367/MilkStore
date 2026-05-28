@@ -44,7 +44,7 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger)
     }
 
     // ── Core send ─────────────────────────────────────────────────────
-    private async Task SendAsync(string to, string subject, string htmlBody)
+    public async Task SendAsync(string to, string subject, string htmlBody)
     {
         if (string.IsNullOrWhiteSpace(_from) || string.IsNullOrWhiteSpace(_password))
         {
@@ -132,7 +132,7 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger)
     }
 
     // ── Template email admin ──────────────────────────────────────────
-    private static string BuildAdminEmail(
+    private string BuildAdminEmail(
         int orderId, string name, string email,
         decimal total, string address, string phone)
     {
