@@ -60,7 +60,16 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger)
             message.Body = new TextPart("html") { Text = htmlBody };
 
             using var smtp = new SmtpClient();
-            await smtp.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+            // Thử port 465 SSL trước, nếu lỗi thử 587 StartTLS
+            try
+            {
+                await smtp.ConnectAsync("smtp.gmail.com", 465, SecureSocketOptions.SslOnConnect);
+            }
+            catch
+            {
+                await smtp.DisconnectAsync(true);
+                await smtp.ConnectAsync("smtp.gmail.com", 587, SecureSocketOptions.StartTls);
+            }
             await smtp.AuthenticateAsync(_from, _password);
             await smtp.SendAsync(message);
             await smtp.DisconnectAsync(true);
@@ -68,8 +77,7 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger)
         }
         catch (Exception ex)
         {
-            // Không crash app nếu gửi mail thất bại
-            logger.LogError(ex, "Lỗi gửi email tới {To}", to);
+            logger.LogError(ex, "[EMAIL ERROR] {Type}: {Message}", ex.GetType().Name, ex.Message);
         }
     }
 
