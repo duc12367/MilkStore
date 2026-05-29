@@ -72,14 +72,45 @@
                 }
 
                 <div class="form-section">
-                    <h5> Mã giảm giá</h5>
-                    <div class="coupon-row">
+                    <h5>🏷️ Mã giảm giá</h5>
+
+                    @* Gợi ý mã đang có hiệu lực *@
+                    @if (ViewBag.ActiveCoupons != null)
+                    {
+                        var coupons = (List<MilkStore.Models.Coupon>)ViewBag.ActiveCoupons;
+                        if (coupons.Any())
+                        {
+                            <div style="background:#f0fdf4;border:1px solid #bbf7d0;border-radius:8px;padding:.65rem .85rem;margin-bottom:.85rem">
+                                <div style="font-size:.78rem;color:#166534;font-weight:600;margin-bottom:.4rem">🎁 Mã khuyến mãi đang có:</div>
+                                <div style="display:flex;flex-wrap:wrap;gap:.4rem">
+                                    @foreach (var c in coupons)
+                                    {
+                                        var label = c.DiscountType == "Percent"
+                                            ? $"Giảm {c.DiscountValue}%"
+                                            : $"Giảm {c.DiscountValue:N0}đ";
+                                        <span onclick="document.getElementById('couponCodeInput').value='@c.Code';document.getElementById('btnCheckCoupon').click();"
+                                              style="display:inline-flex;align-items:center;gap:.3rem;background:#fff;border:1.5px dashed #22c55e;border-radius:6px;padding:.3rem .65rem;font-size:.82rem;cursor:pointer;font-weight:600;color:#15803d;transition:background .15s"
+                                              onmouseover="this.style.background='#dcfce7'" onmouseout="this.style.background='#fff'">
+                                            <span style="letter-spacing:.5px">@c.Code</span>
+                                            <span style="font-weight:400;color:#4ade80;font-size:.75rem">@label</span>
+                                        </span>
+                                    }
+                                </div>
+                                <div style="font-size:.73rem;color:#4ade80;margin-top:.35rem">👆 Bấm vào mã để áp dụng ngay</div>
+                            </div>
+                        }
+                    }
+
+                    <div style="display:flex;gap:.5rem;align-items:center">
                         <input type="text" name="couponCode" id="couponCodeInput"
                                class="form-control"
-                               placeholder="Nhập mã giảm giá (VD: SALE10)"
-                               style="text-transform:uppercase"
+                               placeholder="Nhập hoặc chọn mã bên trên"
+                               style="text-transform:uppercase;flex:1"
                                autocomplete="off" />
-                        <button type="button" id="btnCheckCoupon">Kiểm tra</button>
+                        <button type="button" id="btnCheckCoupon"
+                                style="padding:.6rem 1rem;background:#0ea5e9;color:#fff;border:none;border-radius:8px;font-size:.88rem;cursor:pointer;white-space:nowrap;flex-shrink:0">
+                            Kiểm tra
+                        </button>
                     </div>
                     <div id="couponMsg"></div>
                     <small style="color:#888;margin-top:.3rem;display:block">Mã không phân biệt chữ hoa/thường</small>

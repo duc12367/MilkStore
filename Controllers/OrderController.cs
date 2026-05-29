@@ -47,6 +47,14 @@ public class OrderController(MilkStore4Context db, MilkStore.Services.EmailServi
             .Where(c => c.UserId == UserId)
             .ToListAsync();
 
+        // Lấy mã giảm giá đang hoạt động để gợi ý cho khách
+        var now = DateTime.UtcNow;
+        ViewBag.ActiveCoupons = await db.Coupons
+            .Where(c => c.StartDate <= now && c.ExpiryDate >= now &&
+                        (c.MaxUsage == null || c.UsageCount < c.MaxUsage))
+            .OrderBy(c => c.Code)
+            .ToListAsync();
+
         // Giỏ rỗng → không cho vào checkout
         if (!items.Any())
             return RedirectToAction("Index", "Cart");
