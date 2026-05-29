@@ -36,6 +36,10 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger)
         await SendAsync(_adminEmail, "Admin MilkStore", subject, body);
     }
 
+    // ── Overload 3 tham số cho AccountController (gửi reset password) ──
+    public async Task SendAsync(string to, string subject, string htmlBody)
+        => await SendAsync(to, to, subject, htmlBody);
+
     // ── Gửi qua Brevo HTTP API ───────────────────────────────────────
     public async Task SendAsync(string to, string toName, string subject, string htmlBody)
     {
