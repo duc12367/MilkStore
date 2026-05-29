@@ -1,5 +1,5 @@
 ﻿// FILE: Services/EmailService.cs
-// Dùng Brevo (Sendinblue) HTTP API — không bị Render chặn
+// Dùng Resend HTTP API — đơn giản, không bị Render chặn
 
 using System.Net.Http.Headers;
 using System.Text;
@@ -9,12 +9,10 @@ namespace MilkStore.Services;
 
 public class EmailService(IConfiguration config, ILogger<EmailService> logger)
 {
-    private readonly string _apiKey = config["Brevo:ApiKey"] ?? "";
-    private readonly string _from = config["Brevo:From"] ?? "";
-    private readonly string _fromName = config["Brevo:FromName"] ?? "MilkStore";
-    private readonly string _adminEmail = config["Brevo:AdminEmail"] ?? "";
+    private readonly string _apiKey = config["Resend:ApiKey"] ?? "";
+    private readonly string _from = config["Resend:From"] ?? "onboarding@resend.dev";
+    private readonly string _adminEmail = config["Resend:AdminEmail"] ?? "";
 
-    // ── Xác nhận đơn hàng cho khách ────────────────────────────────
     public async Task SendOrderConfirmationAsync(
         string customerEmail, string customerName,
         int orderId, decimal total, string shippingAddress,
@@ -22,10 +20,9 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger)
     {
         var subject = $"✅ MilkStore – Xác nhận đơn hàng #{orderId:D6}";
         var body = BuildCustomerEmail(customerName, orderId, total, shippingAddress, items);
-        await SendAsync(customerEmail, customerName, subject, body);
+        await SendAsync(customerEmail, subject, body);
     }
 
-    // ── Thông báo đơn mới cho admin ─────────────────────────────────
     public async Task SendNewOrderNotifyAdminAsync(
         int orderId, string customerName, string customerEmail,
         decimal total, string shippingAddress, string phone)
@@ -33,48 +30,42 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger)
         if (string.IsNullOrWhiteSpace(_adminEmail)) return;
         var subject = $"🛒 Đơn hàng mới #{orderId:D6} – {customerName}";
         var body = BuildAdminEmail(orderId, customerName, customerEmail, total, shippingAddress, phone);
-        await SendAsync(_adminEmail, "Admin MilkStore", subject, body);
+        await SendAsync(_adminEmail, subject, body);
     }
 
-    // ── Overload 3 tham số cho AccountController (gửi reset password) ──
+    // Overload 3 tham số cho AccountController
     public async Task SendAsync(string to, string subject, string htmlBody)
-        => await SendAsync(to, to, subject, htmlBody);
-
-    // ── Gửi qua Brevo HTTP API ───────────────────────────────────────
-    public async Task SendAsync(string to, string toName, string subject, string htmlBody)
     {
         if (string.IsNullOrWhiteSpace(_apiKey))
         {
-            logger.LogWarning("[EMAIL] Chưa cấu hình Brevo:ApiKey");
+            logger.LogWarning("[EMAIL] Chưa cấu hình Resend:ApiKey");
             return;
         }
 
         var payload = new
         {
-            sender = new { email = _from, name = _fromName },
-            to = new[] { new { email = to, name = toName } },
-            subject,
-            htmlContent = htmlBody
+            from = _from,
+            to = new[] { to },
+            subject = subject,
+            html = htmlBody
         };
 
         try
         {
             using var http = new HttpClient();
-            http.DefaultRequestHeaders.Add("api-key", _apiKey);
-            http.DefaultRequestHeaders.Accept.Add(
-                new MediaTypeWithQualityHeaderValue("application/json"));
+            http.DefaultRequestHeaders.Authorization =
+                new AuthenticationHeaderValue("Bearer", _apiKey);
 
             var json = JsonSerializer.Serialize(payload);
             var content = new StringContent(json, Encoding.UTF8, "application/json");
-            var response = await http.PostAsync(
-                "https://api.brevo.com/v3/smtp/email", content);
+            var response = await http.PostAsync("https://api.resend.com/emails", content);
 
             if (response.IsSuccessStatusCode)
                 logger.LogInformation("[EMAIL] Đã gửi tới {To}: {Subject}", to, subject);
             else
             {
                 var err = await response.Content.ReadAsStringAsync();
-                logger.LogError("[EMAIL ERROR] Brevo {Status}: {Err}", response.StatusCode, err);
+                logger.LogError("[EMAIL ERROR] Resend {Status}: {Err}", response.StatusCode, err);
             }
         }
         catch (Exception ex)
@@ -83,7 +74,6 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger)
         }
     }
 
-    // ── Template email khách ─────────────────────────────────────────
     private string BuildCustomerEmail(
         string name, int orderId, decimal total,
         string address, List<(string ProductName, int Qty, decimal Price)> items)
@@ -130,7 +120,6 @@ public class EmailService(IConfiguration config, ILogger<EmailService> logger)
         """;
     }
 
-    // ── Template email admin ─────────────────────────────────────────
     private string BuildAdminEmail(
         int orderId, string name, string email,
         decimal total, string address, string phone)
