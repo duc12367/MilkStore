@@ -2,304 +2,58 @@
 @{
     ViewData["Title"] = "Sản phẩm yêu thích";
     Layout = "~/Views/Shared/_Layout.cshtml";
-    int page = ViewBag.Page ?? 1;
+    int page       = ViewBag.Page ?? 1;
     int totalPages = ViewBag.TotalPages ?? 1;
-    int total = ViewBag.Total ?? 0;
+    int total      = ViewBag.Total ?? 0;
 }
 
 <style>
-    .wish-hero {
-        background: linear-gradient(135deg,#fff0f3,#fff8fa);
-        padding: 2rem 0 1.5rem;
-        border-bottom: 1px solid #ffe0e8;
-        margin-bottom: 2rem;
-    }
+.wish-hero { background: linear-gradient(135deg,#fff0f3,#fff8fa); padding: 2rem 0 1.5rem; border-bottom: 1px solid #ffe0e8; margin-bottom: 2rem; }
+.wish-hero-inner { display:flex; align-items:center; gap:1rem; }
+.wish-hero-icon { font-size: 2.2rem; line-height:1; }
+.wish-hero-title { font-size: 1.6rem; font-weight: 800; color: #1a1a2e; margin:0; }
+.wish-hero-count { font-size: .9rem; color: #888; margin-top: .2rem; }
 
-    .wish-hero-inner {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-    }
+.wish-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 1.2rem; }
+@@media(max-width:900px){ .wish-grid { grid-template-columns: repeat(3,1fr); } }
+@@media(max-width:600px){ .wish-grid { grid-template-columns: repeat(2,1fr); } }
 
-    .wish-hero-icon {
-        font-size: 2.2rem;
-        line-height: 1;
-    }
+.wish-card { background:#fff; border-radius:14px; border:1px solid #f0e6ea; overflow:hidden; transition: box-shadow .2s, transform .2s; position:relative; }
+.wish-card:hover { box-shadow: 0 8px 24px rgba(220,50,90,.1); transform: translateY(-3px); }
 
-    .wish-hero-title {
-        font-size: 1.6rem;
-        font-weight: 800;
-        color: #1a1a2e;
-        margin: 0;
-    }
+.wish-card-img-wrap { position:relative; overflow:hidden; aspect-ratio: 1/1; background:#fafafa; }
+.wish-card-img { width:100%; height:100%; object-fit:cover; transition: transform .3s; }
+.wish-card:hover .wish-card-img { transform: scale(1.06); }
+.wish-card-overlay { position:absolute; inset:0; background:rgba(0,0,0,.35); display:flex; align-items:center; justify-content:center; opacity:0; transition:opacity .2s; }
+.wish-card:hover .wish-card-overlay { opacity:1; }
+.wish-card-overlay a { color:#fff; font-size:.85rem; font-weight:700; text-decoration:none; background:rgba(255,255,255,.2); padding:.4rem 1rem; border-radius:20px; border:1.5px solid rgba(255,255,255,.6); backdrop-filter:blur(4px); }
 
-    .wish-hero-count {
-        font-size: .9rem;
-        color: #888;
-        margin-top: .2rem;
-    }
+.wish-card-remove { position:absolute; top:8px; right:8px; width:28px; height:28px; border-radius:50%; background:rgba(255,255,255,.9); border:none; cursor:pointer; font-size:.8rem; display:flex; align-items:center; justify-content:center; box-shadow:0 2px 6px rgba(0,0,0,.15); z-index:2; transition: background .15s; }
+.wish-card-remove:hover { background:#ff4d6d; color:#fff; }
 
-    .wish-grid {
-        display: grid;
-        grid-template-columns: repeat(4, 1fr);
-        gap: 1.2rem;
-    }
-    @@media(max - width:900px) {
-        .wish-grid {
-            grid-template-columns: repeat(3,1fr);
-        }
-    }
-    @@media(max - width:600px) {
-        .wish-grid {
-            grid-template-columns: repeat(2,1fr);
-        }
-    }
+.wish-card-body { padding: .75rem .9rem .9rem; }
+.wish-card-brand { font-size:.72rem; font-weight:700; color:#00b894; text-transform:uppercase; letter-spacing:.5px; margin-bottom:.2rem; }
+.wish-card-name { font-size:.88rem; font-weight:700; color:#1a1a2e; display:-webkit-box; -webkit-line-clamp:2; -webkit-box-orient:vertical; overflow:hidden; margin-bottom:.6rem; text-decoration:none; line-height:1.4; }
+.wish-card-name:hover { color:#e63559; }
+.wish-card-footer { display:flex; align-items:center; justify-content:space-between; gap:.4rem; }
+.wish-card-price { font-size:.95rem; font-weight:800; color:#e63559; }
+.wish-card-add { background:#1a3a2a; color:#fff; border:none; border-radius:8px; padding:.32rem .7rem; font-size:.78rem; font-weight:700; cursor:pointer; display:flex; align-items:center; gap:.3rem; transition:background .15s; white-space:nowrap; }
+.wish-card-add:hover { background:#2d5a40; }
+.wish-card-add:disabled { background:#ccc; cursor:not-allowed; }
+.out-badge { position:absolute; top:8px; left:8px; background:#e17055; color:#fff; font-size:.68rem; font-weight:700; padding:2px 8px; border-radius:20px; z-index:2; }
 
-    .wish-card {
-        background: #fff;
-        border-radius: 14px;
-        border: 1px solid #f0e6ea;
-        overflow: hidden;
-        transition: box-shadow .2s, transform .2s;
-        position: relative;
-    }
+.wish-empty { text-align:center; padding: 5rem 1rem; }
+.wish-empty-icon { font-size: 4rem; margin-bottom: 1rem; opacity:.6; }
+.wish-empty-title { font-size:1.3rem; font-weight:700; color:#444; margin-bottom:.5rem; }
+.wish-empty-sub { color:#aaa; font-size:.9rem; margin-bottom:1.5rem; }
+.btn-shop { background:linear-gradient(135deg,#e63559,#ff6b9d); color:#fff; padding:.6rem 1.6rem; border-radius:24px; font-weight:700; text-decoration:none; font-size:.9rem; display:inline-block; transition: opacity .2s; }
+.btn-shop:hover { opacity:.85; color:#fff; }
 
-        .wish-card:hover {
-            box-shadow: 0 8px 24px rgba(220,50,90,.1);
-            transform: translateY(-3px);
-        }
-
-    .wish-card-img-wrap {
-        position: relative;
-        overflow: hidden;
-        aspect-ratio: 1/1;
-        background: #fafafa;
-    }
-
-    .wish-card-img {
-        width: 100%;
-        height: 100%;
-        object-fit: cover;
-        transition: transform .3s;
-    }
-
-    .wish-card:hover .wish-card-img {
-        transform: scale(1.06);
-    }
-
-    .wish-card-overlay {
-        position: absolute;
-        inset: 0;
-        background: rgba(0,0,0,.35);
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        opacity: 0;
-        transition: opacity .2s;
-    }
-
-    .wish-card:hover .wish-card-overlay {
-        opacity: 1;
-    }
-
-    .wish-card-overlay a {
-        color: #fff;
-        font-size: .85rem;
-        font-weight: 700;
-        text-decoration: none;
-        background: rgba(255,255,255,.2);
-        padding: .4rem 1rem;
-        border-radius: 20px;
-        border: 1.5px solid rgba(255,255,255,.6);
-        backdrop-filter: blur(4px);
-    }
-
-    .wish-card-remove {
-        position: absolute;
-        top: 8px;
-        right: 8px;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        background: rgba(255,255,255,.9);
-        border: none;
-        cursor: pointer;
-        font-size: .8rem;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        box-shadow: 0 2px 6px rgba(0,0,0,.15);
-        z-index: 2;
-        transition: background .15s;
-    }
-
-        .wish-card-remove:hover {
-            background: #ff4d6d;
-            color: #fff;
-        }
-
-    .wish-card-body {
-        padding: .75rem .9rem .9rem;
-    }
-
-    .wish-card-brand {
-        font-size: .72rem;
-        font-weight: 700;
-        color: #00b894;
-        text-transform: uppercase;
-        letter-spacing: .5px;
-        margin-bottom: .2rem;
-    }
-
-    .wish-card-name {
-        font-size: .88rem;
-        font-weight: 700;
-        color: #1a1a2e;
-        display: -webkit-box;
-        -webkit-line-clamp: 2;
-        -webkit-box-orient: vertical;
-        overflow: hidden;
-        margin-bottom: .6rem;
-        text-decoration: none;
-        line-height: 1.4;
-    }
-
-        .wish-card-name:hover {
-            color: #e63559;
-        }
-
-    .wish-card-footer {
-        display: flex;
-        align-items: center;
-        justify-content: space-between;
-        gap: .4rem;
-    }
-
-    .wish-card-price {
-        font-size: .95rem;
-        font-weight: 800;
-        color: #e63559;
-    }
-
-    .wish-card-add {
-        background: #1a3a2a;
-        color: #fff;
-        border: none;
-        border-radius: 8px;
-        padding: .32rem .7rem;
-        font-size: .78rem;
-        font-weight: 700;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        gap: .3rem;
-        transition: background .15s;
-        white-space: nowrap;
-    }
-
-        .wish-card-add:hover {
-            background: #2d5a40;
-        }
-
-        .wish-card-add:disabled {
-            background: #ccc;
-            cursor: not-allowed;
-        }
-
-    .out-badge {
-        position: absolute;
-        top: 8px;
-        left: 8px;
-        background: #e17055;
-        color: #fff;
-        font-size: .68rem;
-        font-weight: 700;
-        padding: 2px 8px;
-        border-radius: 20px;
-        z-index: 2;
-    }
-
-    .wish-empty {
-        text-align: center;
-        padding: 5rem 1rem;
-    }
-
-    .wish-empty-icon {
-        font-size: 4rem;
-        margin-bottom: 1rem;
-        opacity: .6;
-    }
-
-    .wish-empty-title {
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: #444;
-        margin-bottom: .5rem;
-    }
-
-    .wish-empty-sub {
-        color: #aaa;
-        font-size: .9rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .btn-shop {
-        background: linear-gradient(135deg,#e63559,#ff6b9d);
-        color: #fff;
-        padding: .6rem 1.6rem;
-        border-radius: 24px;
-        font-weight: 700;
-        text-decoration: none;
-        font-size: .9rem;
-        display: inline-block;
-        transition: opacity .2s;
-    }
-
-        .btn-shop:hover {
-            opacity: .85;
-            color: #fff;
-        }
-
-    .wish-pagination {
-        display: flex;
-        justify-content: center;
-        gap: .5rem;
-        margin-top: 2.5rem;
-        flex-wrap: wrap;
-    }
-
-    .pg-btn {
-        width: 36px;
-        height: 36px;
-        border-radius: 50%;
-        border: 1.5px solid #e0e0e0;
-        background: #fff;
-        font-size: .85rem;
-        font-weight: 600;
-        cursor: pointer;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        transition: all .15s;
-        color: #444;
-        text-decoration: none;
-    }
-
-        .pg-btn:hover {
-            border-color: #e63559;
-            color: #e63559;
-        }
-
-        .pg-btn.active {
-            background: #e63559;
-            border-color: #e63559;
-            color: #fff;
-        }
-
-        .pg-btn.disabled {
-            opacity: .35;
-            pointer-events: none;
-        }
+.wish-pagination { display:flex; justify-content:center; gap:.5rem; margin-top:2.5rem; flex-wrap:wrap; }
+.pg-btn { width:36px; height:36px; border-radius:50%; border:1.5px solid #e0e0e0; background:#fff; font-size:.85rem; font-weight:600; cursor:pointer; display:flex; align-items:center; justify-content:center; transition: all .15s; color:#444; text-decoration:none; }
+.pg-btn:hover { border-color:#e63559; color:#e63559; }
+.pg-btn.active { background:#e63559; border-color:#e63559; color:#fff; }
+.pg-btn.disabled { opacity:.35; pointer-events:none; }
 </style>
 
 <div class="wish-hero">
@@ -384,12 +138,12 @@
         @if (totalPages > 1)
         {
             <div class="wish-pagination">
-                <a href="?page=@(page - 1)" class="pg-btn @(page <= 1 ? "disabled" : "")">‹</a>
+                <a href="?page=@(page-1)" class="pg-btn @(page <= 1 ? "disabled" : "")">‹</a>
                 @for (int i = 1; i <= totalPages; i++)
                 {
                     <a href="?page=@i" class="pg-btn @(i == page ? "active" : "")">@i</a>
                 }
-                <a href="?page=@(page + 1)" class="pg-btn @(page >= totalPages ? "disabled" : "")">›</a>
+                <a href="?page=@(page+1)" class="pg-btn @(page >= totalPages ? "disabled" : "")">›</a>
             </div>
         }
     }
