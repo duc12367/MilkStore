@@ -23,7 +23,8 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 builder.Services.AddControllersWithViews(options =>
 {
     // [FIX SESSION] Kiểm tra IsBlocked sau mỗi request (cache 30s để giảm DB query)
-    options.Filters.Add<MilkStore.Filters.BlockedUserFilter>();
+    options.Filters.Add(new Microsoft.AspNetCore.Mvc.ServiceFilterAttribute(
+        typeof(MilkStore.Filters.BlockedUserFilter)));
 });
 builder.Services.AddMemoryCache(); // dùng cho RateLimitAttribute + BlockedUserFilter
 builder.Services.AddScoped<MilkStore.Filters.BlockedUserFilter>();
@@ -212,7 +213,7 @@ using (var scope = app.Services.CreateScope())
             ADD COLUMN IF NOT EXISTS ""IsBlocked""         BOOLEAN      NOT NULL DEFAULT FALSE;
     ");
 
-    //  Thêm CreatedAt vào Users để dashboard thống kê user mới theo tháng
+    // [FIX UTC] Thêm CreatedAt vào Users để dashboard thống kê user mới theo tháng
     db.Database.ExecuteSqlRaw(@"
         ALTER TABLE ""Users""
             ADD COLUMN IF NOT EXISTS ""CreatedAt"" TIMESTAMPTZ NOT NULL DEFAULT NOW();
@@ -234,7 +235,7 @@ using (var scope = app.Services.CreateScope())
         ON CONFLICT DO NOTHING;
     ");
 
-    //  Wishlist
+    // [TRUNG HẠN] Wishlist
     db.Database.ExecuteSqlRaw(@"
         CREATE TABLE IF NOT EXISTS ""WishlistItems"" (
             ""Id""        SERIAL PRIMARY KEY,
@@ -248,7 +249,7 @@ using (var scope = app.Services.CreateScope())
     ");
 
 
-    //  UserAddresses — nhiều địa chỉ giao hàng
+    // [TRUNG HẠN] UserAddresses — nhiều địa chỉ giao hàng
     db.Database.ExecuteSqlRaw(@"
         CREATE TABLE IF NOT EXISTS ""UserAddresses"" (
             ""Id""          SERIAL PRIMARY KEY,

@@ -4,424 +4,1049 @@
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>@ViewData["Title"] — MilkStore</title>
-    @{ var _uid = Context.Session.GetInt32("UserId"); }
-@if(_uid != null) { <meta name="user-id" content="@_uid" /> }
+    @{
+        var _uid = Context.Session.GetInt32("UserId");
+    }
+    @if (_uid != null)
+    {
+        <meta name="user-id" content="@_uid" />
+    }
     <link rel="icon" type="image/png" href="~/images/logo-transparent.png" />
     <link rel="stylesheet" href="~/lib/bootstrap/dist/css/bootstrap.min.css" />
     <link rel="stylesheet" href="~/css/site.css" asp-append-version="true" />
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700&family=Playfair+Display:wght@600;700&display=swap" rel="stylesheet">
     <style>
-*,*::before,*::after{box-sizing:border-box}
-body{font-family:'Nunito',sans-serif;font-size:15px;color:#2d3436;background:#f8f9fb}
-.announcement-bar{background:linear-gradient(90deg,#00b894,#00cec9);color:#fff;text-align:center;padding:7px 16px;font-size:13px;font-weight:600}
-.navbar{background:#fff!important;border-bottom:1px solid #e8ecef;padding:10px 0;position:sticky;top:0;z-index:1000;box-shadow:0 2px 12px rgba(0,0,0,.06)}
-.brand-text{font-family:'Playfair Display',serif;font-size:22px;font-weight:700;color:#00b894;letter-spacing:-.5px}
-.nav-link{color:#2d3436!important;font-weight:600;font-size:14px;padding:6px 12px!important;border-radius:8px;transition:background .15s,color .15s}
-.nav-link:hover{background:#f0faf8;color:#00b894!important}
-.nav-admin{color:#6c5ce7!important}
-.nav-admin:hover{background:#f3f0ff!important;color:#6c5ce7!important}
-.search-wrap{display:flex;align-items:center;background:#f4f6f8;border:1.5px solid #e0e6ea;border-radius:24px;padding:6px 14px;gap:8px;transition:border-color .2s;min-width:200px}
-.search-wrap:focus-within{border-color:#00b894;background:#fff}
-.search-icon-img{width:14px;height:14px;opacity:.5;flex-shrink:0}
-.search-input{border:none;background:transparent;outline:none;font-size:13px;font-family:'Nunito',sans-serif;width:100%;color:#2d3436}
-.btn-register{background:#00b894;color:#fff!important;padding:7px 18px;border-radius:20px;font-size:13px;font-weight:700;text-decoration:none;transition:background .2s;display:inline-block}
-.btn-register:hover{background:#00997a;color:#fff!important}
-.btn-cart-nav{display:flex;align-items:center;gap:6px;background:#fff8f0;border:1.5px solid #ffd6a5;color:#e17055!important;padding:6px 14px;border-radius:20px;font-size:13px;font-weight:700;text-decoration:none;transition:background .2s}
-.btn-cart-nav:hover{background:#fff0e0;color:#e17055!important}
-.user-avatar{width:30px;height:30px;border-radius:50%;background:linear-gradient(135deg,#00b894,#00cec9);color:#fff;display:flex;align-items:center;justify-content:center;font-size:13px;font-weight:700}
-.user-name-nav{font-size:13px;font-weight:600;color:#2d3436}
-.dropdown-menu-styled{border:none;border-radius:14px;box-shadow:0 8px 30px rgba(0,0,0,.12);padding:8px;min-width:180px}
-.dropdown-menu-styled .dropdown-item{border-radius:8px;font-size:13px;font-weight:600;padding:9px 14px;color:#2d3436;display:flex;align-items:center;gap:8px}
-.dropdown-menu-styled .dropdown-item:hover{background:#f0faf8}
-.dd-icon{width:15px;height:15px;opacity:.7}
-.site-footer{background:#1e272e;color:#b2bec3;padding:48px 0 24px;margin-top:60px}
-.footer-grid{display:grid;grid-template-columns:2fr 1fr 1fr 1.5fr;gap:40px;margin-bottom:32px}
-@@media(max-width:768px){.footer-grid{grid-template-columns:1fr 1fr;gap:24px}}
-@@media(max-width:480px){.footer-grid{grid-template-columns:1fr}}
-.footer-logo{display:flex;align-items:center;gap:10px;margin-bottom:12px}
-.footer-logo span{font-family:'Playfair Display',serif;font-size:20px;font-weight:700;color:#00b894}
-.footer-tagline{font-size:13px;line-height:1.7;color:#7f8c8d;margin-bottom:16px}
-.footer-social{display:flex;gap:8px}
-.social-btn{width:34px;height:34px;background:#2d3436;border-radius:50%;display:flex;align-items:center;justify-content:center;transition:background .2s}
-.social-btn:hover{background:#00b894}
-.footer-heading{font-size:12px;font-weight:700;color:#dfe6e9;text-transform:uppercase;letter-spacing:1px;margin-bottom:14px}
-.footer-link{display:block;color:#7f8c8d;font-size:13px;text-decoration:none;margin-bottom:8px;transition:color .15s}
-.footer-link:hover{color:#00b894}
-.footer-contact-item{display:flex;align-items:center;gap:8px;margin-bottom:10px;font-size:13px}
-.footer-contact-icon{width:14px;height:14px;opacity:.6;filter:brightness(5)}
-.footer-bottom{border-top:1px solid #2d3436;padding-top:20px;display:flex;justify-content:space-between;align-items:center;font-size:12px;color:#636e72;flex-wrap:wrap;gap:8px}
-.back-to-top-btn{position:fixed;bottom:90px;right:26px;width:40px;height:40px;border-radius:50%;background:#00b894;border:none;cursor:pointer;display:flex;align-items:center;justify-content:center;opacity:0;pointer-events:none;transition:opacity .3s;z-index:999;box-shadow:0 4px 12px rgba(0,184,148,.4)}
-.back-to-top-btn.visible{opacity:1;pointer-events:auto}
-#page-loader{position:fixed;inset:0;background:#fff;display:flex;align-items:center;justify-content:center;z-index:9999;transition:opacity .4s}
-#page-loader.hidden{opacity:0;pointer-events:none}
-.spinner{width:36px;height:36px;border:3px solid #e0e0e0;border-top-color:#00b894;border-radius:50%;animation:spin .7s linear infinite}
-@@keyframes spin{to{transform:rotate(360deg)}}
-.ms-toast{position:fixed;top:72px;right:20px;padding:12px 20px;border-radius:10px;font-size:13px;font-weight:600;color:#fff;z-index:9998;opacity:0;transform:translateY(-10px);transition:all .3s;max-width:320px;box-shadow:0 4px 16px rgba(0,0,0,.15)}
-.ms-toast.show{opacity:1;transform:translateY(0)}
-.ms-toast.success{background:#00b894}
-.ms-toast.error{background:#e17055}
-#mb-chat{position:fixed;bottom:24px;right:24px;z-index:9000;display:flex;flex-direction:column;align-items:flex-end;gap:10px}
-#mb-window{width:330px;background:#fff;border-radius:16px;overflow:hidden;border:1px solid #e0e6ea;display:none;flex-direction:column;transform:translateY(16px) scale(.97);opacity:0;transition:transform .2s ease,opacity .2s ease;box-shadow:0 8px 32px rgba(0,0,0,.12)}
-#mb-window.open{transform:translateY(0) scale(1);opacity:1}
-.mb-hdr{background:linear-gradient(135deg,#00b894,#00cec9);padding:10px 14px;display:flex;align-items:center;gap:10px}
-.mb-av-hdr{width:32px;height:32px;border-radius:50%;background:rgba(255,255,255,.25);display:flex;align-items:center;justify-content:center;font-size:15px;flex-shrink:0}
-.mb-hdr-info{flex:1;min-width:0;overflow:hidden}
-.mb-hdr-name{color:#fff;font-size:13px;font-weight:700;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
-.mb-hdr-online{display:flex;align-items:center;gap:4px;font-size:10px;color:rgba(255,255,255,.9)}
-.mb-online-dot{width:6px;height:6px;border-radius:50%;background:#55efc4;flex-shrink:0}
-.mb-hdr-close{color:#fff;font-size:18px;cursor:pointer;line-height:1;opacity:.85}
-.mb-hdr-close:hover{opacity:1}
-.mb-nav{display:flex;background:#f8f9fb;border-bottom:1px solid #e8ecef}
-.mb-nav a{flex:1;text-align:center;padding:8px 4px;font-size:11px;font-weight:700;color:#636e72;text-decoration:none;border-bottom:2px solid transparent;transition:color .15s,border-color .15s;display:flex;flex-direction:column;align-items:center;gap:2px}
-.mb-nav a:hover{color:#00b894;border-bottom-color:#00b894}
-.mb-nav-icon{font-size:14px}
-#mb-msgs{height:250px;overflow-y:auto;padding:10px;display:flex;flex-direction:column;gap:8px;background:#f4f6f8}
-#mb-msgs::-webkit-scrollbar{width:4px}
-#mb-msgs::-webkit-scrollbar-thumb{background:#dfe6e9;border-radius:4px}
-.mb-time{text-align:center;font-size:10px;color:#b2bec3}
-.mb-row{display:flex;align-items:flex-end;gap:6px}
-.mb-row.me{flex-direction:row-reverse}
-.mb-av{width:26px;height:26px;border-radius:50%;background:#00b894;display:flex;align-items:center;justify-content:center;font-size:11px;flex-shrink:0;color:#fff;font-weight:700}
-.mb-av.u{background:#6c5ce7}
-.mb-av.ad{background:#e17055}
-.mb-bub{max-width:76%;padding:8px 12px;font-size:13px;line-height:1.55;word-break:break-word}
-.mb-bub.bot{background:#fff;color:#2d3436;border-radius:4px 14px 14px 14px;border:1px solid #e8ecef}
-.mb-bub.me{background:#00b894;color:#fff;border-radius:14px 4px 14px 14px}
-.mb-bub.admin{background:#e17055;color:#fff;border-radius:14px 4px 14px 14px}
-.mb-quick{padding:6px 10px 5px;background:#fff;border-top:1px solid #f0f4f7;display:flex;gap:5px;flex-wrap:wrap}
-.mb-qbtn{padding:4px 10px;border-radius:20px;border:1.5px solid #b2f5ea;background:#f0faf8;color:#00b894;font-size:11px;font-weight:600;cursor:pointer;transition:background .12s,color .12s;white-space:nowrap;font-family:'Nunito',sans-serif}
-.mb-qbtn:hover,.mb-qbtn.used{background:#00b894;color:#fff;border-color:#00b894}
-.mb-inp-row{display:flex;gap:6px;padding:8px 10px;background:#fff;align-items:center;border-top:1px solid #f0f4f7}
-.mb-inp-row input{flex:1;border:1.5px solid #e0e6ea;border-radius:20px;padding:7px 14px;font-size:13px;outline:none;background:#f8f9fb;color:#2d3436;font-family:'Nunito',sans-serif}
-.mb-inp-row input:focus{border-color:#00b894;background:#fff}
-.mb-send{width:34px;height:34px;border-radius:50%;background:#00b894;color:#fff;border:none;font-size:14px;cursor:pointer;display:flex;align-items:center;justify-content:center;flex-shrink:0}
-.mb-send:hover{background:#00997a}
-.mb-typing{font-size:11px;color:#b2bec3;padding:2px 4px}
-#mb-fab{width:52px;height:52px;border-radius:50%;background:linear-gradient(135deg,#00b894,#00cec9);color:#fff;border:none;font-size:22px;cursor:pointer;box-shadow:0 4px 16px rgba(0,184,148,.45);transition:transform .2s;display:flex;align-items:center;justify-content:center}
-#mb-fab:hover{transform:scale(1.08)}
-.dot{animation:blink 1.4s infinite}
-.dot:nth-child(2){animation-delay:.2s}
-.dot:nth-child(3){animation-delay:.4s}
-@@keyframes blink{0%,80%,100%{opacity:0}40%{opacity:1}}
+            *, *::before, *::after {
+                box-sizing: border-box
+            }
+
+            body {
+                font-family: 'Nunito',sans-serif;
+                font-size: 15px;
+                color: #2d3436;
+                background: #f8f9fb
+            }
+
+            .announcement-bar {
+                background: linear-gradient(90deg,#00b894,#00cec9);
+                color: #fff;
+                text-align: center;
+                padding: 7px 16px;
+                font-size: 13px;
+                font-weight: 600
+            }
+
+            .navbar {
+                background: #fff !important;
+                border-bottom: 1px solid #e8ecef;
+                padding: 10px 0;
+                position: sticky;
+                top: 0;
+                z-index: 1000;
+                box-shadow: 0 2px 12px rgba(0,0,0,.06)
+            }
+
+            .brand-text {
+                font-family: 'Playfair Display',serif;
+                font-size: 22px;
+                font-weight: 700;
+                color: #00b894;
+                letter-spacing: -.5px
+            }
+
+            .nav-link {
+                color: #2d3436 !important;
+                font-weight: 600;
+                font-size: 14px;
+                padding: 6px 12px !important;
+                border-radius: 8px;
+                transition: background .15s,color .15s
+            }
+
+                .nav-link:hover {
+                    background: #f0faf8;
+                    color: #00b894 !important
+                }
+
+            .nav-admin {
+                color: #6c5ce7 !important
+            }
+
+                .nav-admin:hover {
+                    background: #f3f0ff !important;
+                    color: #6c5ce7 !important
+                }
+
+            .search-wrap {
+                display: flex;
+                align-items: center;
+                background: #f4f6f8;
+                border: 1.5px solid #e0e6ea;
+                border-radius: 24px;
+                padding: 6px 14px;
+                gap: 8px;
+                transition: border-color .2s;
+                min-width: 200px
+            }
+
+                .search-wrap:focus-within {
+                    border-color: #00b894;
+                    background: #fff
+                }
+
+            .search-icon-img {
+                width: 14px;
+                height: 14px;
+                opacity: .5;
+                flex-shrink: 0
+            }
+
+            .search-input {
+                border: none;
+                background: transparent;
+                outline: none;
+                font-size: 13px;
+                font-family: 'Nunito',sans-serif;
+                width: 100%;
+                color: #2d3436
+            }
+
+            .btn-register {
+                background: #00b894;
+                color: #fff !important;
+                padding: 7px 18px;
+                border-radius: 20px;
+                font-size: 13px;
+                font-weight: 700;
+                text-decoration: none;
+                transition: background .2s;
+                display: inline-block
+            }
+
+                .btn-register:hover {
+                    background: #00997a;
+                    color: #fff !important
+                }
+
+            .btn-cart-nav {
+                display: flex;
+                align-items: center;
+                gap: 6px;
+                background: #fff8f0;
+                border: 1.5px solid #ffd6a5;
+                color: #e17055 !important;
+                padding: 6px 14px;
+                border-radius: 20px;
+                font-size: 13px;
+                font-weight: 700;
+                text-decoration: none;
+                transition: background .2s
+            }
+
+                .btn-cart-nav:hover {
+                    background: #fff0e0;
+                    color: #e17055 !important
+                }
+
+            .user-avatar {
+                width: 30px;
+                height: 30px;
+                border-radius: 50%;
+                background: linear-gradient(135deg,#00b894,#00cec9);
+                color: #fff;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 13px;
+                font-weight: 700
+            }
+
+            .user-name-nav {
+                font-size: 13px;
+                font-weight: 600;
+                color: #2d3436
+            }
+
+            .dropdown-menu-styled {
+                border: none;
+                border-radius: 14px;
+                box-shadow: 0 8px 30px rgba(0,0,0,.12);
+                padding: 8px;
+                min-width: 180px
+            }
+
+                .dropdown-menu-styled .dropdown-item {
+                    border-radius: 8px;
+                    font-size: 13px;
+                    font-weight: 600;
+                    padding: 9px 14px;
+                    color: #2d3436;
+                    display: flex;
+                    align-items: center;
+                    gap: 8px
+                }
+
+                    .dropdown-menu-styled .dropdown-item:hover {
+                        background: #f0faf8
+                    }
+
+            .dd-icon {
+                width: 15px;
+                height: 15px;
+                opacity: .7
+            }
+
+            .site-footer {
+                background: #1e272e;
+                color: #b2bec3;
+                padding: 48px 0 24px;
+                margin-top: 60px
+            }
+
+            .footer-grid {
+                display: grid;
+                grid-template-columns: 2fr 1fr 1fr 1.5fr;
+                gap: 40px;
+                margin-bottom: 32px
+            }
+
+            @@media(max-width:768px) {
+                .footer-grid {
+                    grid-template-columns: 1fr 1fr;
+                    gap: 24px
+                }
+            }
+
+            @@media(max-width:480px) {
+                .footer-grid {
+                    grid-template-columns: 1fr
+                }
+            }
+
+            .footer-logo {
+                display: flex;
+                align-items: center;
+                gap: 10px;
+                margin-bottom: 12px
+            }
+
+                .footer-logo span {
+                    font-family: 'Playfair Display',serif;
+                    font-size: 20px;
+                    font-weight: 700;
+                    color: #00b894
+                }
+
+            .footer-tagline {
+                font-size: 13px;
+                line-height: 1.7;
+                color: #7f8c8d;
+                margin-bottom: 16px
+            }
+
+            .footer-social {
+                display: flex;
+                gap: 8px
+            }
+
+            .social-btn {
+                width: 34px;
+                height: 34px;
+                background: #2d3436;
+                border-radius: 50%;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                transition: background .2s
+            }
+
+                .social-btn:hover {
+                    background: #00b894
+                }
+
+            .footer-heading {
+                font-size: 12px;
+                font-weight: 700;
+                color: #dfe6e9;
+                text-transform: uppercase;
+                letter-spacing: 1px;
+                margin-bottom: 14px
+            }
+
+            .footer-link {
+                display: block;
+                color: #7f8c8d;
+                font-size: 13px;
+                text-decoration: none;
+                margin-bottom: 8px;
+                transition: color .15s
+            }
+
+                .footer-link:hover {
+                    color: #00b894
+                }
+
+            .footer-contact-item {
+                display: flex;
+                align-items: center;
+                gap: 8px;
+                margin-bottom: 10px;
+                font-size: 13px
+            }
+
+            .footer-contact-icon {
+                width: 14px;
+                height: 14px;
+                opacity: .6;
+                filter: brightness(5)
+            }
+
+            .footer-bottom {
+                border-top: 1px solid #2d3436;
+                padding-top: 20px;
+                display: flex;
+                justify-content: space-between;
+                align-items: center;
+                font-size: 12px;
+                color: #636e72;
+                flex-wrap: wrap;
+                gap: 8px
+            }
+
+            .back-to-top-btn {
+                position: fixed;
+                bottom: 90px;
+                right: 26px;
+                width: 40px;
+                height: 40px;
+                border-radius: 50%;
+                background: #00b894;
+                border: none;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                opacity: 0;
+                pointer-events: none;
+                transition: opacity .3s;
+                z-index: 999;
+                box-shadow: 0 4px 12px rgba(0,184,148,.4)
+            }
+
+                .back-to-top-btn.visible {
+                    opacity: 1;
+                    pointer-events: auto
+                }
+
+            #page-loader {
+                position: fixed;
+                inset: 0;
+                background: #fff;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                z-index: 9999;
+                transition: opacity .4s
+            }
+
+                #page-loader.hidden {
+                    opacity: 0;
+                    pointer-events: none
+                }
+
+            .spinner {
+                width: 36px;
+                height: 36px;
+                border: 3px solid #e0e0e0;
+                border-top-color: #00b894;
+                border-radius: 50%;
+                animation: spin .7s linear infinite
+            }
+
+            @@keyframes spin {
+                to {
+                    transform: rotate(360deg)
+                }
+            }
+
+            .ms-toast {
+                position: fixed;
+                top: 72px;
+                right: 20px;
+                padding: 12px 20px;
+                border-radius: 10px;
+                font-size: 13px;
+                font-weight: 600;
+                color: #fff;
+                z-index: 9998;
+                opacity: 0;
+                transform: translateY(-10px);
+                transition: all .3s;
+                max-width: 320px;
+                box-shadow: 0 4px 16px rgba(0,0,0,.15)
+            }
+
+                .ms-toast.show {
+                    opacity: 1;
+                    transform: translateY(0)
+                }
+
+                .ms-toast.success {
+                    background: #00b894
+                }
+
+                .ms-toast.error {
+                    background: #e17055
+                }
+
+            #mb-chat {
+                position: fixed;
+                bottom: 24px;
+                right: 24px;
+                z-index: 9000;
+                display: flex;
+                flex-direction: column;
+                align-items: flex-end;
+                gap: 10px
+            }
+
+            #mb-window {
+                width: 330px;
+                background: #fff;
+                border-radius: 16px;
+                overflow: hidden;
+                border: 1px solid #e0e6ea;
+                display: none;
+                flex-direction: column;
+                transform: translateY(16px) scale(.97);
+                opacity: 0;
+                transition: transform .2s ease,opacity .2s ease;
+                box-shadow: 0 8px 32px rgba(0,0,0,.12)
+            }
+
+                #mb-window.open {
+                    transform: translateY(0) scale(1);
+                    opacity: 1
+                }
+
+            .mb-hdr {
+                background: linear-gradient(135deg,#00b894,#00cec9);
+                padding: 10px 14px;
+                display: flex;
+                align-items: center;
+                gap: 10px
+            }
+
+            .mb-av-hdr {
+                width: 32px;
+                height: 32px;
+                border-radius: 50%;
+                background: rgba(255,255,255,.25);
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 15px;
+                flex-shrink: 0
+            }
+
+            .mb-hdr-info {
+                flex: 1;
+                min-width: 0;
+                overflow: hidden
+            }
+
+            .mb-hdr-name {
+                color: #fff;
+                font-size: 13px;
+                font-weight: 700;
+                white-space: nowrap;
+                overflow: hidden;
+                text-overflow: ellipsis
+            }
+
+            .mb-hdr-online {
+                display: flex;
+                align-items: center;
+                gap: 4px;
+                font-size: 10px;
+                color: rgba(255,255,255,.9)
+            }
+
+            .mb-online-dot {
+                width: 6px;
+                height: 6px;
+                border-radius: 50%;
+                background: #55efc4;
+                flex-shrink: 0
+            }
+
+            .mb-hdr-close {
+                color: #fff;
+                font-size: 18px;
+                cursor: pointer;
+                line-height: 1;
+                opacity: .85
+            }
+
+                .mb-hdr-close:hover {
+                    opacity: 1
+                }
+
+            .mb-nav {
+                display: flex;
+                background: #f8f9fb;
+                border-bottom: 1px solid #e8ecef
+            }
+
+                .mb-nav a {
+                    flex: 1;
+                    text-align: center;
+                    padding: 8px 4px;
+                    font-size: 11px;
+                    font-weight: 700;
+                    color: #636e72;
+                    text-decoration: none;
+                    border-bottom: 2px solid transparent;
+                    transition: color .15s,border-color .15s;
+                    display: flex;
+                    flex-direction: column;
+                    align-items: center;
+                    gap: 2px
+                }
+
+                    .mb-nav a:hover {
+                        color: #00b894;
+                        border-bottom-color: #00b894
+                    }
+
+            .mb-nav-icon {
+                font-size: 14px
+            }
+
+            #mb-msgs {
+                height: 250px;
+                overflow-y: auto;
+                padding: 10px;
+                display: flex;
+                flex-direction: column;
+                gap: 8px;
+                background: #f4f6f8
+            }
+
+                #mb-msgs::-webkit-scrollbar {
+                    width: 4px
+                }
+
+                #mb-msgs::-webkit-scrollbar-thumb {
+                    background: #dfe6e9;
+                    border-radius: 4px
+                }
+
+            .mb-time {
+                text-align: center;
+                font-size: 10px;
+                color: #b2bec3
+            }
+
+            .mb-row {
+                display: flex;
+                align-items: flex-end;
+                gap: 6px
+            }
+
+                .mb-row.me {
+                    flex-direction: row-reverse
+                }
+
+            .mb-av {
+                width: 26px;
+                height: 26px;
+                border-radius: 50%;
+                background: #00b894;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                font-size: 11px;
+                flex-shrink: 0;
+                color: #fff;
+                font-weight: 700
+            }
+
+                .mb-av.u {
+                    background: #6c5ce7
+                }
+
+                .mb-av.ad {
+                    background: #e17055
+                }
+
+            .mb-bub {
+                max-width: 76%;
+                padding: 8px 12px;
+                font-size: 13px;
+                line-height: 1.55;
+                word-break: break-word
+            }
+
+                .mb-bub.bot {
+                    background: #fff;
+                    color: #2d3436;
+                    border-radius: 4px 14px 14px 14px;
+                    border: 1px solid #e8ecef
+                }
+
+                .mb-bub.me {
+                    background: #00b894;
+                    color: #fff;
+                    border-radius: 14px 4px 14px 14px
+                }
+
+                .mb-bub.admin {
+                    background: #e17055;
+                    color: #fff;
+                    border-radius: 14px 4px 14px 14px
+                }
+
+            .mb-quick {
+                padding: 6px 10px 5px;
+                background: #fff;
+                border-top: 1px solid #f0f4f7;
+                display: flex;
+                gap: 5px;
+                flex-wrap: wrap
+            }
+
+            .mb-qbtn {
+                padding: 4px 10px;
+                border-radius: 20px;
+                border: 1.5px solid #b2f5ea;
+                background: #f0faf8;
+                color: #00b894;
+                font-size: 11px;
+                font-weight: 600;
+                cursor: pointer;
+                transition: background .12s,color .12s;
+                white-space: nowrap;
+                font-family: 'Nunito',sans-serif
+            }
+
+                .mb-qbtn:hover, .mb-qbtn.used {
+                    background: #00b894;
+                    color: #fff;
+                    border-color: #00b894
+                }
+
+            .mb-inp-row {
+                display: flex;
+                gap: 6px;
+                padding: 8px 10px;
+                background: #fff;
+                align-items: center;
+                border-top: 1px solid #f0f4f7
+            }
+
+                .mb-inp-row input {
+                    flex: 1;
+                    border: 1.5px solid #e0e6ea;
+                    border-radius: 20px;
+                    padding: 7px 14px;
+                    font-size: 13px;
+                    outline: none;
+                    background: #f8f9fb;
+                    color: #2d3436;
+                    font-family: 'Nunito',sans-serif
+                }
+
+                    .mb-inp-row input:focus {
+                        border-color: #00b894;
+                        background: #fff
+                    }
+
+            .mb-send {
+                width: 34px;
+                height: 34px;
+                border-radius: 50%;
+                background: #00b894;
+                color: #fff;
+                border: none;
+                font-size: 14px;
+                cursor: pointer;
+                display: flex;
+                align-items: center;
+                justify-content: center;
+                flex-shrink: 0
+            }
+
+                .mb-send:hover {
+                    background: #00997a
+                }
+
+            .mb-typing {
+                font-size: 11px;
+                color: #b2bec3;
+                padding: 2px 4px
+            }
+
+            #mb-fab {
+                width: 52px;
+                height: 52px;
+                border-radius: 50%;
+                background: linear-gradient(135deg,#00b894,#00cec9);
+                color: #fff;
+                border: none;
+                font-size: 22px;
+                cursor: pointer;
+                box-shadow: 0 4px 16px rgba(0,184,148,.45);
+                transition: transform .2s;
+                display: flex;
+                align-items: center;
+                justify-content: center
+            }
+
+                #mb-fab:hover {
+                    transform: scale(1.08)
+                }
+
+            .dot {
+                animation: blink 1.4s infinite
+            }
+
+                .dot:nth-child(2) {
+                    animation-delay: .2s
+                }
+
+                .dot:nth-child(3) {
+                    animation-delay: .4s
+                }
+
+            @@keyframes blink {
+                0%, 80%, 100% {
+                    opacity: 0
+                }
+
+                40% {
+                    opacity: 1
+                }
+            }
     </style>
 </head>
 <body>
-@if (TempData["Success"] != null)
-{
-    <div id="server-toast" data-message="@TempData["Success"]" data-type="success" style="display:none"></div>
-}
-@if (TempData["Error"] != null)
-{
-    <div id="server-toast" data-message="@TempData["Error"]" data-type="error" style="display:none"></div>
-}
-<div id="page-loader"><div class="spinner"></div></div>
+    @if (TempData["Success"] != null)
+    {
+        <div id="server-toast" data-message="@TempData["Success"]" data-type="success" style="display:none"></div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div id="server-toast" data-message="@TempData["Error"]" data-type="error" style="display:none"></div>
+    }
+    <div id="page-loader"><div class="spinner"></div></div>
 
-<div class="announcement-bar">
-    <img src="https://cdn-icons-png.flaticon.com/512/3514/3514491.png" alt="" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;filter:brightness(10)">
-    Miễn phí giao hàng cho đơn từ 300.000đ &nbsp;·&nbsp;
-    <img src="https://cdn-icons-png.flaticon.com/512/1041/1041916.png" alt="" style="width:13px;height:13px;vertical-align:middle;margin-right:4px;filter:brightness(10)">
-    Sản phẩm chính hãng 100%
-</div>
+    <div class="announcement-bar">
+        <img src="https://cdn-icons-png.flaticon.com/512/3514/3514491.png" alt="" style="width:14px;height:14px;vertical-align:middle;margin-right:6px;filter:brightness(10)">
+        Miễn phí giao hàng cho đơn từ 300.000đ &nbsp;·&nbsp;
+        <img src="https://cdn-icons-png.flaticon.com/512/1041/1041916.png" alt="" style="width:13px;height:13px;vertical-align:middle;margin-right:4px;filter:brightness(10)">
+        Sản phẩm chính hãng 100%
+    </div>
 
-<nav class="navbar navbar-expand-lg navbar-light bg-white">
-    <div class="container">
-        <a class="navbar-brand d-flex align-items-center gap-2" asp-area="" asp-controller="Home" asp-action="Index">
-            <img src="https://img3.stockfresh.com/files/b/butenkow/m/23/6363960_stock-vector-vector-milk-logo.jpg" alt="MilkStore Logo" style="width:34px;height:34px;border-radius:50%;object-fit:cover">
-            <span class="brand-text">MilkStore</span>
-        </a>
-        <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
-            <span class="navbar-toggler-icon"></span>
-        </button>
-        <div class="collapse navbar-collapse" id="navMenu">
-            <ul class="navbar-nav me-auto gap-1">
-                <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a></li>
-                <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Product" asp-action="Index">Sản phẩm</a></li>
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Danh mục</a>
-                    <ul class="dropdown-menu dropdown-menu-styled">
-                        <li><a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="1">🥛 Sữa tươi</a></li>
-                        <li><a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="2">🍼 Sữa bột</a></li>
-                        <li><a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="3">🧋 Sữa chua</a></li>
-                        <li><a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="4">🍮 Sữa đặc</a></li>
-                    </ul>
-                </li>
-            </ul>
-            <form asp-area="" asp-controller="Product" asp-action="Index" method="get" class="d-flex me-3">
-                <div class="search-wrap">
-                    <img src="https://cdn-icons-png.flaticon.com/512/622/622669.png" alt="search" class="search-icon-img">
-                    <input type="text" name="search" placeholder="Tìm sản phẩm..." class="search-input" />
-                </div>
-            </form>
-            <ul class="navbar-nav align-items-center gap-2">
-                @{
-                    var userId   = Context.Session.GetInt32("UserId");
-                    var roleId   = Context.Session.GetInt32("RoleId");
-                    var fullName = Context.Session.GetString("FullName");
-                }
-                @if (userId == null)
-                {
-                    <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Account" asp-action="Login">Đăng nhập</a></li>
-                    <li class="nav-item"><a asp-area="" asp-controller="Account" asp-action="Register" class="btn-register">Đăng ký</a></li>
-                }
-                else
-                {
-                    @if (roleId == 1)
-                    {
-                        <li class="nav-item">
-                            <a class="nav-link nav-admin" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">⚙️ Admin</a>
-                        </li>
-                    }
-                    <li class="nav-item">
-                        <a asp-area="" asp-controller="Cart" asp-action="Index" class="btn-cart-nav">🛒 Giỏ hàng</a>
-                    </li>
+    <nav class="navbar navbar-expand-lg navbar-light bg-white">
+        <div class="container">
+            <a class="navbar-brand d-flex align-items-center gap-2" asp-area="" asp-controller="Home" asp-action="Index">
+                <img src="https://img3.stockfresh.com/files/b/butenkow/m/23/6363960_stock-vector-vector-milk-logo.jpg" alt="MilkStore Logo" style="width:34px;height:34px;border-radius:50%;object-fit:cover">
+                <span class="brand-text">MilkStore</span>
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navMenu">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navMenu">
+                <ul class="navbar-nav me-auto gap-1">
+                    <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Home" asp-action="Index">Trang chủ</a></li>
+                    <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Product" asp-action="Index">Sản phẩm</a></li>
                     <li class="nav-item dropdown">
-                        <a href="#" class="nav-link dropdown-toggle user-menu-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
-                            <div class="user-avatar">@fullName?.Substring(0,1).ToUpper()</div>
-                            <span class="user-name-nav">@fullName</span>
-                        </a>
-                        <ul class="dropdown-menu dropdown-menu-end dropdown-menu-styled shadow-sm">
-                            <li><a class="dropdown-item" asp-area="" asp-controller="Account" asp-action="Profile"><img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" alt="" class="dd-icon"> Tài khoản</a></li>
-                            <li><a class="dropdown-item" asp-area="" asp-controller="Order" asp-action="MyOrders"><img src="https://cdn-icons-png.flaticon.com/512/3144/3144456.png" alt="" class="dd-icon"> Đơn hàng của tôi</a></li>
-                            <li><hr class="dropdown-divider"/></li>
-                            <li>
-                                <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
-                                    @Html.AntiForgeryToken()
-                                    <button type="submit" class="dropdown-item text-danger">
-                                        <img src="https://cdn-icons-png.flaticon.com/512/1828/1828479.png" alt="" class="dd-icon" style="filter:hue-rotate(300deg)"> Đăng xuất
-                                    </button>
-                                </form>
-                            </li>
+                        <a class="nav-link dropdown-toggle" href="#" data-bs-toggle="dropdown">Danh mục</a>
+                        <ul class="dropdown-menu dropdown-menu-styled">
+                            <li><a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="1">🥛 Sữa tươi</a></li>
+                            <li><a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="2">🍼 Sữa bột</a></li>
+                            <li><a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="3">🧋 Sữa chua</a></li>
+                            <li><a class="dropdown-item" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="4">🍮 Sữa đặc</a></li>
                         </ul>
                     </li>
-                }
-            </ul>
+                </ul>
+                <form asp-area="" asp-controller="Product" asp-action="Index" method="get" class="d-flex me-3">
+                    <div class="search-wrap">
+                        <img src="https://cdn-icons-png.flaticon.com/512/622/622669.png" alt="search" class="search-icon-img">
+                        <input type="text" name="search" placeholder="Tìm sản phẩm..." class="search-input" />
+                    </div>
+                </form>
+                <ul class="navbar-nav align-items-center gap-2">
+                    @{
+                        var userId = Context.Session.GetInt32("UserId");
+                        var roleId = Context.Session.GetInt32("RoleId");
+                        var fullName = Context.Session.GetString("FullName");
+                    }
+                    @if (userId == null)
+                    {
+                        <li class="nav-item"><a class="nav-link" asp-area="" asp-controller="Account" asp-action="Login">Đăng nhập</a></li>
+                        <li class="nav-item"><a asp-area="" asp-controller="Account" asp-action="Register" class="btn-register">Đăng ký</a></li>
+                    }
+                    else
+                    {
+                        @if (roleId == 1)
+                        {
+                            <li class="nav-item">
+                                <a class="nav-link nav-admin" asp-area="Admin" asp-controller="Dashboard" asp-action="Index">⚙️ Admin</a>
+                            </li>
+                        }
+                        <li class="nav-item">
+                            <a asp-area="" asp-controller="Cart" asp-action="Index" class="btn-cart-nav">🛒 Giỏ hàng</a>
+                        </li>
+                        <li class="nav-item dropdown">
+                            <a href="#" class="nav-link dropdown-toggle user-menu-toggle d-flex align-items-center gap-2" data-bs-toggle="dropdown">
+                                <div class="user-avatar">@fullName?.Substring(0, 1).ToUpper()</div>
+                                <span class="user-name-nav">@fullName</span>
+                            </a>
+                            <ul class="dropdown-menu dropdown-menu-end dropdown-menu-styled shadow-sm">
+                                <li><a class="dropdown-item" asp-area="" asp-controller="Account" asp-action="Profile"><img src="https://cdn-icons-png.flaticon.com/512/1077/1077114.png" alt="" class="dd-icon"> Tài khoản</a></li>
+                                <li><a class="dropdown-item" asp-area="" asp-controller="Order" asp-action="MyOrders"><img src="https://cdn-icons-png.flaticon.com/512/3144/3144456.png" alt="" class="dd-icon"> Đơn hàng của tôi</a></li>
+                                <li><hr class="dropdown-divider" /></li>
+                                <li>
+                                    <form asp-area="" asp-controller="Account" asp-action="Logout" method="post">
+                                        @Html.AntiForgeryToken()
+                                        <button type="submit" class="dropdown-item text-danger">
+                                            <img src="https://cdn-icons-png.flaticon.com/512/1828/1828479.png" alt="" class="dd-icon" style="filter:hue-rotate(300deg)"> Đăng xuất
+                                        </button>
+                                    </form>
+                                </li>
+                            </ul>
+                        </li>
+                    }
+                </ul>
+            </div>
         </div>
-    </div>
-</nav>
+    </nav>
 
-<main style="min-height:60vh">@RenderBody()</main>
+    <main style="min-height:60vh">@RenderBody()</main>
 
-<footer class="site-footer">
-    <div class="container">
-        <div class="footer-grid">
-            <div class="footer-brand-col">
-                <div class="footer-logo">
-                    <img src="https://img3.stockfresh.com/files/b/butenkow/m/23/6363960_stock-vector-vector-milk-logo.jpg" alt="MilkStore" style="width:34px;height:34px;border-radius:50%;object-fit:cover">
-                    <span>MilkStore</span>
+    <footer class="site-footer">
+        <div class="container">
+            <div class="footer-grid">
+                <div class="footer-brand-col">
+                    <div class="footer-logo">
+                        <img src="https://img3.stockfresh.com/files/b/butenkow/m/23/6363960_stock-vector-vector-milk-logo.jpg" alt="MilkStore" style="width:34px;height:34px;border-radius:50%;object-fit:cover">
+                        <span>MilkStore</span>
+                    </div>
+                    <p class="footer-tagline">Cửa hàng sữa uy tín — chất lượng cao — giao hàng nhanh toàn quốc.</p>
+                    <div class="footer-social">
+                        <a href="https://www.facebook.com/" class="social-btn" title="Facebook"><img src="https://z-m-static.xx.fbcdn.net/rsrc.php/yt/r/DUiOg0mJTjz.webp" alt="Facebook" style="width:16px;height:16px;"></a>
+                        <a href="https://www.instagram.com/" class="social-btn" title="Instagram"><img src="https://images.vexels.com/media/users/3/137380/isolated/preview/1b2ca367caa7eff8b45c09ec09b44c16-instagram-icon-logo.png" alt="Instagram" style="width:16px;height:16px;"></a>
+                        <a href="https://www.youtube.com/" class="social-btn" title="YouTube"><img src="https://cdn-icons-png.freepik.com/256/1383/1383260.png?semt=ais_white_label" alt="YouTube" style="width:16px;height:16px;"></a>
+                    </div>
                 </div>
-                <p class="footer-tagline">Cửa hàng sữa uy tín — chất lượng cao — giao hàng nhanh toàn quốc.</p>
-                <div class="footer-social">
-                    <a href="https://www.facebook.com/" class="social-btn" title="Facebook"><img src="https://z-m-static.xx.fbcdn.net/rsrc.php/yt/r/DUiOg0mJTjz.webp" alt="Facebook" style="width:16px;height:16px;"></a>
-                    <a href="https://www.instagram.com/" class="social-btn" title="Instagram"><img src="https://images.vexels.com/media/users/3/137380/isolated/preview/1b2ca367caa7eff8b45c09ec09b44c16-instagram-icon-logo.png" alt="Instagram" style="width:16px;height:16px;"></a>
-                    <a href="https://www.youtube.com/" class="social-btn" title="YouTube"><img src="https://cdn-icons-png.freepik.com/256/1383/1383260.png?semt=ais_white_label" alt="YouTube" style="width:16px;height:16px;"></a>
+                <div>
+                    <div class="footer-heading">Danh mục</div>
+                    <a class="footer-link" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="1">Sữa tươi</a>
+                    <a class="footer-link" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="2">Sữa bột</a>
+                    <a class="footer-link" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="3">Sữa chua</a>
+                    <a class="footer-link" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="4">Sữa đặc</a>
+                </div>
+                <div>
+                    <div class="footer-heading">Hỗ trợ</div>
+                    <a class="footer-link" asp-controller="Home" asp-action="ReturnPolicy">Chính sách đổi trả</a>
+                    <a class="footer-link" href="#">Hướng dẫn mua hàng</a>
+                    <a class="footer-link" href="#">Câu hỏi thường gặp</a>
+                    <a class="footer-link" asp-controller="Home" asp-action="Contact">Liên hệ</a>
+                </div>
+                <div>
+                    <div class="footer-heading">Liên hệ</div>
+                    <div class="footer-contact-item"><img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="email" class="footer-contact-icon"><span>contact@@milkstore.vn</span></div>
+                    <div class="footer-contact-item"><img src="https://cdn-icons-png.flaticon.com/512/597/597177.png" alt="phone" class="footer-contact-icon"><span>1800 6789</span></div>
+                    <div class="footer-contact-item"><img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" alt="location" class="footer-contact-icon"><span>Hà Nội, Việt Nam</span></div>
+                    <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">
+                        <img src="https://cdn-icons-png.flaticon.com/512/5968/5968756.png" alt="Visa" style="width:36px;height:24px;object-fit:contain;background:#fff;border-radius:4px;padding:2px">
+                        <img src="https://cdn-icons-png.flaticon.com/512/349/349221.png" alt="Mastercard" style="width:36px;height:24px;object-fit:contain;background:#fff;border-radius:4px;padding:2px">
+                        <img src="https://rgb.vn/wp-content/uploads/2014/05/rgb_vn_new_branding_paypal_2014_logo_detail.png" alt="PayPal" style="width:36px;height:24px;object-fit:contain;background:#fff;border-radius:4px;padding:2px">
+                    </div>
                 </div>
             </div>
-            <div>
-                <div class="footer-heading">Danh mục</div>
-                <a class="footer-link" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="1">Sữa tươi</a>
-                <a class="footer-link" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="2">Sữa bột</a>
-                <a class="footer-link" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="3">Sữa chua</a>
-                <a class="footer-link" asp-area="" asp-controller="Product" asp-action="Index" asp-route-categoryId="4">Sữa đặc</a>
-            </div>
-            <div>
-                <div class="footer-heading">Hỗ trợ</div>
-                <a class="footer-link" asp-controller="Home" asp-action="ReturnPolicy">Chính sách đổi trả</a>
-                <a class="footer-link" href="#">Hướng dẫn mua hàng</a>
-                <a class="footer-link" href="#">Câu hỏi thường gặp</a>
-                <a class="footer-link" asp-controller="Home" asp-action="Contact">Liên hệ</a>
-            </div>
-            <div>
-                <div class="footer-heading">Liên hệ</div>
-                <div class="footer-contact-item"><img src="https://cdn-icons-png.flaticon.com/512/561/561127.png" alt="email" class="footer-contact-icon"><span>contact@@milkstore.vn</span></div>
-                <div class="footer-contact-item"><img src="https://cdn-icons-png.flaticon.com/512/597/597177.png" alt="phone" class="footer-contact-icon"><span>1800 6789</span></div>
-                <div class="footer-contact-item"><img src="https://cdn-icons-png.flaticon.com/512/684/684908.png" alt="location" class="footer-contact-icon"><span>Hà Nội, Việt Nam</span></div>
-                <div style="margin-top:12px;display:flex;gap:6px;flex-wrap:wrap">
-                    <img src="https://cdn-icons-png.flaticon.com/512/5968/5968756.png" alt="Visa" style="width:36px;height:24px;object-fit:contain;background:#fff;border-radius:4px;padding:2px">
-                    <img src="https://cdn-icons-png.flaticon.com/512/349/349221.png" alt="Mastercard" style="width:36px;height:24px;object-fit:contain;background:#fff;border-radius:4px;padding:2px">
-                    <img src="https://rgb.vn/wp-content/uploads/2014/05/rgb_vn_new_branding_paypal_2014_logo_detail.png" alt="PayPal" style="width:36px;height:24px;object-fit:contain;background:#fff;border-radius:4px;padding:2px">
-                </div>
+            <div class="footer-bottom">
+                <span>© 2025 MilkStore. All rights reserved.</span>
+                <span><img src="https://cdn-icons-png.flaticon.com/512/197/197473.png" alt="Vietnam" style="width:16px;height:11px;object-fit:cover;border-radius:2px;margin-right:5px;vertical-align:middle">Made in Vietnam</span>
             </div>
         </div>
-        <div class="footer-bottom">
-            <span>© 2025 MilkStore. All rights reserved.</span>
-            <span><img src="https://cdn-icons-png.flaticon.com/512/197/197473.png" alt="Vietnam" style="width:16px;height:11px;object-fit:cover;border-radius:2px;margin-right:5px;vertical-align:middle">Made in Vietnam</span>
+    </footer>
+
+    <button id="back-to-top" class="back-to-top-btn" title="Lên đầu trang">
+        <img src="https://cdn-icons-png.flaticon.com/512/608/608336.png" alt="top" style="width:16px;height:16px;filter:brightness(10)">
+    </button>
+
+    <!-- CHATBOT -->
+    <div id="mb-chat">
+        <div id="mb-window">
+            <div class="mb-hdr">
+                <div class="mb-av-hdr">🥛</div>
+                <div class="mb-hdr-info">
+                    <div class="mb-hdr-name">Mai — Tư vấn sữa MilkStore</div>
+                    <div class="mb-hdr-online"><div class="mb-online-dot"></div><span id="mb-status-txt">Đang kết nối...</span></div>
+                </div>
+                <div class="mb-hdr-close" onclick="mbToggle()">✕</div>
+            </div>
+            <div class="mb-nav">
+                <a href="/Cart/Index"><div class="mb-nav-icon">🛒</div>Giỏ hàng</a>
+                <a href="/Order/MyOrders"><div class="mb-nav-icon">📦</div>Đơn hàng</a>
+                <a href="/Product"><div class="mb-nav-icon">🏪</div>Sản phẩm</a>
+            </div>
+            <div id="mb-msgs">
+                <div class="mb-time">Hôm nay @DateTime.Now.ToString("HH:mm")</div>
+                <div class="mb-row">
+                    <div class="mb-av">M</div>
+                    <div class="mb-bub bot">Xin chào! Mình là Mai 😊 Bạn cần tư vấn sữa gì — cho bé, mẹ bầu hay người lớn ạ?</div>
+                </div>
+            </div>
+            <div class="mb-quick">
+                <button class="mb-qbtn" onclick="mbQs(this)">Sữa bé sơ sinh</button>
+                <button class="mb-qbtn" onclick="mbQs(this)">Sữa tăng cân</button>
+                <button class="mb-qbtn" onclick="mbQs(this)">Sữa tiểu đường</button>
+                <button class="mb-qbtn" onclick="mbQs(this)">Sữa ít đường</button>
+                <button class="mb-qbtn" onclick="mbQs(this)">Sữa hữu cơ</button>
+                <button class="mb-qbtn" onclick="mbQs(this)">Sữa mẹ bầu</button>
+            </div>
+            <div class="mb-inp-row">
+                <input id="mb-inp" placeholder="Nhập câu hỏi..." onkeydown="if(event.key==='Enter')mbSend()" />
+                <button class="mb-send" onclick="mbSend()">➤</button>
+            </div>
         </div>
+        <button id="mb-fab" onclick="mbToggle()">🥛</button>
     </div>
-</footer>
 
-<button id="back-to-top" class="back-to-top-btn" title="Lên đầu trang">
-    <img src="https://cdn-icons-png.flaticon.com/512/608/608336.png" alt="top" style="width:16px;height:16px;filter:brightness(10)">
-</button>
+    <script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="~/js/site.js" asp-append-version="true"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
+    @await RenderSectionAsync("Scripts", required: false)
+    <script>
+        // Page loader
+        window.addEventListener('load',()=>{const l=document.getElementById('page-loader');if(l){l.classList.add('hidden');setTimeout(()=>l.remove(),500)}});
 
-<!-- CHATBOT -->
-<div id="mb-chat">
-  <div id="mb-window">
-    <div class="mb-hdr">
-      <div class="mb-av-hdr">🥛</div>
-      <div class="mb-hdr-info">
-        <div class="mb-hdr-name">Mai — Tư vấn sữa MilkStore</div>
-        <div class="mb-hdr-online"><div class="mb-online-dot"></div><span id="mb-status-txt">Đang kết nối...</span></div>
-      </div>
-      <div class="mb-hdr-close" onclick="mbToggle()">✕</div>
-    </div>
-    <div class="mb-nav">
-      <a href="/Cart/Index"><div class="mb-nav-icon">🛒</div>Giỏ hàng</a>
-      <a href="/Order/MyOrders"><div class="mb-nav-icon">📦</div>Đơn hàng</a>
-      <a href="/Product"><div class="mb-nav-icon">🏪</div>Sản phẩm</a>
-    </div>
-    <div id="mb-msgs">
-      <div class="mb-time">Hôm nay @DateTime.Now.ToString("HH:mm")</div>
-      <div class="mb-row">
-        <div class="mb-av">M</div>
-        <div class="mb-bub bot">Xin chào! Mình là Mai 😊 Bạn cần tư vấn sữa gì — cho bé, mẹ bầu hay người lớn ạ?</div>
-      </div>
-    </div>
-    <div class="mb-quick">
-      <button class="mb-qbtn" onclick="mbQs(this)">Sữa bé sơ sinh</button>
-      <button class="mb-qbtn" onclick="mbQs(this)">Sữa tăng cân</button>
-      <button class="mb-qbtn" onclick="mbQs(this)">Sữa tiểu đường</button>
-      <button class="mb-qbtn" onclick="mbQs(this)">Sữa ít đường</button>
-      <button class="mb-qbtn" onclick="mbQs(this)">Sữa hữu cơ</button>
-      <button class="mb-qbtn" onclick="mbQs(this)">Sữa mẹ bầu</button>
-    </div>
-    <div class="mb-inp-row">
-      <input id="mb-inp" placeholder="Nhập câu hỏi..." onkeydown="if(event.key==='Enter')mbSend()"/>
-      <button class="mb-send" onclick="mbSend()">➤</button>
-    </div>
-  </div>
-  <button id="mb-fab" onclick="mbToggle()">🥛</button>
-</div>
+        // Back to top
+        const topBtn=document.getElementById('back-to-top');
+        if(topBtn){window.addEventListener('scroll',()=>topBtn.classList.toggle('visible',scrollY>300));topBtn.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));}
 
-<script src="~/lib/bootstrap/dist/js/bootstrap.bundle.min.js"></script>
-<script src="~/js/site.js" asp-append-version="true"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/microsoft-signalr/7.0.5/signalr.min.js"></script>
-@await RenderSectionAsync("Scripts", required: false)
-<script>
-// Page loader
-window.addEventListener('load',()=>{const l=document.getElementById('page-loader');if(l){l.classList.add('hidden');setTimeout(()=>l.remove(),500)}});
+        // Toast
+        const toastEl=document.getElementById('server-toast');
+        if(toastEl){const msg=toastEl.dataset.message,type=toastEl.dataset.type;if(msg){const t=document.createElement('div');t.className=`ms-toast ${type}`;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.classList.add('show'),50);setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),300)},3500);}}
 
-// Back to top
-const topBtn=document.getElementById('back-to-top');
-if(topBtn){window.addEventListener('scroll',()=>topBtn.classList.toggle('visible',scrollY>300));topBtn.addEventListener('click',()=>window.scrollTo({top:0,behavior:'smooth'}));}
+        // Chatbot — SignalR
+        // Chatbot — SignalR
+        // Lấy userId từ session (null nếu chưa đăng nhập)
+        const mbUserId = '@(Context.Session.GetInt32("UserId")?.ToString() ?? "")';
 
-// Toast
-const toastEl=document.getElementById('server-toast');
-if(toastEl){const msg=toastEl.dataset.message,type=toastEl.dataset.type;if(msg){const t=document.createElement('div');t.className=`ms-toast ${type}`;t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.classList.add('show'),50);setTimeout(()=>{t.classList.remove('show');setTimeout(()=>t.remove(),300)},3500);}}
+        let mbSid;
+        if (mbUserId) {
+        // Đã đăng nhập → sessionId gắn với userId, lưu localStorage theo user
+        mbSid = 'user_' + mbUserId;
+        localStorage.setItem('mb_sid_user', mbSid);
+        } else {
+        // Chưa đăng nhập → sessionId ngẫu nhiên, chỉ tồn tại trong tab hiện tại
+        mbSid = sessionStorage.getItem('mb_sid_guest') || ('guest_' + Math.random().toString(36).slice(2));
+        sessionStorage.setItem('mb_sid_guest', mbSid);
+        }
+        let mbOpen = false;
+        let mbConn = null;
 
-// Chatbot — SignalR
-// Chatbot — SignalR
-// Lấy userId từ session (null nếu chưa đăng nhập)
-const mbUserId = '@(Context.Session.GetInt32("UserId")?.ToString() ?? "")';
+        function mbToggle() {
+        const w = document.getElementById('mb-window');
+        mbOpen = !mbOpen;
+        if (mbOpen) { w.style.display='flex'; setTimeout(()=>w.classList.add('open'),10); }
+        else { w.classList.remove('open'); setTimeout(()=>{ w.style.display='none'; },220); }
+        }
 
-let mbSid;
-if (mbUserId) {
-    // Đã đăng nhập → sessionId gắn với userId, lưu localStorage theo user
-    mbSid = 'user_' + mbUserId;
-    localStorage.setItem('mb_sid_user', mbSid);
-} else {
-    // Chưa đăng nhập → sessionId ngẫu nhiên, chỉ tồn tại trong tab hiện tại
-    mbSid = sessionStorage.getItem('mb_sid_guest') || ('guest_' + Math.random().toString(36).slice(2));
-    sessionStorage.setItem('mb_sid_guest', mbSid);
-}
-let mbOpen = false;
-let mbConn = null;
+        function mbAddMsg(txt, role) {
+        const m = document.getElementById('mb-msgs');
+        const row = document.createElement('div');
+        row.className = 'mb-row' + (role==='user' ? ' me' : '');
+        const av = document.createElement('div');
+        av.className = 'mb-av' + (role==='user' ? ' u' : role==='admin' ? ' ad' : '');
+        av.textContent = role==='user' ? 'B' : role==='admin' ? 'AD' : 'M';
+        const bub = document.createElement('div');
+        bub.className = 'mb-bub ' + (role==='user' ? 'me' : role==='admin' ? 'admin' : 'bot');
+        bub.textContent = txt;
+        if (role==='user') { row.appendChild(bub); row.appendChild(av); }
+        else { row.appendChild(av); row.appendChild(bub); }
+        m.appendChild(row);
+        m.scrollTop = m.scrollHeight;
+        }
 
-function mbToggle() {
-    const w = document.getElementById('mb-window');
-    mbOpen = !mbOpen;
-    if (mbOpen) { w.style.display='flex'; setTimeout(()=>w.classList.add('open'),10); }
-    else { w.classList.remove('open'); setTimeout(()=>{ w.style.display='none'; },220); }
-}
+        function mbQs(btn) {
+        btn.classList.add('used');
+        mbSend(btn.textContent);
+        }
 
-function mbAddMsg(txt, role) {
-    const m = document.getElementById('mb-msgs');
-    const row = document.createElement('div');
-    row.className = 'mb-row' + (role==='user' ? ' me' : '');
-    const av = document.createElement('div');
-    av.className = 'mb-av' + (role==='user' ? ' u' : role==='admin' ? ' ad' : '');
-    av.textContent = role==='user' ? 'B' : role==='admin' ? 'AD' : 'M';
-    const bub = document.createElement('div');
-    bub.className = 'mb-bub ' + (role==='user' ? 'me' : role==='admin' ? 'admin' : 'bot');
-    bub.textContent = txt;
-    if (role==='user') { row.appendChild(bub); row.appendChild(av); }
-    else { row.appendChild(av); row.appendChild(bub); }
-    m.appendChild(row);
-    m.scrollTop = m.scrollHeight;
-}
+        async function mbSend(text) {
+        const inp = document.getElementById('mb-inp');
+        const msg = text || inp.value.trim();
+        if (!msg) return;
+        if (!text) inp.value = '';
+        mbAddMsg(msg, 'user');
 
-function mbQs(btn) {
-    btn.classList.add('used');
-    mbSend(btn.textContent);
-}
+        const t = document.createElement('div');
+        t.className = 'mb-typing'; t.id = 'mb-typing';
+        t.innerHTML = 'Mai đang nhập <span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>';
+        document.getElementById('mb-msgs').appendChild(t);
+        document.getElementById('mb-msgs').scrollTop = 9999;
 
-async function mbSend(text) {
-    const inp = document.getElementById('mb-inp');
-    const msg = text || inp.value.trim();
-    if (!msg) return;
-    if (!text) inp.value = '';
-    mbAddMsg(msg, 'user');
-
-    const t = document.createElement('div');
-    t.className = 'mb-typing'; t.id = 'mb-typing';
-    t.innerHTML = 'Mai đang nhập <span class="dot">.</span><span class="dot">.</span><span class="dot">.</span>';
-    document.getElementById('mb-msgs').appendChild(t);
-    document.getElementById('mb-msgs').scrollTop = 9999;
-
-    try {
+        try {
         const r = await fetch('/Chat/Send', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ sessionId: mbSid, message: msg })
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ sessionId: mbSid, message: msg })
         });
         const isConnected = mbConn && mbConn.state === signalR.HubConnectionState.Connected;
         if (!isConnected) {
-            const data = await r.json();
-            document.getElementById('mb-typing')?.remove();
-            if (data.reply) mbAddMsg(data.reply, 'bot');
+        const data = await r.json();
+        document.getElementById('mb-typing')?.remove();
+        if (data.reply) mbAddMsg(data.reply, 'bot');
         }
-    } catch {
+        } catch {
         document.getElementById('mb-typing')?.remove();
         mbAddMsg('Xin lỗi, mình đang bận. Thử lại sau nhé!', 'bot');
-    }
-    setTimeout(() => document.getElementById('mb-typing')?.remove(), 8000);
-}
+        }
+        setTimeout(() => document.getElementById('mb-typing')?.remove(), 8000);
+        }
 
-// Khởi động SignalR SAU KHI trang load xong
-window.addEventListener('load', () => {
-    if (typeof signalR === 'undefined') return;
+        // Khởi động SignalR SAU KHI trang load xong
+        window.addEventListener('load', () => {
+        if (typeof signalR === 'undefined') return;
 
-    mbConn = new signalR.HubConnectionBuilder()
+        mbConn = new signalR.HubConnectionBuilder()
         .withUrl("/chatHub")
         .withAutomaticReconnect([0, 2000, 5000, 10000, 30000])
         .configureLogging(signalR.LogLevel.Warning)
         .build();
 
-    mbConn.on("ReceiveMessage", (msg) => {
+        mbConn.on("ReceiveMessage", (msg) => {
         if (msg.sessionId !== mbSid) return;
         if (msg.role === "bot" || msg.role === "admin") {
-            document.getElementById('mb-typing')?.remove();
-            mbAddMsg(msg.content, msg.role);
+        document.getElementById('mb-typing')?.remove();
+        mbAddMsg(msg.content, msg.role);
         }
-    });
+        });
 
-    mbConn.start().then(() => {
+        mbConn.start().then(() => {
         mbConn.invoke("JoinSession", mbSid);
         document.getElementById('mb-status-txt').textContent = "Đang trực tuyến";
         fetch('/Chat/History?sessionId=' + mbSid)
-            .then(r => r.json())
-            .then(msgs => {
-                if (msgs && msgs.length > 1) {
-                    document.getElementById('mb-msgs').innerHTML = '';
-                    msgs.forEach(h => mbAddMsg(h.content, h.role));
-                }
-            }).catch(()=>{});
-    }).catch(() => {
+        .then(r => r.json())
+        .then(msgs => {
+        if (msgs && msgs.length > 1) {
+        document.getElementById('mb-msgs').innerHTML = '';
+        msgs.forEach(h => mbAddMsg(h.content, h.role));
+        }
+        }).catch(()=>{});
+        }).catch(() => {
         document.getElementById('mb-status-txt').textContent = "Offline";
         document.querySelector('.mb-online-dot').style.background = '#b2bec3';
-    });
-});
-</script>
+        });
+        });
+    </script>
     <script src="~/js/notifications.js" asp-append-version="true"></script>
 </body>
 </html>
