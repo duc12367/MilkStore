@@ -116,22 +116,22 @@
                                     <button class="btn-wish" onclick="toggleWish(this, @p.Id)" title="Yêu thích">❤️</button>
                                 }
                                 <form asp-controller="Cart" asp-action="Add" method="post">
-                                @Html.AntiForgeryToken()
-                                <input type="hidden" name="productId" value="@p.Id" />
-                                <input type="hidden" name="quantity" value="1" />
-                                <button type="submit" class="btn-add-cart"
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="productId" value="@p.Id" />
+                                    <input type="hidden" name="quantity" value="1" />
+                                    <button type="submit" class="btn-add-cart"
                                         @(p.StockQuantity <= 0 ? "disabled" : "")>
-                                    @if (p.StockQuantity <= 0)
-                                    {
-                                        <span>Hết hàng</span>
-                                    }
-                                    else
-                                    {
-                                        <img src="https://cdn-icons-png.flaticon.com/512/3144/3144456.png" alt="" style="width:13px;height:13px;filter:brightness(10)">
-                                        <span>Thêm</span>
-                                    }
-                                </button>
-                            </form>
+                                        @if (p.StockQuantity <= 0)
+                                        {
+                                            <span>Hết hàng</span>
+                                        }
+                                        else
+                                        {
+                                            <img src="https://cdn-icons-png.flaticon.com/512/3144/3144456.png" alt="" style="width:13px;height:13px;filter:brightness(10)">
+                                            <span>Thêm</span>
+                                        }
+                                    </button>
+                                </form>
                             </div>
                         </div>
                     </div>
@@ -169,166 +169,373 @@
 </div>
 
 <style>
-.page-hero {
-    background: linear-gradient(135deg,#0f2018,#1a3a2a);
-    padding: 3rem 0 2.5rem; color: #fff; margin-bottom: 0;
-}
-.breadcrumb-nav {
-    display: flex; align-items: center; gap: .5rem;
-    font-size: .82rem; opacity: .65; margin-bottom: .75rem;
-}
-.breadcrumb-nav a { color: #fff; transition: opacity .2s }
-.breadcrumb-nav a:hover { opacity: 1 }
-.page-hero-title {
-    font-size: 2rem; font-weight: 800; margin-bottom: .4rem;
-}
-.page-hero-sub { font-size: .9rem; opacity: .7; margin: 0 }
+    .page-hero {
+        background: linear-gradient(135deg,#0f2018,#1a3a2a);
+        padding: 3rem 0 2.5rem;
+        color: #fff;
+        margin-bottom: 0;
+    }
 
-.filter-bar {
-    display: flex; gap: .75rem; flex-wrap: wrap; align-items: center;
-    background: #fff; padding: 1.1rem 1.25rem;
-    border-radius: 14px; margin-bottom: 1.25rem;
-    box-shadow: 0 2px 16px rgba(0,0,0,.06);
-    border: 1px solid #f0ece4;
-}
-.filter-search-wrap { position: relative; flex: 1; min-width: 200px }
-.filter-search-icon {
-    position: absolute; left: .75rem; top: 50%; transform: translateY(-50%);
-    width: 15px; height: 15px; opacity: .4; pointer-events: none;
-}
-.filter-input {
-    width: 100%; padding: .55rem 1rem .55rem 2.2rem;
-    border: 1.5px solid #e8e2d9; border-radius: 8px; font-size: .9rem;
-    outline: none; transition: border-color .2s; font-family: inherit;
-}
-.filter-input:focus { border-color: #1a3a2a }
-.filter-select {
-    padding: .55rem .9rem; border: 1.5px solid #e8e2d9;
-    border-radius: 8px; font-size: .88rem; background: #fff;
-    outline: none; cursor: pointer; font-family: inherit;
-}
-.filter-btn {
-    padding: .55rem 1.2rem; background: #1a3a2a; color: #fff;
-    border: none; border-radius: 8px; font-weight: 600; cursor: pointer;
-    display: inline-flex; align-items: center; gap: .4rem;
-    font-size: .88rem; transition: background .2s;
-}
-.filter-btn:hover { background: #2d5a40 }
-.filter-clear {
-    display: inline-flex; align-items: center; gap: .35rem;
-    color: #888; font-size: .85rem; transition: color .2s;
-    padding: .4rem .5rem;
-}
-.filter-clear:hover { color: #c0392b }
-.result-info {
-    display: flex; align-items: center; gap: .5rem;
-    font-size: .87rem; color: #888; margin-bottom: 1.25rem;
-}
+    .breadcrumb-nav {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        font-size: .82rem;
+        opacity: .65;
+        margin-bottom: .75rem;
+    }
 
-.product-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fill, minmax(210px,1fr));
-    gap: 1.25rem;
-}
-.product-card {
-    background: #fff; border-radius: 14px;
-    box-shadow: 0 2px 14px rgba(0,0,0,.07);
-    overflow: hidden; transition: transform .2s, box-shadow .2s;
-}
-.product-card:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 12px 32px rgba(26,58,42,.12);
-}
-.product-img-link { display: block; position: relative; overflow: hidden }
-.product-img {
-    width: 100%; height: 190px; object-fit: cover;
-    transition: transform .35s;
-}
-.product-card:hover .product-img { transform: scale(1.05) }
-.product-hover-overlay {
-    position: absolute; inset: 0; background: rgba(26,58,42,.4);
-    display: flex; align-items: center; justify-content: center;
-    color: #fff; font-weight: 600; font-size: .9rem;
-    opacity: 0; transition: opacity .25s;
-}
-.product-card:hover .product-hover-overlay { opacity: 1 }
-.out-of-stock-badge {
-    position: absolute; top: .7rem; left: .7rem;
-    background: rgba(0,0,0,.55); color: #fff;
-    font-size: .73rem; font-weight: 600;
-    padding: .22rem .65rem; border-radius: 20px;
-}
-.product-info { padding: .9rem }
-.product-brand {
-    font-size: .73rem; color: #1a6b3c; font-weight: 700;
-    text-transform: uppercase; letter-spacing: .5px;
-    display: block; margin-bottom: .3rem;
-}
-.product-name {
-    display: block; font-size: .9rem; font-weight: 600;
-    color: #222; margin-bottom: .65rem; line-height: 1.35;
-    transition: color .2s;
-}
-.product-name:hover { color: #1a3a2a }
-.product-bottom {
-    display: flex; align-items: center; justify-content: space-between;
-}
-.product-price { font-size: 1rem; font-weight: 800; color: #c0392b }
-.btn-add-cart {
-    background: #1a3a2a; color: #fff; border: none;
-    border-radius: 8px; padding: .38rem .8rem;
-    font-size: .8rem; font-weight: 600; cursor: pointer;
-    display: inline-flex; align-items: center; gap: .3rem;
-    transition: background .2s;
-}
-.btn-add-cart:hover:not(:disabled) { background: #2d5a40 }
-.btn-add-cart:disabled { background: #ccc; cursor: not-allowed }
-.btn-wish { background: #fff0f3; border: 1.5px solid #ffb3c1; border-radius: 8px; padding: .35rem .6rem; font-size: .9rem; cursor: pointer; transition: transform .15s; line-height:1 }
-.btn-wish:hover { transform: scale(1.2) }
-.btn-wish.active { background: #ffe0e6; border-color: #ff4d6d }
+        .breadcrumb-nav a {
+            color: #fff;
+            transition: opacity .2s
+        }
 
-.empty-state {
-    text-align: center; padding: 5rem 0; color: #aaa;
-}
-.empty-state h3 { font-size: 1.2rem; color: #555; margin-bottom: .5rem }
-.empty-state p { margin-bottom: 1.25rem; font-size: .9rem }
-.btn-back-shop {
-    display: inline-block; background: #1a3a2a; color: #fff;
-    padding: .7rem 1.8rem; border-radius: 10px;
-    font-weight: 700; font-size: .9rem; transition: background .2s;
-}
-.btn-back-shop:hover { background: #2d5a40 }
+            .breadcrumb-nav a:hover {
+                opacity: 1
+            }
 
-.pagination-wrap {
-    display: flex; justify-content: center; gap: .5rem; margin: 2.5rem 0;
-}
-.page-btn {
-    width: 40px; height: 40px; display: flex;
-    align-items: center; justify-content: center;
-    border-radius: 10px; font-weight: 600; color: #1a3a2a;
-    background: #fff; border: 1.5px solid #e0dbd3;
-    transition: all .2s; font-size: .9rem;
-}
-.page-btn.active { background: #1a3a2a; color: #fff; border-color: #1a3a2a }
-.page-btn:hover:not(.active) { background: #f0f7f2; border-color: #1a3a2a }
+    .page-hero-title {
+        font-size: 2rem;
+        font-weight: 800;
+        margin-bottom: .4rem;
+    }
+
+    .page-hero-sub {
+        font-size: .9rem;
+        opacity: .7;
+        margin: 0
+    }
+
+    .filter-bar {
+        display: flex;
+        gap: .75rem;
+        flex-wrap: wrap;
+        align-items: center;
+        background: #fff;
+        padding: 1.1rem 1.25rem;
+        border-radius: 14px;
+        margin-bottom: 1.25rem;
+        box-shadow: 0 2px 16px rgba(0,0,0,.06);
+        border: 1px solid #f0ece4;
+    }
+
+    .filter-search-wrap {
+        position: relative;
+        flex: 1;
+        min-width: 200px
+    }
+
+    .filter-search-icon {
+        position: absolute;
+        left: .75rem;
+        top: 50%;
+        transform: translateY(-50%);
+        width: 15px;
+        height: 15px;
+        opacity: .4;
+        pointer-events: none;
+    }
+
+    .filter-input {
+        width: 100%;
+        padding: .55rem 1rem .55rem 2.2rem;
+        border: 1.5px solid #e8e2d9;
+        border-radius: 8px;
+        font-size: .9rem;
+        outline: none;
+        transition: border-color .2s;
+        font-family: inherit;
+    }
+
+        .filter-input:focus {
+            border-color: #1a3a2a
+        }
+
+    .filter-select {
+        padding: .55rem .9rem;
+        border: 1.5px solid #e8e2d9;
+        border-radius: 8px;
+        font-size: .88rem;
+        background: #fff;
+        outline: none;
+        cursor: pointer;
+        font-family: inherit;
+    }
+
+    .filter-btn {
+        padding: .55rem 1.2rem;
+        background: #1a3a2a;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: .4rem;
+        font-size: .88rem;
+        transition: background .2s;
+    }
+
+        .filter-btn:hover {
+            background: #2d5a40
+        }
+
+    .filter-clear {
+        display: inline-flex;
+        align-items: center;
+        gap: .35rem;
+        color: #888;
+        font-size: .85rem;
+        transition: color .2s;
+        padding: .4rem .5rem;
+    }
+
+        .filter-clear:hover {
+            color: #c0392b
+        }
+
+    .result-info {
+        display: flex;
+        align-items: center;
+        gap: .5rem;
+        font-size: .87rem;
+        color: #888;
+        margin-bottom: 1.25rem;
+    }
+
+    .product-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(210px,1fr));
+        gap: 1.25rem;
+    }
+
+    .product-card {
+        background: #fff;
+        border-radius: 14px;
+        box-shadow: 0 2px 14px rgba(0,0,0,.07);
+        overflow: hidden;
+        transition: transform .2s, box-shadow .2s;
+    }
+
+        .product-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 12px 32px rgba(26,58,42,.12);
+        }
+
+    .product-img-link {
+        display: block;
+        position: relative;
+        overflow: hidden
+    }
+
+    .product-img {
+        width: 100%;
+        height: 190px;
+        object-fit: cover;
+        transition: transform .35s;
+    }
+
+    .product-card:hover .product-img {
+        transform: scale(1.05)
+    }
+
+    .product-hover-overlay {
+        position: absolute;
+        inset: 0;
+        background: rgba(26,58,42,.4);
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: #fff;
+        font-weight: 600;
+        font-size: .9rem;
+        opacity: 0;
+        transition: opacity .25s;
+    }
+
+    .product-card:hover .product-hover-overlay {
+        opacity: 1
+    }
+
+    .out-of-stock-badge {
+        position: absolute;
+        top: .7rem;
+        left: .7rem;
+        background: rgba(0,0,0,.55);
+        color: #fff;
+        font-size: .73rem;
+        font-weight: 600;
+        padding: .22rem .65rem;
+        border-radius: 20px;
+    }
+
+    .product-info {
+        padding: .9rem
+    }
+
+    .product-brand {
+        font-size: .73rem;
+        color: #1a6b3c;
+        font-weight: 700;
+        text-transform: uppercase;
+        letter-spacing: .5px;
+        display: block;
+        margin-bottom: .3rem;
+    }
+
+    .product-name {
+        display: block;
+        font-size: .9rem;
+        font-weight: 600;
+        color: #222;
+        margin-bottom: .65rem;
+        line-height: 1.35;
+        transition: color .2s;
+    }
+
+        .product-name:hover {
+            color: #1a3a2a
+        }
+
+    .product-bottom {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .product-price {
+        font-size: 1rem;
+        font-weight: 800;
+        color: #c0392b
+    }
+
+    .btn-add-cart {
+        background: #1a3a2a;
+        color: #fff;
+        border: none;
+        border-radius: 8px;
+        padding: .38rem .8rem;
+        font-size: .8rem;
+        font-weight: 600;
+        cursor: pointer;
+        display: inline-flex;
+        align-items: center;
+        gap: .3rem;
+        transition: background .2s;
+    }
+
+        .btn-add-cart:hover:not(:disabled) {
+            background: #2d5a40
+        }
+
+        .btn-add-cart:disabled {
+            background: #ccc;
+            cursor: not-allowed
+        }
+
+    .btn-wish {
+        background: #fff0f3;
+        border: 1.5px solid #ffb3c1;
+        border-radius: 8px;
+        padding: .35rem .6rem;
+        font-size: .9rem;
+        cursor: pointer;
+        transition: transform .15s;
+        line-height: 1
+    }
+
+        .btn-wish:hover {
+            transform: scale(1.2)
+        }
+
+        .btn-wish.active {
+            background: #ffe0e6;
+            border-color: #ff4d6d
+        }
+
+    .empty-state {
+        text-align: center;
+        padding: 5rem 0;
+        color: #aaa;
+    }
+
+        .empty-state h3 {
+            font-size: 1.2rem;
+            color: #555;
+            margin-bottom: .5rem
+        }
+
+        .empty-state p {
+            margin-bottom: 1.25rem;
+            font-size: .9rem
+        }
+
+    .btn-back-shop {
+        display: inline-block;
+        background: #1a3a2a;
+        color: #fff;
+        padding: .7rem 1.8rem;
+        border-radius: 10px;
+        font-weight: 700;
+        font-size: .9rem;
+        transition: background .2s;
+    }
+
+        .btn-back-shop:hover {
+            background: #2d5a40
+        }
+
+    .pagination-wrap {
+        display: flex;
+        justify-content: center;
+        gap: .5rem;
+        margin: 2.5rem 0;
+    }
+
+    .page-btn {
+        width: 40px;
+        height: 40px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border-radius: 10px;
+        font-weight: 600;
+        color: #1a3a2a;
+        background: #fff;
+        border: 1.5px solid #e0dbd3;
+        transition: all .2s;
+        font-size: .9rem;
+    }
+
+        .page-btn.active {
+            background: #1a3a2a;
+            color: #fff;
+            border-color: #1a3a2a
+        }
+
+        .page-btn:hover:not(.active) {
+            background: #f0f7f2;
+            border-color: #1a3a2a
+        }
 </style>
 <script>
-async function toggleWish(btn, productId) {
-    const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
-    try {
-        const r = await fetch('/Wishlist/Toggle?productId=' + productId, {
-            method: 'POST',
-            headers: { 'RequestVerificationToken': token, 'Content-Type': 'application/json' }
-        });
-        const data = await r.json();
-        btn.classList.toggle('active', data.added);
-        btn.textContent = data.added ? '❤️' : '🤍';
-        const t = document.createElement('div');
-        t.className = 'ms-toast ' + (data.added ? 'success' : 'error');
-        t.textContent = data.message;
-        document.body.appendChild(t);
-        setTimeout(() => t.classList.add('show'), 50);
-        setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 2500);
-    } catch { alert('Vui lòng đăng nhập để sử dụng tính năng này.'); }
-}
+    async function toggleWish(btn, productId) {
+        const token = document.querySelector('input[name="__RequestVerificationToken"]')?.value;
+        try {
+            const r = await fetch('/Wishlist/Toggle?productId=' + productId, {
+                method: 'POST',
+                headers: { 'RequestVerificationToken': token, 'Content-Type': 'application/json' }
+            });
+            const data = await r.json();
+            btn.classList.toggle('active', data.added);
+            btn.textContent = data.added ? '❤️' : '🤍';
+            const t = document.createElement('div');
+            t.className = 'ms-toast ' + (data.added ? 'success' : 'error');
+            t.textContent = data.message;
+            document.body.appendChild(t);
+            setTimeout(() => t.classList.add('show'), 50);
+            setTimeout(() => { t.classList.remove('show'); setTimeout(() => t.remove(), 300); }, 2500);
+        } catch { alert('Vui lòng đăng nhập để sử dụng tính năng này.'); }
+    }
 </script>

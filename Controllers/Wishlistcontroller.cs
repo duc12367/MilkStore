@@ -14,16 +14,22 @@ public class WishlistController(MilkStore4Context db) : Controller
 {
     private int UserId => HttpContext.Session.GetInt32("UserId")!.Value;
 
-    // GET /Wishlist — trang danh sách yêu thích
-    public async Task<IActionResult> Index()
+    // GET /Wishlist — trang danh sách yêu thích (có pagination)
+    public async Task<IActionResult> Index(int page = 1)
     {
-        var items = await db.WishlistItems
+        int pageSize = 12;
+        var query = db.WishlistItems
             .Include(w => w.Product).ThenInclude(p => p.Brand)
             .Include(w => w.Product).ThenInclude(p => p.Category)
             .Where(w => w.UserId == UserId)
-            .OrderByDescending(w => w.AddedAt)
-            .ToListAsync();
+            .OrderByDescending(w => w.AddedAt);
 
+        int total = await query.CountAsync();
+        var items = await query.Skip((page - 1) * pageSize).Take(pageSize).ToListAsync();
+
+        ViewBag.Page = page;
+        ViewBag.TotalPages = (int)Math.Ceiling(total / (double)pageSize);
+        ViewBag.Total = total;
         return View(items);
     }
 
