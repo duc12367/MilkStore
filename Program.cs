@@ -20,7 +20,13 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
     options.KnownProxies.Clear();
 });
 
-builder.Services.AddControllersWithViews();
+builder.Services.AddControllersWithViews(options =>
+{
+    // [FIX SESSION] Kiểm tra IsBlocked sau mỗi request (cache 30s để giảm DB query)
+    options.Filters.Add<MilkStore.Filters.BlockedUserFilter>();
+});
+builder.Services.AddMemoryCache(); // dùng cho RateLimitAttribute + BlockedUserFilter
+builder.Services.AddScoped<MilkStore.Filters.BlockedUserFilter>();
 
 builder.Services.AddDbContext<MilkStore4Context>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("MilkStore")));
@@ -112,6 +118,7 @@ app.MapControllerRoute(
     .WithStaticAssets();
 
 app.MapHub<ChatHub>("/chatHub");
+app.MapHub<MilkStore.Hubs.NotificationHub>("/notificationHub");
 app.Urls.Add("http://0.0.0.0:8080");
 
 using (var scope = app.Services.CreateScope())
@@ -205,6 +212,12 @@ using (var scope = app.Services.CreateScope())
             ADD COLUMN IF NOT EXISTS ""IsBlocked""         BOOLEAN      NOT NULL DEFAULT FALSE;
     ");
 
+    //  Thêm CreatedAt vào Users để dashboard thống kê user mới theo tháng
+    db.Database.ExecuteSqlRaw(@"
+        ALTER TABLE ""Users""
+            ADD COLUMN IF NOT EXISTS ""CreatedAt"" TIMESTAMPTZ NOT NULL DEFAULT NOW();
+    ");
+
     db.Database.ExecuteSqlRaw(@"
         CREATE TABLE IF NOT EXISTS ""Coupons"" (
             ""Id""            SERIAL PRIMARY KEY,
@@ -220,6 +233,36 @@ using (var scope = app.Services.CreateScope())
             ('FIXED50K', 'Fixed',   50000, '2027-12-31')
         ON CONFLICT DO NOTHING;
     ");
+
+    //  Wishlist
+    db.Database.ExecuteSqlRaw(@"
+        CREATE TABLE IF NOT EXISTS ""WishlistItems"" (
+            ""Id""        SERIAL PRIMARY KEY,
+            ""UserId""    INT NOT NULL,
+            ""ProductId"" INT NOT NULL,
+            ""AddedAt""   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            CONSTRAINT ""UQ_Wishlist_UserProduct"" UNIQUE (""UserId"", ""ProductId""),
+            CONSTRAINT ""FK_Wishlist_Users""    FOREIGN KEY(""UserId"")    REFERENCES ""Users""(""Id"")    ON DELETE CASCADE,
+            CONSTRAINT ""FK_Wishlist_Products"" FOREIGN KEY(""ProductId"") REFERENCES ""Products""(""Id"") ON DELETE CASCADE
+        );
+    ");
+
+
+    //  UserAddresses — nhiều địa chỉ giao hàng
+    db.Database.ExecuteSqlRaw(@"
+        CREATE TABLE IF NOT EXISTS ""UserAddresses"" (
+            ""Id""          SERIAL PRIMARY KEY,
+            ""UserId""      INT NOT NULL,
+            ""Label""       VARCHAR(50) NOT NULL DEFAULT 'Địa chỉ',
+            ""FullAddress"" VARCHAR(500) NOT NULL,
+            ""Phone""       VARCHAR(20),
+            ""IsDefault""   BOOLEAN NOT NULL DEFAULT FALSE,
+            ""CreatedAt""   TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+            CONSTRAINT ""FK_UserAddresses_Users"" FOREIGN KEY(""UserId"") REFERENCES ""Users""(""Id"") ON DELETE CASCADE
+        );
+        CREATE INDEX IF NOT EXISTS ""IX_UserAddresses_UserId"" ON ""UserAddresses""(""UserId"");
+    ");
+
 }
 
 app.Run();

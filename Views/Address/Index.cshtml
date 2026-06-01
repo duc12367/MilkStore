@@ -1,0 +1,105 @@
+﻿@model List<MilkStore.Models.UserAddress>
+@{
+    ViewData["Title"] = "Địa chỉ giao hàng";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="page-hero">
+    <div class="container">
+        <div class="breadcrumb-nav">
+            <a asp-controller="Home" asp-action="Index">Trang chủ</a>
+            <span style="opacity:.4;margin:0 6px">›</span>
+            <a asp-controller="Account" asp-action="Profile">Tài khoản</a>
+            <span style="opacity:.4;margin:0 6px">›</span>
+            <span>Địa chỉ giao hàng</span>
+        </div>
+        <h1 class="page-hero-title">📍 Địa chỉ giao hàng</h1>
+        <p class="page-hero-sub">Quản lý tối đa 5 địa chỉ. Địa chỉ mặc định sẽ tự điền khi thanh toán.</p>
+    </div>
+</div>
+
+<div class="container" style="margin-top:2rem;margin-bottom:3rem;max-width:720px">
+
+    @if (TempData["Success"] != null)
+    {
+        <div class="alert alert-success">@TempData["Success"]</div>
+    }
+    @if (TempData["Error"] != null)
+    {
+        <div class="alert alert-danger">@TempData["Error"]</div>
+    }
+
+    <!-- Danh sách địa chỉ -->
+    @foreach (var addr in Model)
+    {
+        <div style="background:#fff;border-radius:14px;border:1.5px solid @(addr.IsDefault ? "#00b894" : "#e8ecef");padding:1.2rem 1.5rem;margin-bottom:1rem;display:flex;justify-content:space-between;align-items:flex-start;gap:1rem">
+            <div>
+                <div style="display:flex;align-items:center;gap:.6rem;margin-bottom:.3rem">
+                    <strong style="font-size:.95rem">@addr.Label</strong>
+                    @if (addr.IsDefault)
+                    {
+                        <span style="background:#d4f5ec;color:#00774f;font-size:.75rem;font-weight:700;padding:2px 10px;border-radius:20px">Mặc định</span>
+                    }
+                </div>
+                <div style="color:#555;font-size:.9rem;margin-bottom:.2rem">📌 @addr.FullAddress</div>
+                @if (!string.IsNullOrEmpty(addr.Phone))
+                {
+                    <div style="color:#888;font-size:.85rem">📞 @addr.Phone</div>
+                }
+            </div>
+            <div style="display:flex;gap:.5rem;flex-shrink:0">
+                @if (!addr.IsDefault)
+                {
+                    <form asp-action="SetDefault" method="post" style="display:inline">
+                        @Html.AntiForgeryToken()
+                        <input type="hidden" name="id" value="@addr.Id" />
+                        <button type="submit" style="background:#f0faf8;border:1px solid #00b894;color:#00774f;border-radius:8px;padding:.3rem .8rem;font-size:.8rem;cursor:pointer">✓ Đặt mặc định</button>
+                    </form>
+                }
+                <form asp-action="Delete" method="post" style="display:inline"
+                      onsubmit="return confirm('Xóa địa chỉ này?')">
+                    @Html.AntiForgeryToken()
+                    <input type="hidden" name="id" value="@addr.Id" />
+                    <button type="submit" style="background:#fff0f0;border:1px solid #ffc0c0;color:#e17055;border-radius:8px;padding:.3rem .8rem;font-size:.8rem;cursor:pointer">🗑 Xóa</button>
+                </form>
+            </div>
+        </div>
+    }
+
+    @if (Model.Count < 5)
+    {
+        <!-- Form thêm địa chỉ mới -->
+        <div style="background:#f8f9fb;border-radius:14px;border:1.5px dashed #c8d6df;padding:1.5rem;margin-top:1rem">
+            <h4 style="margin:0 0 1rem;font-size:.95rem;color:#444">➕ Thêm địa chỉ mới</h4>
+            <form asp-action="Add" method="post">
+                @Html.AntiForgeryToken()
+                <div style="display:grid;grid-template-columns:1fr 1fr;gap:.75rem;margin-bottom:.75rem">
+                    <div>
+                        <label style="font-size:.82rem;color:#555;display:block;margin-bottom:.25rem">Nhãn (VD: Nhà riêng)</label>
+                        <input type="text" name="label" placeholder="Nhà riêng" maxlength="50" class="form-control form-control-sm" />
+                    </div>
+                    <div>
+                        <label style="font-size:.82rem;color:#555;display:block;margin-bottom:.25rem">Số điện thoại</label>
+                        <input type="text" name="phone" placeholder="0901234567" class="form-control form-control-sm" />
+                    </div>
+                </div>
+                <div style="margin-bottom:.75rem">
+                    <label style="font-size:.82rem;color:#555;display:block;margin-bottom:.25rem">Địa chỉ đầy đủ *</label>
+                    <textarea name="fullAddress" rows="2" placeholder="Số nhà, đường, phường/xã, quận/huyện, tỉnh/thành" required minlength="10"
+                              class="form-control form-control-sm"></textarea>
+                </div>
+                <div style="display:flex;align-items:center;justify-content:space-between">
+                    <label style="display:flex;align-items:center;gap:.4rem;font-size:.85rem;cursor:pointer">
+                        <input type="checkbox" name="isDefault" value="true" />
+                        Đặt làm địa chỉ mặc định
+                    </label>
+                    <button type="submit" class="btn btn-sm btn-primary">Lưu địa chỉ</button>
+                </div>
+            </form>
+        </div>
+    }
+    else
+    {
+        <p style="text-align:center;color:#aaa;font-size:.9rem;margin-top:1rem">Đã đạt tối đa 5 địa chỉ. Xóa bớt để thêm mới.</p>
+    }
+</div>

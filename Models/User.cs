@@ -69,6 +69,12 @@ public partial class User
     /// </summary>
     public bool IsBlocked { get; set; } = false;
 
+    /// <summary>
+    /// Thời điểm tạo tài khoản (UTC).
+    /// Dùng cho Dashboard thống kê user mới theo tháng.
+    /// </summary>
+    public DateTime CreatedAt { get; set; } = DateTime.UtcNow;
+
     // ── Navigation properties ────────────────────────────────
     public virtual ICollection<CartItem> CartItems { get; set; } = new List<CartItem>();
     public virtual ICollection<Order> Orders { get; set; } = new List<Order>();

@@ -1,42 +1,36 @@
-using MilkStore.Services;
 // FILE: Controllers/OrderController.cs
 // MỤC ĐÍCH: Xử lý toàn bộ luồng đặt hàng của khách hàng.
-//           Bao gồm: xem trang checkout, đặt hàng (PlaceOrder),
-//           xem đơn đã đặt, chi tiết đơn, và hủy đơn.
 //
 // LUỒNG CHÍNH (Happy Path):
 //   1. Khách vào /Order/Checkout → xem giỏ hàng + điền địa chỉ
 //   2. Bấm "Đặt hàng" → POST PlaceOrder
-//   3. PlaceOrder: tạo Order + OrderItems, trừ kho, xóa giỏ
+//   3. PlaceOrder: tạo Order + OrderItems, trừ kho (nguyên tử), xóa giỏ
 //   4a. Nếu COD → redirect thẳng đến trang Success
 //   4b. Nếu MoMo/VNPay → redirect đến PaymentController để thanh toán online
-
+//
+// FIX NGẮN HẠN:
+//   [TX]  PlaceOrder bọc trong một transaction duy nhất — rollback toàn bộ nếu có lỗi.
+//   [RC]  Trừ kho bằng ExecuteUpdateAsync nguyên tử (WHERE StockQuantity >= qty)
+//         → tránh race condition khi 2 user cùng mua sản phẩm cuối.
+//   [UTC] Toàn bộ DateTime dùng DateTime.UtcNow nhất quán.
 
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
 using MilkStore.Filters;
 using MilkStore.Models;
+using MilkStore.Services;
 
 namespace MilkStore.Controllers;
 
-
-/// Controller xử lý đặt hàng và quản lý lịch sử đơn hàng của khách.
-/// Tất cả action yêu cầu đăng nhập (bảo vệ bởi [LoginRequired]).
-
 [LoginRequired]
-public class OrderController(MilkStore4Context db, MilkStore.Services.EmailService emailSvc) : Controller
+public class OrderController(MilkStore4Context db, EmailService emailSvc) : Controller
 {
-    // Hai cách lấy UserId — dùng Nullable khi cần kiểm tra null trước redirect
     private int? UserIdNullable => HttpContext.Session.GetInt32("UserId");
     private int UserId => HttpContext.Session.GetInt32("UserId")!.Value;
 
-    // --------------------------------------------------------
+    // ────────────────────────────────────────────────────────
     // GET /Order/Checkout
-    // Hiển thị trang xác nhận đơn hàng trước khi đặt.
-    // Kiểm tra: nếu giỏ rỗng → redirect về giỏ hàng.
-    // Điền sẵn địa chỉ mặc định từ tài khoản user (có thể sửa).
-    // --------------------------------------------------------
-    /// Trang checkout — xem lại giỏ hàng và điền thông tin giao hàng.
+    // ────────────────────────────────────────────────────────
     public async Task<IActionResult> Checkout()
     {
         if (UserIdNullable == null)
@@ -47,17 +41,16 @@ public class OrderController(MilkStore4Context db, MilkStore.Services.EmailServi
             .Where(c => c.UserId == UserId)
             .ToListAsync();
 
-        // Lấy mã giảm giá đang hoạt động để gợi ý cho khách
+        if (!items.Any())
+            return RedirectToAction("Index", "Cart");
+
+        // [UTC] dùng UtcNow nhất quán
         var now = DateTime.UtcNow;
         ViewBag.ActiveCoupons = await db.Coupons
             .Where(c => c.StartDate <= now && c.ExpiryDate >= now &&
                         (c.MaxUsage == null || c.UsageCount < c.MaxUsage))
             .OrderBy(c => c.Code)
             .ToListAsync();
-
-        // Giỏ rỗng → không cho vào checkout
-        if (!items.Any())
-            return RedirectToAction("Index", "Cart");
 
         var user = await db.Users.FindAsync(UserId);
 
@@ -70,46 +63,29 @@ public class OrderController(MilkStore4Context db, MilkStore.Services.EmailServi
         return View();
     }
 
-    // --------------------------------------------------------
+    // ────────────────────────────────────────────────────────
     // POST /Order/PlaceOrder
-    // ĐÂY LÀ ACTION TRUNG TÂM — thực hiện đặt hàng thực sự.
     //
-    // PIPELINE XỬ LÝ (5 bước, thực hiện trong 2 lần SaveChanges):
-    //
-    //   [SaveChanges lần 1] — lấy Order.Id từ DB
-    //     Bước 1: Tính tổng tiền từ giỏ hàng
-    //     Bước 2: Tạo đối tượng Order (trạng thái "Pending") và lưu DB
-    //             → cần Order.Id trước khi tạo OrderItems
-    //
-    //   [SaveChanges lần 2] — ghi tất cả thay đổi còn lại
-    //     Bước 3: Tạo OrderItem cho từng sản phẩm (snapshot giá hiện tại)
-    //     Bước 4: Trừ tồn kho (Math.Max tránh âm)
-    //     Bước 5: Xóa toàn bộ giỏ hàng
-    //
-    //   Sau đó:
-    //     → COD: redirect thẳng đến Success
-    //     → MoMo/VNPay: redirect đến PaymentController.CreatePayment
-    //
-    // LƯU Ý VỀ TRANSACTION:
-    //   Hiện tại không dùng explicit Transaction — nếu SaveChanges lần 2 lỗi
-    //   thì Order đã tạo nhưng chưa có OrderItems (dữ liệu không nhất quán).
-    //   Cải thiện sau: bọc toàn bộ trong using var tx = db.Database.BeginTransaction()
-    // --------------------------------------------------------
-    /// <summary>
-    /// Đặt hàng: tạo Order, snapshot giá, trừ kho, xóa giỏ,
-    /// rồi redirect theo phương thức thanh toán.
-    /// </summary>
+    // Pipeline (tất cả trong 1 transaction):
+    //   B1: Validate input
+    //   B2: Load giỏ hàng, kiểm tra tồn kho sơ bộ
+    //   B3: Tính tiền, áp mã giảm giá
+    //   B4: Tạo Order → lấy Order.Id
+    //   B5: Trừ kho nguyên tử (ExecuteUpdateAsync) — rollback nếu hết hàng
+    //   B6: Tạo OrderItems + xóa giỏ
+    //   B7: Commit transaction
+    //   B8: Gửi email (ngoài transaction, không ảnh hưởng đơn hàng)
+    // ────────────────────────────────────────────────────────
     [HttpPost]
     [ValidateAntiForgeryToken]
-    public async Task<IActionResult> PlaceOrder(string shippingAddress,
-        string paymentMethod, string? note, string? phone, string? email, string? couponCode)
+    public async Task<IActionResult> PlaceOrder(
+        string shippingAddress, string paymentMethod,
+        string? note, string? phone, string? email, string? couponCode)
     {
         if (UserIdNullable == null)
             return RedirectToAction("Login", "Account");
 
-        // [TC06] FIX: Validate địa chỉ giao hàng bắt buộc.
-        //            Trước đây không có check này → tạo đơn với địa chỉ null,
-        //            shipper không biết giao đâu.
+        // ── B1: Validate input ───────────────────────────────
         if (string.IsNullOrWhiteSpace(shippingAddress))
         {
             TempData["Error"] = "Vui lòng nhập địa chỉ giao hàng.";
@@ -117,11 +93,9 @@ public class OrderController(MilkStore4Context db, MilkStore.Services.EmailServi
         }
         if (shippingAddress.Trim().Length < 10)
         {
-            TempData["Error"] = "Địa chỉ giao hàng quá ngắn. Vui lòng nhập đầy đủ (tối thiểu 10 ký tự).";
+            TempData["Error"] = "Địa chỉ giao hàng quá ngắn (tối thiểu 10 ký tự).";
             return RedirectToAction("Checkout");
         }
-
-        // Validate số điện thoại bắt buộc + định dạng (TT13)
         if (string.IsNullOrWhiteSpace(phone))
         {
             TempData["Error"] = "Vui lòng nhập số điện thoại.";
@@ -129,18 +103,17 @@ public class OrderController(MilkStore4Context db, MilkStore.Services.EmailServi
         }
         if (!System.Text.RegularExpressions.Regex.IsMatch(phone.Trim(), @"^[0-9]{10,11}$"))
         {
-            TempData["Error"] = "Số điện thoại không hợp lệ. Vui lòng nhập 10-11 chữ số.";
+            TempData["Error"] = "Số điện thoại không hợp lệ (10–11 chữ số).";
             return RedirectToAction("Checkout");
         }
-
-        // Validate email nếu nhập (TT12)
         if (!string.IsNullOrWhiteSpace(email) &&
             !System.Text.RegularExpressions.Regex.IsMatch(email.Trim(), @"^[^@\s]+@[^@\s]+\.[^@\s]+$"))
         {
-            TempData["Error"] = "Email không đúng định dạng. Ví dụ: abc@gmail.com";
+            TempData["Error"] = "Email không đúng định dạng.";
             return RedirectToAction("Checkout");
         }
 
+        // ── B2: Load giỏ hàng ───────────────────────────────
         var items = await db.CartItems
             .Include(c => c.Product)
             .Where(c => c.UserId == UserId)
@@ -149,114 +122,119 @@ public class OrderController(MilkStore4Context db, MilkStore.Services.EmailServi
         if (!items.Any())
             return RedirectToAction("Index", "Cart");
 
-        // *** KIỂM TRA TỒN KHO TRƯỚC KHI ĐẶT HÀNG ***
-        // Nếu bất kỳ sản phẩm nào SL mua > SL tồn kho → báo lỗi, không tạo đơn
-        var outOfStockItems = items
+        // Kiểm tra sơ bộ tồn kho (đọc nhanh, không lock)
+        var outOfStock = items
             .Where(c => c.Product != null && c.Quantity > c.Product.StockQuantity)
             .Select(c => c.Product!.ProductName)
             .ToList();
 
-        if (outOfStockItems.Any())
+        if (outOfStock.Any())
         {
-            TempData["Error"] = $"Sản phẩm sau không đủ số lượng tồn kho: {string.Join(", ", outOfStockItems)}. Vui lòng kiểm tra lại giỏ hàng.";
+            TempData["Error"] = $"Sản phẩm không đủ hàng: {string.Join(", ", outOfStock)}.";
             return RedirectToAction("Index", "Cart");
         }
 
-        // Bước 1: Tính tổng tiền (snapshot tại thời điểm đặt)
+        // ── B3: Tính tiền + áp coupon ───────────────────────
         decimal total = items.Sum(c => (c.Product?.Price ?? 0m) * c.Quantity);
-
-        // Bước 1b: Áp dụng mã giảm giá nếu có
-        // [FIX KM12,13,14,15,22] Kiểm tra đầy đủ: tồn tại, StartDate, ExpiryDate, MaxUsage; lưu vào Order
         decimal discountAmount = 0;
         string? appliedCouponCode = null;
+        Coupon? coupon = null;
+
         if (!string.IsNullOrWhiteSpace(couponCode))
         {
             var code = couponCode.Trim().ToUpper();
-            var coupon = await db.Coupons.FirstOrDefaultAsync(c => c.Code == code);
+            coupon = await db.Coupons.FirstOrDefaultAsync(c => c.Code == code);
             var now = DateTime.UtcNow;
 
-            if (coupon == null)
-            {
-                TempData["Error"] = "Mã giảm giá không tồn tại.";
-                return RedirectToAction("Checkout");
-            }
-            if (now < coupon.StartDate)
-            {
-                TempData["Error"] = $"Mã giảm giá chưa có hiệu lực. Mã sẽ bắt đầu từ {coupon.StartDate:dd/MM/yyyy}.";
-                return RedirectToAction("Checkout");
-            }
-            if (now > coupon.ExpiryDate)
-            {
-                TempData["Error"] = "Mã giảm giá đã hết hạn.";
-                return RedirectToAction("Checkout");
-            }
-            if (coupon.MaxUsage.HasValue && coupon.UsageCount >= coupon.MaxUsage.Value)
-            {
-                TempData["Error"] = "Mã giảm giá đã hết lượt sử dụng.";
-                return RedirectToAction("Checkout");
-            }
+            if (coupon == null) { TempData["Error"] = "Mã giảm giá không tồn tại."; return RedirectToAction("Checkout"); }
+            if (now < coupon.StartDate) { TempData["Error"] = $"Mã chưa có hiệu lực. Bắt đầu từ {coupon.StartDate:dd/MM/yyyy}."; return RedirectToAction("Checkout"); }
+            if (now > coupon.ExpiryDate) { TempData["Error"] = "Mã giảm giá đã hết hạn."; return RedirectToAction("Checkout"); }
+            if (coupon.MaxUsage.HasValue && coupon.UsageCount >= coupon.MaxUsage.Value) { TempData["Error"] = "Mã đã hết lượt sử dụng."; return RedirectToAction("Checkout"); }
 
             discountAmount = coupon.DiscountType == "Percent"
                 ? total * coupon.DiscountValue / 100
                 : coupon.DiscountValue;
-            total = Math.Max(0, total - discountAmount);
+            discountAmount = Math.Min(discountAmount, total);
+            total = total - discountAmount;
             appliedCouponCode = code;
-
-            // Tăng UsageCount ngay (sẽ SaveChanges cùng lần 1)
-            coupon.UsageCount += 1;
         }
-        var order = new Order
-        {
-            UserId = UserId,
-            OrderDate = DateTime.UtcNow,
-            TotalAmount = total,
-            Status = "Pending",
-            PaymentMethod = paymentMethod,
-            ShippingAddress = shippingAddress,
-            Phone = phone,
-            Note = note,
-            // [FIX KM22] Lưu coupon đã dùng để audit và báo cáo
-            CouponCode = appliedCouponCode,
-            DiscountAmount = discountAmount
-        };
 
-        db.Orders.Add(order);
-        await db.SaveChangesAsync();     // Lần 1: lấy Order.Id từ DB
-
-        // Bước 3 & 4: Tạo OrderItems + trừ tồn kho
-        foreach (var item in items)
+        // ── B4–B7: Tất cả DB trong 1 transaction ────────────
+        // [TX] Nếu bất kỳ bước nào lỗi → rollback toàn bộ,
+        //      không để Order mồ côi (không có OrderItems).
+        int orderId;
+        using (var tx = await db.Database.BeginTransactionAsync())
         {
-            // Snapshot giá: lưu PriceAtTime để giá đơn hàng không bị thay đổi
-            // dù admin cập nhật giá sản phẩm sau này
-            db.OrderItems.Add(new OrderItem
+            try
             {
-                OrderId = order.Id,
-                ProductId = item.ProductId,
-                Quantity = item.Quantity,
-                PriceAtTime = item.Product?.Price ?? 0m   // Giá tại thời điểm đặt
-            });
+                // B4: Tạo Order
+                var order = new Order
+                {
+                    UserId = UserId,
+                    OrderDate = DateTime.UtcNow,  // [UTC]
+                    TotalAmount = total,
+                    Status = "Pending",
+                    PaymentMethod = paymentMethod,
+                    ShippingAddress = shippingAddress.Trim(),
+                    Phone = phone.Trim(),
+                    Note = note,
+                    CouponCode = appliedCouponCode,
+                    DiscountAmount = discountAmount
+                };
+                db.Orders.Add(order);
+                await db.SaveChangesAsync(); // lấy order.Id
+                orderId = order.Id;
 
-            // Trừ tồn kho — Math.Max(0, ...) đảm bảo không bao giờ âm
-            // (trường hợp race condition: 2 người cùng mua hàng cuối)
-            var product = await db.Products.FindAsync(item.ProductId);
-            if (product != null)
-                product.StockQuantity = Math.Max(0,
-                    product.StockQuantity - item.Quantity);
+                // B5: [RC] Trừ kho nguyên tử — UPDATE với điều kiện StockQuantity >= qty
+                //     Nếu affected rows < số sản phẩm → hàng đã hết giữa chừng → rollback
+                foreach (var item in items)
+                {
+                    int affected = await db.Products
+                        .Where(p => p.Id == item.ProductId && p.StockQuantity >= item.Quantity)
+                        .ExecuteUpdateAsync(s => s.SetProperty(
+                            p => p.StockQuantity,
+                            p => p.StockQuantity - item.Quantity));
+
+                    if (affected == 0)
+                    {
+                        // Hàng vừa hết (race condition) → rollback, báo lỗi
+                        await tx.RollbackAsync();
+                        TempData["Error"] = $"Sản phẩm \"{item.Product?.ProductName}\" vừa hết hàng. Vui lòng kiểm tra lại giỏ hàng.";
+                        return RedirectToAction("Index", "Cart");
+                    }
+                }
+
+                // B6: Tạo OrderItems + tăng UsageCount coupon + xóa giỏ
+                foreach (var item in items)
+                {
+                    db.OrderItems.Add(new OrderItem
+                    {
+                        OrderId = orderId,
+                        ProductId = item.ProductId,
+                        Quantity = item.Quantity,
+                        PriceAtTime = item.Product?.Price ?? 0m
+                    });
+                }
+
+                if (coupon != null)
+                    coupon.UsageCount += 1;  // trong transaction → tự rollback nếu lỗi
+
+                db.CartItems.RemoveRange(items);
+                await db.SaveChangesAsync();
+
+                await tx.CommitAsync();
+            }
+            catch
+            {
+                await tx.RollbackAsync();
+                throw;
+            }
         }
 
-        // Bước 5: Xóa toàn bộ giỏ hàng sau khi đặt thành công
-        db.CartItems.RemoveRange(items);
-        await db.SaveChangesAsync();    // Lần 2: lưu OrderItems + trừ kho + xóa giỏ
-
-        // Bước 6: Gửi email thông báo
+        // ── B8: Gửi email (ngoài transaction) ───────────────
         try
         {
-            var logger = HttpContext.RequestServices.GetRequiredService<ILogger<OrderController>>();
-            logger.LogInformation("[EMAIL] Bắt đầu gửi email cho đơn #{OrderId}", order.Id);
-
             var user = await db.Users.FindAsync(UserId);
-            logger.LogInformation("[EMAIL] User email: {Email}", user?.Email ?? "NULL");
-
             var itemDetails = items.Select(i => (
                 i.Product?.ProductName ?? "Sản phẩm",
                 i.Quantity,
@@ -267,44 +245,33 @@ public class OrderController(MilkStore4Context db, MilkStore.Services.EmailServi
 
             if (!string.IsNullOrWhiteSpace(user?.Email))
                 emailTasks.Add(emailSvc.SendOrderConfirmationAsync(
-                    user.Email,
-                    user.FullName ?? "Khách hàng",
-                    order.Id,
-                    order.TotalAmount,
-                    shippingAddress,
-                    itemDetails));
+                    user.Email, user.FullName ?? "Khách hàng",
+                    orderId, total, shippingAddress, itemDetails));
 
             emailTasks.Add(emailSvc.SendNewOrderNotifyAdminAsync(
-                order.Id,
-                user?.FullName ?? "Khách hàng",
-                user?.Email ?? "(không có email)",
-                order.TotalAmount,
-                shippingAddress,
-                phone ?? ""));
+                orderId,
+                (await db.Users.FindAsync(UserId))?.FullName ?? "Khách hàng",
+                (await db.Users.FindAsync(UserId))?.Email ?? "(không có email)",
+                total, shippingAddress, phone ?? ""));
 
             await Task.WhenAll(emailTasks);
-            logger.LogInformation("[EMAIL] Gửi email hoàn tất cho đơn #{OrderId}", order.Id);
         }
         catch (Exception ex)
         {
-            var logger = HttpContext.RequestServices.GetRequiredService<ILogger<OrderController>>();
-            logger.LogError(ex, "[EMAIL] Lỗi gửi email cho đơn #{OrderId}", order.Id);
+            HttpContext.RequestServices
+                .GetRequiredService<ILogger<OrderController>>()
+                .LogError(ex, "[EMAIL] Lỗi gửi email cho đơn #{OrderId}", orderId);
         }
 
-        // Phân luồng theo phương thức thanh toán
         if (paymentMethod == "VNPay" || paymentMethod == "MoMo")
-            return RedirectToAction("CreatePayment", "Payment", new { orderId = order.Id });
+            return RedirectToAction("CreatePayment", "Payment", new { orderId });
 
-        return RedirectToAction("Success", new { id = order.Id });
+        return RedirectToAction("Success", new { id = orderId });
     }
 
-    // --------------------------------------------------------
+    // ────────────────────────────────────────────────────────
     // GET /Order/Success/5
-    // Trang xác nhận đặt hàng thành công.
-    // Load full đơn hàng kèm sản phẩm để hiển thị tóm tắt.
-    // Bảo mật: lọc o.UserId == UserId để không xem được đơn người khác.
-    // --------------------------------------------------------
-    /// <summary>Trang thông báo đặt hàng / thanh toán thành công.</summary>
+    // ────────────────────────────────────────────────────────
     public async Task<IActionResult> Success(int id)
     {
         if (UserIdNullable == null)
@@ -313,19 +280,15 @@ public class OrderController(MilkStore4Context db, MilkStore.Services.EmailServi
         var order = await db.Orders
             .Include(o => o.OrderItems)
             .ThenInclude(oi => oi.Product)
-            .FirstOrDefaultAsync(o => o.Id == id && o.UserId == UserId); // Bảo mật: chỉ xem đơn của mình
+            .FirstOrDefaultAsync(o => o.Id == id && o.UserId == UserId);
 
         if (order == null) return NotFound();
         return View(order);
     }
 
-    // --------------------------------------------------------
+    // ────────────────────────────────────────────────────────
     // GET /Order/MyOrders
-    // Lịch sử toàn bộ đơn hàng của user, sắp xếp mới nhất lên đầu.
-    // ThenInclude(oi => oi.Product) để lấy ảnh và tên sản phẩm
-    // hiển thị thumbnail trong danh sách đơn hàng.
-    // --------------------------------------------------------
-    /// <summary>Lịch sử đơn hàng của user hiện tại, sắp xếp mới nhất lên đầu.</summary>
+    // ────────────────────────────────────────────────────────
     public async Task<IActionResult> MyOrders()
     {
         if (UserIdNullable == null)
@@ -333,19 +296,17 @@ public class OrderController(MilkStore4Context db, MilkStore.Services.EmailServi
 
         var orders = await db.Orders
             .Include(o => o.OrderItems)
-                .ThenInclude(oi => oi.Product)  // Cần để hiển thị ảnh và tên SP trong danh sách
+                .ThenInclude(oi => oi.Product)
             .Where(o => o.UserId == UserId)
-            .OrderByDescending(o => o.OrderDate) // Đơn mới nhất lên đầu
+            .OrderByDescending(o => o.OrderDate)
             .ToListAsync();
 
         return View(orders);
     }
 
-    // --------------------------------------------------------
+    // ────────────────────────────────────────────────────────
     // GET /Order/Detail/5
-    // Chi tiết một đơn hàng cụ thể.
-    // --------------------------------------------------------
-    /// <summary>Chi tiết đơn hàng — xem đầy đủ sản phẩm, giá, trạng thái.</summary>
+    // ────────────────────────────────────────────────────────
     public async Task<IActionResult> Detail(int id)
     {
         if (UserIdNullable == null)
@@ -360,17 +321,10 @@ public class OrderController(MilkStore4Context db, MilkStore.Services.EmailServi
         return View(order);
     }
 
-    // --------------------------------------------------------
+    // ────────────────────────────────────────────────────────
     // POST /Order/CancelOrder
-    // Cho phép khách tự hủy đơn — chỉ khi trạng thái là "Pending".
-    // Đơn đang giao hoặc đã thanh toán KHÔNG được hủy từ phía khách.
-    //
-    // Khi hủy: hoàn lại tồn kho cho từng sản phẩm trong đơn.
-    // --------------------------------------------------------
-    /// <summary>
-    /// Khách hủy đơn hàng. Chỉ áp dụng với đơn "Pending".
-    /// Tự động hoàn tồn kho khi hủy thành công.
-    /// </summary>
+    // Chỉ hủy được đơn "Pending". Hoàn kho trong transaction.
+    // ────────────────────────────────────────────────────────
     [HttpPost]
     [ValidateAntiForgeryToken]
     public async Task<IActionResult> CancelOrder(int id)
@@ -385,29 +339,41 @@ public class OrderController(MilkStore4Context db, MilkStore.Services.EmailServi
 
         if (order == null) return NotFound();
 
-        // Chặn hủy nếu đơn đã qua trạng thái Pending (đang giao, đã thanh toán...)
         if (order.Status != "Pending")
         {
             TempData["Error"] = "Chỉ có thể hủy đơn hàng đang chờ xử lý.";
             return RedirectToAction("MyOrders");
         }
 
-        order.Status = "Cancelled";
-
-        // Hoàn lại tồn kho: cộng ngược số lượng đã trừ lúc PlaceOrder
-        foreach (var item in order.OrderItems)
+        using var tx = await db.Database.BeginTransactionAsync();
+        try
         {
-            if (item.Product != null)
-                item.Product.StockQuantity += item.Quantity;
+            order.Status = "Cancelled";
+
+            // Hoàn kho nguyên tử
+            foreach (var item in order.OrderItems)
+            {
+                await db.Products
+                    .Where(p => p.Id == item.ProductId)
+                    .ExecuteUpdateAsync(s => s.SetProperty(
+                        p => p.StockQuantity,
+                        p => p.StockQuantity + item.Quantity));
+            }
+
+            await db.SaveChangesAsync();
+            await tx.CommitAsync();
+        }
+        catch
+        {
+            await tx.RollbackAsync();
+            throw;
         }
 
-        await db.SaveChangesAsync();
         TempData["Success"] = "Đã hủy đơn hàng thành công.";
         return RedirectToAction("MyOrders");
     }
 
-    // ── GET /Order/PreviewCoupon?code=SALE10&total=500000 (AJAX) ──
-    // [FIX KM25] Trả về JSON để Checkout preview giảm giá real-time trước khi đặt hàng
+    // ── GET /Order/PreviewCoupon (AJAX) ─────────────────────
     [HttpGet]
     public async Task<IActionResult> PreviewCoupon(string code, decimal total)
     {
@@ -418,19 +384,16 @@ public class OrderController(MilkStore4Context db, MilkStore.Services.EmailServi
         var coupon = await db.Coupons.FirstOrDefaultAsync(c => c.Code == code);
         var now = DateTime.UtcNow;
 
-        if (coupon == null)
-            return Json(new { error = "Mã giảm giá không tồn tại." });
-        if (now < coupon.StartDate)
-            return Json(new { error = $"Mã chưa có hiệu lực, bắt đầu từ {coupon.StartDate:dd/MM/yyyy}." });
-        if (now > coupon.ExpiryDate)
-            return Json(new { error = "Mã giảm giá đã hết hạn." });
-        if (coupon.MaxUsage.HasValue && coupon.UsageCount >= coupon.MaxUsage.Value)
-            return Json(new { error = "Mã đã hết lượt sử dụng." });
+        if (coupon == null) return Json(new { error = "Mã không tồn tại." });
+        if (now < coupon.StartDate) return Json(new { error = $"Mã chưa có hiệu lực, bắt đầu từ {coupon.StartDate:dd/MM/yyyy}." });
+        if (now > coupon.ExpiryDate) return Json(new { error = "Mã đã hết hạn." });
+        if (coupon.MaxUsage.HasValue && coupon.UsageCount >= coupon.MaxUsage.Value) return Json(new { error = "Mã đã hết lượt sử dụng." });
 
         decimal discount = coupon.DiscountType == "Percent"
             ? total * coupon.DiscountValue / 100
             : coupon.DiscountValue;
         discount = Math.Min(discount, total);
+
         string label = coupon.DiscountType == "Percent"
             ? $"{coupon.DiscountValue}%"
             : $"{coupon.DiscountValue:N0}đ";
@@ -443,5 +406,4 @@ public class OrderController(MilkStore4Context db, MilkStore.Services.EmailServi
             finalTotal = total - discount
         });
     }
-
 }

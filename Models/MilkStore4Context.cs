@@ -30,6 +30,8 @@ public partial class MilkStore4Context : DbContext, IDataProtectionKeyContext
     public virtual DbSet<Role> Roles { get; set; }
     public virtual DbSet<Test> Tests { get; set; }
     public virtual DbSet<User> Users { get; set; }
+    public virtual DbSet<WishlistItem> WishlistItems { get; set; }
+    public virtual DbSet<UserAddress> UserAddresses { get; set; }
     public virtual DbSet<VwCustomerStat> VwCustomerStats { get; set; }
     public virtual DbSet<VwOrderDetail> VwOrderDetails { get; set; }
     public virtual DbSet<VwProductStat> VwProductStats { get; set; }
@@ -194,6 +196,29 @@ public partial class MilkStore4Context : DbContext, IDataProtectionKeyContext
             entity.Property(e => e.Price).HasColumnType("decimal(18, 2)");
             entity.Property(e => e.ProductName).HasMaxLength(200);
             entity.Property(e => e.TotalRevenue).HasColumnType("decimal(38, 2)");
+        });
+
+        modelBuilder.Entity<WishlistItem>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => new { e.UserId, e.ProductId }).IsUnique();
+            entity.Property(e => e.AddedAt).HasDefaultValueSql("NOW()").HasColumnType("timestamptz");
+            entity.HasOne(d => d.Product).WithMany()
+                .HasForeignKey(d => d.ProductId).OnDelete(DeleteBehavior.Cascade);
+            entity.HasOne(d => d.User).WithMany()
+                .HasForeignKey(d => d.UserId).OnDelete(DeleteBehavior.Cascade);
+        });
+
+        modelBuilder.Entity<UserAddress>(entity =>
+        {
+            entity.HasKey(e => e.Id);
+            entity.HasIndex(e => e.UserId);
+            entity.Property(e => e.Label).HasMaxLength(50);
+            entity.Property(e => e.FullAddress).HasMaxLength(500);
+            entity.Property(e => e.Phone).HasMaxLength(20);
+            entity.Property(e => e.CreatedAt).HasDefaultValueSql("NOW()").HasColumnType("timestamptz");
+            entity.HasOne(d => d.User).WithMany()
+                .HasForeignKey(d => d.UserId).OnDelete(DeleteBehavior.Cascade);
         });
 
         OnModelCreatingPartial(modelBuilder);

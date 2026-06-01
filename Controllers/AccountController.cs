@@ -2,6 +2,7 @@ using BCrypt.Net;
 using Microsoft.AspNetCore.Authentication;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using MilkStore.Filters;
 using MilkStore.Models;
 using Org.BouncyCastle.Crypto.Generators;
 
@@ -26,6 +27,7 @@ public class AccountController : Controller
         return View();
     }
 
+    [RateLimit(maxRequests: 10, windowSeconds: 60)]  // max 10 lần đăng nhập / 60 giây
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Login(string email, string password, string? returnUrl)
     {
@@ -87,6 +89,7 @@ public class AccountController : Controller
         return View();
     }
 
+    [RateLimit(maxRequests: 5, windowSeconds: 300)]  // max 5 lần đăng ký / 5 phút
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> Register(string fullName, string email,
         string password, string confirmPassword, string? address, string? phone)
@@ -153,6 +156,7 @@ public class AccountController : Controller
 
     public IActionResult ForgotPassword() => View();
 
+    [RateLimit(maxRequests: 3, windowSeconds: 300)]  // max 3 lần gửi email reset / 5 phút
     [HttpPost, ValidateAntiForgeryToken]
     public async Task<IActionResult> ForgotPassword(string email)
     {

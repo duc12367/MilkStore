@@ -1,0 +1,78 @@
+﻿@model List<MilkStore.Models.WishlistItem>
+@{
+    ViewData["Title"] = "Sản phẩm yêu thích";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<div class="page-hero">
+    <div class="container">
+        <div class="breadcrumb-nav">
+            <a asp-controller="Home" asp-action="Index">Trang chủ</a>
+            <span style="opacity:.4;margin:0 6px">›</span>
+            <span>Yêu thích</span>
+        </div>
+        <h1 class="page-hero-title">❤️ Sản phẩm yêu thích</h1>
+        <p class="page-hero-sub">@Model.Count sản phẩm đã lưu</p>
+    </div>
+</div>
+
+<div class="container" style="margin-top:2rem;margin-bottom:3rem">
+    @if (!Model.Any())
+    {
+        <div class="empty-state">
+            <div style="font-size:3rem;margin-bottom:1rem">💔</div>
+            <h3>Chưa có sản phẩm yêu thích</h3>
+            <p>Nhấn vào biểu tượng tim trên sản phẩm để lưu lại nhé!</p>
+            <a asp-controller="Product" asp-action="Index" class="btn-back-shop">Khám phá sản phẩm</a>
+        </div>
+    }
+    else
+    {
+        <div class="product-grid">
+            @foreach (var item in Model)
+            {
+                var p = item.Product;
+                <div class="product-card">
+                    <a asp-controller="Product" asp-action="Detail" asp-route-id="@p.Id" class="product-img-link">
+                        @if (p.StockQuantity == 0)
+                        {
+                            <span class="out-of-stock-badge">Hết hàng</span>
+                        }
+                        <img src="@(string.IsNullOrEmpty(p.ImageUrl) ? "/images/no-image.png" : p.ImageUrl)"
+                             alt="@p.ProductName" class="product-img" loading="lazy" />
+                        <div class="product-hover-overlay">Xem chi tiết</div>
+                    </a>
+                    <div class="product-info">
+                        <span class="product-brand">@p.Brand?.Name</span>
+                        <a asp-controller="Product" asp-action="Detail" asp-route-id="@p.Id" class="product-name">@p.ProductName</a>
+                        <div class="product-bottom">
+                            <span class="product-price">@($"{p.Price:N0}") ₫</span>
+                            <div style="display:flex;gap:6px">
+                                <!-- Xóa khỏi wishlist -->
+                                <form asp-action="Remove" method="post" style="display:inline">
+                                    @Html.AntiForgeryToken()
+                                    <input type="hidden" name="id" value="@item.Id" />
+                                    <button type="submit" title="Xóa khỏi yêu thích"
+                                            style="background:#fff0f0;border:1.5px solid #ffc0c0;color:#e17055;border-radius:8px;padding:.38rem .7rem;cursor:pointer;font-size:.85rem">
+                                        ❌
+                                    </button>
+                                </form>
+                                <!-- Thêm vào giỏ -->
+                                @if (p.StockQuantity > 0)
+                                {
+                                    <form asp-controller="Cart" asp-action="Add" method="post" style="display:inline">
+                                        @Html.AntiForgeryToken()
+                                        <input type="hidden" name="productId" value="@p.Id" />
+                                        <input type="hidden" name="quantity"  value="1" />
+                                        <button type="submit" class="btn-add-cart">🛒 Thêm</button>
+                                    </form>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+        </div>
+    }
+</div>
+
