@@ -1,4 +1,4 @@
-// FILE: Program.cs
+// Program.cs
 using Microsoft.EntityFrameworkCore;
 using Microsoft.AspNetCore.HttpOverrides;
 using Microsoft.AspNetCore.DataProtection;
@@ -22,7 +22,7 @@ builder.Services.Configure<ForwardedHeadersOptions>(options =>
 
 builder.Services.AddControllersWithViews(options =>
 {
-    // [FIX SESSION] Kiểm tra IsBlocked sau mỗi request (cache 30s để giảm DB query)
+    //  Kiểm tra IsBlocked sau mỗi request (cache 30s để giảm DB query)
     options.Filters.Add(new Microsoft.AspNetCore.Mvc.ServiceFilterAttribute(
         typeof(MilkStore.Filters.BlockedUserFilter)));
 });
@@ -32,7 +32,7 @@ builder.Services.AddScoped<MilkStore.Filters.BlockedUserFilter>();
 builder.Services.AddDbContext<MilkStore4Context>(options =>
     options.UseNpgsql(builder.Configuration.GetConnectionString("MilkStore")));
 
-// FIX: Lưu DataProtection keys vào PostgreSQL thay vì /tmp
+//  Lưu DataProtection keys vào PostgreSQL thay vì /tmp
 // /tmp bị xóa mỗi lần Render redeploy → key mất → session/antiforgery lỗi 400
 builder.Services.AddDataProtection()
     .SetApplicationName("MilkStore")
@@ -213,7 +213,7 @@ using (var scope = app.Services.CreateScope())
             ADD COLUMN IF NOT EXISTS ""IsBlocked""         BOOLEAN      NOT NULL DEFAULT FALSE;
     ");
 
-    // [FIX UTC] Thêm CreatedAt vào Users để dashboard thống kê user mới theo tháng
+    //  Thêm CreatedAt vào Users để dashboard thống kê user mới theo tháng
     db.Database.ExecuteSqlRaw(@"
         ALTER TABLE ""Users""
             ADD COLUMN IF NOT EXISTS ""CreatedAt"" TIMESTAMPTZ NOT NULL DEFAULT NOW();
@@ -235,7 +235,7 @@ using (var scope = app.Services.CreateScope())
         ON CONFLICT DO NOTHING;
     ");
 
-    // [TRUNG HẠN] Wishlist
+    //  Wishlist
     db.Database.ExecuteSqlRaw(@"
         CREATE TABLE IF NOT EXISTS ""WishlistItems"" (
             ""Id""        SERIAL PRIMARY KEY,
@@ -249,7 +249,7 @@ using (var scope = app.Services.CreateScope())
     ");
 
 
-    // [TRUNG HẠN] UserAddresses — nhiều địa chỉ giao hàng
+    //  UserAddresses — nhiều địa chỉ giao hàng
     db.Database.ExecuteSqlRaw(@"
         CREATE TABLE IF NOT EXISTS ""UserAddresses"" (
             ""Id""          SERIAL PRIMARY KEY,
@@ -262,6 +262,14 @@ using (var scope = app.Services.CreateScope())
             CONSTRAINT ""FK_UserAddresses_Users"" FOREIGN KEY(""UserId"") REFERENCES ""Users""(""Id"") ON DELETE CASCADE
         );
         CREATE INDEX IF NOT EXISTS ""IX_UserAddresses_UserId"" ON ""UserAddresses""(""UserId"");
+    ");
+
+
+    //  thêm cột DiscountAmount và CouponCode vào Orders nếu chưa có
+    db.Database.ExecuteSqlRaw(@"
+        ALTER TABLE ""Orders""
+            ADD COLUMN IF NOT EXISTS ""CouponCode""     VARCHAR(50),
+            ADD COLUMN IF NOT EXISTS ""DiscountAmount"" DECIMAL(18,2) NOT NULL DEFAULT 0;
     ");
 
 }
